@@ -12,7 +12,7 @@ class MELEE_API ABaseWeapon : public ABaseEquippable
 	
 public:
 	ABaseWeapon();
-
+	virtual void OnEquipped() override; 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;

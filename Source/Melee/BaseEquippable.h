@@ -2,10 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interactable.h"
 #include "BaseEquippable.generated.h"
 
 UCLASS()
-class MELEE_API ABaseEquippable : public AActor
+class MELEE_API ABaseEquippable : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 	
@@ -37,8 +38,9 @@ public: //set
 	FORCEINLINE void SetIsEquipped(bool IsEquipped) { bIsEquipped = IsEquipped; }
 public:
 	UPrimitiveComponent* GetItemMesh();
-	void OnEquipped(); 
+	virtual void OnEquipped(); 
 	void OnUnequipped();
 	UFUNCTION(BlueprintCallable)
 	void AttachActor(FName SocketName);
+	virtual void Interact(AActor* Caller) override;
 };

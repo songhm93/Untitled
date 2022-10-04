@@ -12,4 +12,5 @@ class MELEE_API AToughSword : public ABaseWeapon
 	
 public:
 	AToughSword();
+
 };

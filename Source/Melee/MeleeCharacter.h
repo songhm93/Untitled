@@ -7,6 +7,7 @@
 #include "MeleeCharacter.generated.h"
 
 class AToughSword;
+class ABaseWeapon;
 
 UCLASS(config=Game)
 class AMeleeCharacter : public ACharacter
@@ -46,17 +47,21 @@ protected:
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void Interact(AActor* Caller);
 private:
 	UPROPERTY(EditAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> SpawnActor;
 	UPROPERTY(BlueprintReadWrite, Category = "Combat", Meta=(AllowPrivateAccess = "true"))
-	AToughSword* Sword;
+	ABaseWeapon* EquippedWeapon;
 	UPROPERTY(EditAnywhere, Category = "Combat" , Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* EquipMontage;
 	UPROPERTY(EditAnywhere, Category = "Combat" , Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* UnequipMontage;
-public:
+	void InteractButtonPressed();
+public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+public: //set
+	FORCEINLINE void SetWeapon(ABaseWeapon* Weapon) { EquippedWeapon = Weapon; }
 };
 
