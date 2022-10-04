@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,15 +10,29 @@ class MELEE_API ABaseEquippable : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ABaseEquippable();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	virtual void OnEquipped(); //자식들한테서 재정의해서 기능 추가할 것
+	virtual void OnUnequipped();
+	void AttachActor(FName ScoketName);
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* ItemSkeletalMesh;
+	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* ItemStaticMesh;
+	UPROPERTY(VisibleAnywhere, Category = "Combat", Meta = (AllowPrivateAccess = "true"))
+	bool bIsEquipped;
+	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	FName AttachSocketName;
+public: //get
+	
+public: //set
+
+public:
+	UPrimitiveComponent* GetItemMesh();
 };
