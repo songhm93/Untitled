@@ -7,14 +7,13 @@
 		{
 			"name": "UE5",
 			"path": "C:\\Program Files\\Epic Games\\UE_5.0"
-		},
-		{
-			"name": "Melee",
-			"path": "Melee"
 		}
 	],
 	"settings": {
-		"typescript.tsc.autoDetect": "off"
+		"typescript.tsc.autoDetect": "off",
+		"files.associations": {
+			"*.rh": "cpp"
+		}
 	},
 	"extensions": {
 		"recommendations": [
