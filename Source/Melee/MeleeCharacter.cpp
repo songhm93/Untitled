@@ -7,6 +7,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "ToughSword.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Interactable.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AMeleeCharacter
@@ -39,24 +41,13 @@ AMeleeCharacter::AMeleeCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false; 
 
+	
+
 }
 
 void AMeleeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	UWorld* World = GetWorld();
-	if(World && SpawnActor)
-	{
-		FActorSpawnParameters Params; 
-		Params.Owner = this;
-		Params.Instigator = this;
-		Sword = World->SpawnActor<AToughSword>(SpawnActor, GetActorTransform(), Params);
-		if(Sword)
-		{
-			Sword->OnEquipped();
-		}
-		
-	}
 	
 }
 
@@ -69,6 +60,8 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("ToggleCombat", IE_Pressed, this, &ThisClass::ToggleCombat);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::InteractButtonPressed);
+	
 
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AMeleeCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &AMeleeCharacter::MoveRight);
@@ -128,23 +121,58 @@ void AMeleeCharacter::MoveRight(float Value)
 
 void AMeleeCharacter::ToggleCombat()
 {
-	if(Sword)
+	if(EquippedWeapon)
 	{
 		if(EquipMontage && UnequipMontage)
 		{
-			if(!Sword->GetIsAttachedToHand())
+			if(!EquippedWeapon->GetIsAttachedToHand())
 			{
 				PlayAnimMontage(EquipMontage);
-				Sword->SetIsAttachedToHand(true);
+				EquippedWeapon->SetIsAttachedToHand(true);
 			}
 			else
 			{
 				PlayAnimMontage(UnequipMontage);
-				Sword->SetIsAttachedToHand(false);
+				EquippedWeapon->SetIsAttachedToHand(false);
+			}
+		}
+	}
+}
+
+void AMeleeCharacter::InteractButtonPressed()
+{
+	FVector Start = GetActorLocation();
+	FVector End = Start + GetActorForwardVector() * 100.f;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
+	ObjectTypesArray.Reserve(1);
+	ObjectTypesArray.Emplace(ECollisionChannel::ECC_GameTraceChannel1);
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+	FHitResult OutHit;
+	UKismetSystemLibrary::SphereTraceSingleForObjects(
+		this, 
+		Start, 
+		End, 
+		30.f, 
+		ObjectTypesArray, 
+		false, 
+		IgnoredActors, 
+		EDrawDebugTrace::ForDuration, 
+		OutHit, 
+		true,
+		FLinearColor::Red,
+		FLinearColor::Green,
+		10.f);
+
+		
+		if(OutHit.GetActor())
+		{
+			IInteractable* Interactable = Cast<IInteractable>(OutHit.GetActor());
+			if(Interactable)
+			{
+				Interactable->Interact(this);
 			}
 		}
 		
-		
-		
-	}
 }
+

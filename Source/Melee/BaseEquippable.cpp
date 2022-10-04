@@ -1,5 +1,6 @@
 #include "BaseEquippable.h"
 #include "GameFramework/Character.h"
+#include "Interactable.h"
 
 ABaseEquippable::ABaseEquippable()
 {
@@ -52,4 +53,9 @@ void ABaseEquippable::AttachActor(FName SocketName)
 	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
 	AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 	
+}
+
+void ABaseEquippable::Interact(AActor* Caller)
+{
+    UE_LOG(LogTemp, Warning, TEXT("머시여"));
 }
