@@ -14,9 +14,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void OnEquipped(); //자식들한테서 재정의해서 기능 추가할 것
-	virtual void OnUnequipped();
-	void AttachActor(FName ScoketName);
+	
+	
 public:	
 	virtual void Tick(float DeltaTime) override;
 
@@ -27,12 +26,19 @@ private:
 	UStaticMeshComponent* ItemStaticMesh;
 	UPROPERTY(VisibleAnywhere, Category = "Combat", Meta = (AllowPrivateAccess = "true"))
 	bool bIsEquipped;
-	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName AttachSocketName;
+	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	USceneComponent* RootSceneComp;
 public: //get
-	
+	FORCEINLINE bool GetIsEquipped() const { return bIsEquipped; }
+	FORCEINLINE FName GetAttachSocketName() const { return AttachSocketName; }
 public: //set
-
+	FORCEINLINE void SetIsEquipped(bool IsEquipped) { bIsEquipped = IsEquipped; }
 public:
 	UPrimitiveComponent* GetItemMesh();
+	void OnEquipped(); 
+	void OnUnequipped();
+	UFUNCTION(BlueprintCallable)
+	void AttachActor(FName SocketName);
 };

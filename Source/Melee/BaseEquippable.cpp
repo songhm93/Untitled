@@ -7,7 +7,11 @@ ABaseEquippable::ABaseEquippable()
 
 	ItemSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemSkeletalMesh"));
 	ItemStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMesh"));
-	AttachSocketName = TEXT("");
+	RootSceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("EmRootSceneCompptyComp"));
+	RootComponent = RootSceneComp;
+	ItemSkeletalMesh->SetupAttachment(RootComponent);
+	ItemStaticMesh->SetupAttachment(RootComponent);
+	AttachSocketName = TEXT("SwordHipAttachSocket");
 }
 
 void ABaseEquippable::BeginPlay()
@@ -43,9 +47,9 @@ void ABaseEquippable::OnUnequipped()
 		bIsEquipped = false;
 }
 
-void ABaseEquippable::AttachActor(FName ScoketName)
+void ABaseEquippable::AttachActor(FName SocketName)
 {
-	FAttachmentTransformRules Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
-	Cast<ACharacter>(GetOwner())->GetMesh()->AttachToComponent(GetItemMesh(), Rules, ScoketName);
+	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
+	AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 	
 }
