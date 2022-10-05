@@ -12,4 +12,6 @@ class MELEE_API AGreatSword : public ABaseWeapon
 	
 public:
 	AGreatSword();
+
+
 };

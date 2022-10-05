@@ -6,10 +6,11 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "ToughSword.h"
+#include "BaseWeapon.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interactable.h"
 #include "MeleeAnimInstance.h"
+#include "CombatComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AMeleeCharacter
@@ -42,8 +43,7 @@ AMeleeCharacter::AMeleeCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false; 
 
-	EquippedWeapon = nullptr;
-	bCombatEnabled = false;
+	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 }
 
 void AMeleeCharacter::BeginPlay()
@@ -122,29 +122,26 @@ void AMeleeCharacter::MoveRight(float Value)
 
 void AMeleeCharacter::ToggleCombat()
 {
-	if(EquippedWeapon)
+	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
-		if(EquippedWeapon->GetEnterCombatAM() && EquippedWeapon->GetExitCombatAM())
+		if(CombatComp->GetEquippedWeapon()->GetEnterCombatAM() && CombatComp->GetEquippedWeapon()->GetExitCombatAM())
 		{
-			if(!bCombatEnabled) //손에 장착 상태가 아니면
+			if(!CombatComp->GetCombatState()) //손에 장착 상태가 아니면
 			{
-				PlayAnimMontage(EquippedWeapon->GetEnterCombatAM());
-				//EquippedWeapon->SetIsAttachedToHand(true);
-				bCombatEnabled = true;
+				PlayAnimMontage(CombatComp->GetEquippedWeapon()->GetEnterCombatAM());
+				CombatComp->SetCombatState(true);
 				if(GetMesh() && GetMesh()->GetAnimInstance())
 				{
-					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatEnabled(true);
-					
+					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(true);
 				}
 			}
 			else
 			{
-				PlayAnimMontage(EquippedWeapon->GetExitCombatAM());
-				//EquippedWeapon->SetIsAttachedToHand(false);
-				bCombatEnabled = false;
+				PlayAnimMontage(CombatComp->GetEquippedWeapon()->GetExitCombatAM());
+				CombatComp->SetCombatState(false);
 				if(GetMesh() && GetMesh()->GetAnimInstance())
 				{
-					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatEnabled(false);
+					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(false);
 					
 				}
 			}
@@ -189,13 +186,4 @@ void AMeleeCharacter::InteractButtonPressed()
 		
 }
 
-void AMeleeCharacter::SetEquippedWeapon(ABaseWeapon* NewWeapon)
-{
-	if(EquippedWeapon)
-	{
-		EquippedWeapon->OnUnequipped();
-		EquippedWeapon->Destroy();
-	}
-	EquippedWeapon = NewWeapon;
-}
 

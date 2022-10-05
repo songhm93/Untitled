@@ -12,11 +12,9 @@ class MELEE_API ABaseEquippable : public AActor, public IInteractable
 	
 public:	
 	ABaseEquippable();
-
+	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay() override;
-public:	
-	virtual void Tick(float DeltaTime) override;
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Combat", Meta = (AllowPrivateAccess = "true"))
 	bool bIsEquipped;

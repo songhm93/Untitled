@@ -37,6 +37,7 @@ public: //set
 	FORCEINLINE void SetHandSocketName(FName SocketName) { HandSocketName = SocketName;}
 	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type;}
 public:
-
+	UFUNCTION(BlueprintCallable)
+	void AttachWeapon(AMeleeCharacter* Character);
 };	
 
