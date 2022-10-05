@@ -7,9 +7,10 @@
 AMeleeGameMode::AMeleeGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/CombatSystem/Blueprints/BP_CombatCharacter"));
-	if (PlayerPawnBPClass.Class != NULL)
-	{
-		DefaultPawnClass = PlayerPawnBPClass.Class;
-	}
+	// static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/CombatSystem/Blueprints/BP_CombatCharacter"));
+	// if (PlayerPawnBPClass.Class != NULL)
+	// {
+	// 	DefaultPawnClass = PlayerPawnBPClass.Class;
+	// }
+	DefaultPawnClass = AMeleeCharacter::StaticClass();
 }
