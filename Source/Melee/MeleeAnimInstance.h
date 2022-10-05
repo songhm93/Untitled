@@ -16,7 +16,7 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Speed;
 	UPROPERTY()
 	AMeleeCharacter* Character;
@@ -32,6 +32,8 @@ private:
 	void AnimNotify_ContinueAttack();
 	UFUNCTION()
 	void AnimNotify_ResetAttack();
+	UFUNCTION()
+	void AnimNotify_FinishDodge();
 public:
 	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type; }
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }

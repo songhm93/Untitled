@@ -18,13 +18,13 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Combat", Meta = (AllowPrivateAccess = "true"))
 	bool bIsEquipped;
-	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* ItemSkeletalMesh;
-	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* ItemStaticMesh;
-	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
 	USceneComponent* RootSceneComp;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName AttachSocketName;
 public: //get
 	FORCEINLINE bool GetIsEquipped() const { return bIsEquipped; }

@@ -19,21 +19,24 @@ protected:
 	
 	
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* EnterCombatMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ExitCombatMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
 	ECombatType CombatType;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> AttackMontage; //공격 애니메이션 몽타주를 배열에 넣어서 관리. 콤보공격을 위함.
+	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> AttackMontage; //공격 애니메이션 몽타주를 배열에 넣어서 관리. 콤보공격을 위함. 무기 타입마다 몽타주 추가 해주기.
+	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> DodgeMontage; //회피 애니메이션 몽타주
 public: //get
 	FORCEINLINE UAnimMontage* GetEnterCombatAM() const { return EnterCombatMontage; }
 	FORCEINLINE UAnimMontage* GetExitCombatAM() const { return ExitCombatMontage; }
 	FORCEINLINE FName GetHandSocketName() const { return HandSocketName; }
 	FORCEINLINE ECombatType GetCombatType() const { return CombatType; }
 	FORCEINLINE TArray<UAnimMontage*> GetAttackMontage() const { return AttackMontage; }
+	FORCEINLINE TArray<UAnimMontage*> GetDodgeMontage() const { return DodgeMontage; }
 public: //set
 	FORCEINLINE void SetEnterCombatAM(UAnimMontage* AM) { EnterCombatMontage = AM;}
 	FORCEINLINE void SetExitCombatAM(UAnimMontage* AM) { ExitCombatMontage = AM;}
@@ -44,5 +47,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttachWeapon(AMeleeCharacter* Character);
 	void SetAttackMontage(UAnimMontage* Montage);
+	void SetDodgeMontage(UAnimMontage* Montage);
 };	
 

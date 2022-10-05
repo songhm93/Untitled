@@ -46,3 +46,9 @@ void ABaseWeapon::SetAttackMontage(UAnimMontage* Montage)
     if(Montage)
         AttackMontage.Add(Montage);
 }
+
+void ABaseWeapon::SetDodgeMontage(UAnimMontage* Montage)
+{
+    if(Montage)
+        DodgeMontage.Add(Montage);
+}
