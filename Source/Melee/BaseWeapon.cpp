@@ -39,4 +39,10 @@ void ABaseWeapon::AttachWeapon(AMeleeCharacter* Character)
                 AttachActor(GetAttachSocketName());
         }
     }
+} 
+
+void ABaseWeapon::SetAttackMontage(UAnimMontage* Montage)
+{
+    if(Montage)
+        AttackMontage.Add(Montage);
 }
