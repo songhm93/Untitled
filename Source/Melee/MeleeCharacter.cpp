@@ -62,6 +62,7 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("ToggleCombat", IE_Pressed, this, &ThisClass::ToggleCombat);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::InteractButtonPressed);
+	PlayerInputComponent->BindAction("LightAttack", IE_Pressed, this, &ThisClass::LightAttack);
 	
 
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AMeleeCharacter::MoveForward);
@@ -124,6 +125,7 @@ void AMeleeCharacter::ToggleCombat()
 {
 	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
+		if(CombatComp->GetIsAttacking()) return;
 		if(CombatComp->GetEquippedWeapon()->GetEnterCombatAM() && CombatComp->GetEquippedWeapon()->GetExitCombatAM())
 		{
 			if(!CombatComp->GetCombatState()) //손에 장착 상태가 아니면
@@ -138,11 +140,11 @@ void AMeleeCharacter::ToggleCombat()
 			else
 			{
 				PlayAnimMontage(CombatComp->GetEquippedWeapon()->GetExitCombatAM());
+				CombatComp->ResetAttackCount();
 				CombatComp->SetCombatState(false);
 				if(GetMesh() && GetMesh()->GetAnimInstance())
 				{
 					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(false);
-					
 				}
 			}
 		}
@@ -174,16 +176,78 @@ void AMeleeCharacter::InteractButtonPressed()
 		FLinearColor::Green,
 		10.f);
 
-		
-		if(OutHit.GetActor())
+	if(OutHit.GetActor())
+	{
+		IInteractable* Interactable = Cast<IInteractable>(OutHit.GetActor());
+		if(Interactable)
 		{
-			IInteractable* Interactable = Cast<IInteractable>(OutHit.GetActor());
-			if(Interactable)
-			{
-				Interactable->Interact(this);
-			}
+			Interactable->Interact(this);
 		}
-		
+	}
 }
 
+void AMeleeCharacter::LightAttack()
+{
+	if(CombatComp && CombatComp->GetCombatState())
+	{
+		if(CombatComp->GetIsAttacking())
+		{
+			CombatComp->SetIsAttackSaved(true);
+		}
+		else
+		{
+			PerformAttack(CombatComp->GetAttackCount(), false);
+		}
+	}
+}
 
+void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx)
+{
+	int32 Idx = AttackIdx;
+	if(CombatComp && CombatComp->GetEquippedWeapon())
+	{
+		TArray<UAnimMontage*> TempArray = CombatComp->GetEquippedWeapon()->GetAttackMontage();
+
+		if(bRandomIdx)
+		{
+			int32 ArrayCount = TempArray.Num();
+			if(ArrayCount == 0)
+				Idx = 0;
+			else
+				Idx = FMath::RandRange(0, ArrayCount - 1);
+		}
+
+		CombatComp->SetIsAttacking(true);
+		if(TempArray.Num() != Idx)
+		{
+			PlayAnimMontage(TempArray[Idx]);
+		}
+		else
+		{
+			CombatComp->ResetAttackCount();
+			PlayAnimMontage(TempArray[CombatComp->GetAttackCount()]);
+		}
+		CombatComp->IncrementAttackCount(); //일정 시간되면 AttackCount 리셋시켜야함
+	}
+}
+
+void AMeleeCharacter::ContinueAttack() //애님 노티파이로 호출될 함수. 공격중에 또 공격 버튼을 눌렀을 때 바로 다음 공격이 발생하는 것을 막기 위함.
+{
+	if(CombatComp)
+	{
+		CombatComp->SetIsAttacking(false);
+		if(CombatComp->GetIsAttackSaved())
+		{
+			CombatComp->SetIsAttackSaved(false);
+			PerformAttack(CombatComp->GetAttackCount(), false);
+		}
+	}
+}
+
+void AMeleeCharacter::ResetAttack() //애님 노티파이로 호출될 함수.
+{
+	if(CombatComp)
+	{
+		CombatComp->ResetAttackCount();
+	}
+}

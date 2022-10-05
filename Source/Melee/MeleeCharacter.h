@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CombatInterface.h"
 #include "MeleeCharacter.generated.h"
 
 class AToughSword;
@@ -11,7 +12,7 @@ class ABaseWeapon;
 class UCombatComponent;
 
 UCLASS(config=Game)
-class AMeleeCharacter : public ACharacter
+class AMeleeCharacter : public ACharacter, public ICombatInterface
 {
 	GENERATED_BODY()
 
@@ -25,7 +26,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
-
+	virtual void ContinueAttack() override;
+	virtual void ResetAttack() override;
 protected:
 	virtual void BeginPlay() override;
 	void MoveForward(float Value);
@@ -45,6 +47,7 @@ protected:
 	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 	void ToggleCombat();
+	void LightAttack();
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -57,5 +60,8 @@ public: //get
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE UCombatComponent* GetCombatComp() const { return CombatComp; }
 public: //set
+
+public:
+	void PerformAttack(int32 AttackIdx, bool bRandomIdx);
 };
 

@@ -28,6 +28,10 @@ private:
 	void AnimNotify_Equip();
 	UFUNCTION()
 	void AnimNotify_UnEquip();
+	UFUNCTION()
+	void AnimNotify_ContinueAttack();
+	UFUNCTION()
+	void AnimNotify_ResetAttack();
 public:
 	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type; }
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }
