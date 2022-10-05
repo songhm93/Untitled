@@ -33,3 +33,19 @@ void UMeleeAnimInstance::AnimNotify_UnEquip()
        Character->GetCombatComp()->GetEquippedWeapon()->AttachWeapon(Character);
     }
 }
+
+void UMeleeAnimInstance::AnimNotify_ContinueAttack()
+{
+    if(Character)
+    {
+        Character->ContinueAttack();
+    }
+}
+
+void UMeleeAnimInstance::AnimNotify_ResetAttack()
+{
+    if(Character)
+    {
+        Character->ResetAttack();
+    }
+}
