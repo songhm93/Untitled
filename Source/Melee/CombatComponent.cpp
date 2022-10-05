@@ -7,6 +7,7 @@ UCombatComponent::UCombatComponent()
 
 	EquippedWeapon = nullptr;
 	bCombatState = false;
+	AttackCount = 0;
 }
 
 
