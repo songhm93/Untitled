@@ -8,6 +8,7 @@
 
 class AToughSword;
 class ABaseWeapon;
+class UCombatComponent;
 
 UCLASS(config=Game)
 class AMeleeCharacter : public ACharacter
@@ -47,19 +48,14 @@ protected:
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void Interact(AActor* Caller);
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", Meta=(AllowPrivateAccess = "true"))
-	ABaseWeapon* EquippedWeapon;
 	void InteractButtonPressed();
-	bool bCombatEnabled;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* CombatComp;
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
-	FORCEINLINE bool GetCombatEnabled() const { return bCombatEnabled; }
+	FORCEINLINE UCombatComponent* GetCombatComp() const { return CombatComp; }
 public: //set
-	FORCEINLINE void SetCombatEnabled(bool Boolean) { bCombatEnabled = Boolean; }
-	void SetEquippedWeapon(ABaseWeapon* NewWeapon);
 };
 
