@@ -9,6 +9,7 @@
 #include "ToughSword.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interactable.h"
+#include "MeleeAnimInstance.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AMeleeCharacter
@@ -41,8 +42,8 @@ AMeleeCharacter::AMeleeCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false; 
 
-	
-
+	EquippedWeapon = nullptr;
+	bCombatEnabled = false;
 }
 
 void AMeleeCharacter::BeginPlay()
@@ -123,17 +124,29 @@ void AMeleeCharacter::ToggleCombat()
 {
 	if(EquippedWeapon)
 	{
-		if(EquipMontage && UnequipMontage)
+		if(EquippedWeapon->GetEnterCombatAM() && EquippedWeapon->GetExitCombatAM())
 		{
-			if(!EquippedWeapon->GetIsAttachedToHand())
+			if(!bCombatEnabled) //손에 장착 상태가 아니면
 			{
-				PlayAnimMontage(EquipMontage);
-				EquippedWeapon->SetIsAttachedToHand(true);
+				PlayAnimMontage(EquippedWeapon->GetEnterCombatAM());
+				//EquippedWeapon->SetIsAttachedToHand(true);
+				bCombatEnabled = true;
+				if(GetMesh() && GetMesh()->GetAnimInstance())
+				{
+					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatEnabled(true);
+					
+				}
 			}
 			else
 			{
-				PlayAnimMontage(UnequipMontage);
-				EquippedWeapon->SetIsAttachedToHand(false);
+				PlayAnimMontage(EquippedWeapon->GetExitCombatAM());
+				//EquippedWeapon->SetIsAttachedToHand(false);
+				bCombatEnabled = false;
+				if(GetMesh() && GetMesh()->GetAnimInstance())
+				{
+					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatEnabled(false);
+					
+				}
 			}
 		}
 	}
@@ -174,5 +187,15 @@ void AMeleeCharacter::InteractButtonPressed()
 			}
 		}
 		
+}
+
+void AMeleeCharacter::SetEquippedWeapon(ABaseWeapon* NewWeapon)
+{
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->OnUnequipped();
+		EquippedWeapon->Destroy();
+	}
+	EquippedWeapon = NewWeapon;
 }
 
