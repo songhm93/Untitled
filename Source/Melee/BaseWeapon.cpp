@@ -2,6 +2,7 @@
 #include "MeleeCharacter.h"
 #include "MeleeAnimInstance.h"
 #include "Types.h"
+#include "CombatComponent.h"
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -10,24 +11,32 @@ ABaseWeapon::ABaseWeapon()
 
 void ABaseWeapon::OnEquipped()
 {
-    
     SetIsEquipped(true);
-    
 
     AMeleeCharacter* Character =  Cast<AMeleeCharacter>(GetOwner());
-    if(Character)
+    
+    if(Character && Character->GetCombatComp())
     {
-        if(Character->GetCombatEnabled())
-            AttachActor(GetHandSocketName());
-        else
-            AttachActor(GetAttachSocketName());
-            
-        Character->SetEquippedWeapon(this);
+        AttachWeapon(Character);
+        Character->GetCombatComp()->SetEquippedWeapon(this);
         if(Character->GetMesh() &&  Character->GetMesh()->GetAnimInstance())
         {
             Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetCombatType(GetCombatType());
         }
-        
     }
-    
+   
+}
+
+void ABaseWeapon::AttachWeapon(AMeleeCharacter* Character)
+{
+    if(Character)
+    {
+        if(Character->GetCombatComp())
+        {
+            if(Character->GetCombatComp()->GetCombatState())
+                AttachActor(GetHandSocketName());
+            else
+                AttachActor(GetAttachSocketName());
+        }
+    }
 }

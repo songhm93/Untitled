@@ -23,9 +23,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	ECombatType CombatType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	bool bCombatEnabled;
-	
+	bool bCombatState;
+	UFUNCTION()
+	void AnimNotify_Equip();
+	UFUNCTION()
+	void AnimNotify_UnEquip();
 public:
 	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type; }
-	FORCEINLINE void SetCombatEnabled(bool Boolean) { bCombatEnabled = Boolean; }
+	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }
 };
