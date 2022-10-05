@@ -193,7 +193,7 @@ void AMeleeCharacter::InteractButtonPressed()
 	}
 }
 
-void AMeleeCharacter::LightAttack()
+void AMeleeCharacter::LightAttack() //todo:공격중에 회피하면 콤보가 초기화가 안됨.
 {
 	if(!CanAttack()) return;
 	if(CombatComp && CombatComp->GetCombatState())
