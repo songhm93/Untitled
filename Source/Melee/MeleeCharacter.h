@@ -49,19 +49,17 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void Interact(AActor* Caller);
 private:
-	UPROPERTY(EditAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
-	TSubclassOf<AActor> SpawnActor;
-	UPROPERTY(BlueprintReadWrite, Category = "Combat", Meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", Meta=(AllowPrivateAccess = "true"))
 	ABaseWeapon* EquippedWeapon;
-	UPROPERTY(EditAnywhere, Category = "Combat" , Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* EquipMontage;
-	UPROPERTY(EditAnywhere, Category = "Combat" , Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* UnequipMontage;
 	void InteractButtonPressed();
+	bool bCombatEnabled;
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
+	FORCEINLINE bool GetCombatEnabled() const { return bCombatEnabled; }
 public: //set
-	FORCEINLINE void SetWeapon(ABaseWeapon* Weapon) { EquippedWeapon = Weapon; }
+	FORCEINLINE void SetCombatEnabled(bool Boolean) { bCombatEnabled = Boolean; }
+	void SetEquippedWeapon(ABaseWeapon* NewWeapon);
 };
 
