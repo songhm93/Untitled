@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "BaseWeapon.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Interactable.h"
 #include "MeleeAnimInstance.h"
 #include "CombatComponent.h"
@@ -44,6 +45,9 @@ AMeleeCharacter::AMeleeCharacter()
 	FollowCamera->bUsePawnControlRotation = false; 
 
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
+
+	bTogglingCombat = false;
+	bDodging = false;
 }
 
 void AMeleeCharacter::BeginPlay()
@@ -63,6 +67,7 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("ToggleCombat", IE_Pressed, this, &ThisClass::ToggleCombat);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::InteractButtonPressed);
 	PlayerInputComponent->BindAction("LightAttack", IE_Pressed, this, &ThisClass::LightAttack);
+	PlayerInputComponent->BindAction("Dodge", IE_Pressed, this, &ThisClass::Dodge);
 	
 
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AMeleeCharacter::MoveForward);
@@ -123,9 +128,10 @@ void AMeleeCharacter::MoveRight(float Value)
 
 void AMeleeCharacter::ToggleCombat()
 {
+	if(!CanToggleCombat()) return;
+	bTogglingCombat = true;
 	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
-		if(CombatComp->GetIsAttacking()) return;
 		if(CombatComp->GetEquippedWeapon()->GetEnterCombatAM() && CombatComp->GetEquippedWeapon()->GetExitCombatAM())
 		{
 			if(!CombatComp->GetCombatState()) //손에 장착 상태가 아니면
@@ -149,6 +155,7 @@ void AMeleeCharacter::ToggleCombat()
 			}
 		}
 	}
+	bTogglingCombat = false;
 }
 
 void AMeleeCharacter::InteractButtonPressed()
@@ -188,6 +195,7 @@ void AMeleeCharacter::InteractButtonPressed()
 
 void AMeleeCharacter::LightAttack()
 {
+	if(!CanAttack()) return;
 	if(CombatComp && CombatComp->GetCombatState())
 	{
 		if(CombatComp->GetIsAttacking())
@@ -203,6 +211,7 @@ void AMeleeCharacter::LightAttack()
 
 void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx)
 {
+	if(!CanAttack()) return;
 	int32 Idx = AttackIdx;
 	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
@@ -227,7 +236,7 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx)
 			CombatComp->ResetAttackCount();
 			PlayAnimMontage(TempArray[CombatComp->GetAttackCount()]);
 		}
-		CombatComp->IncrementAttackCount(); //일정 시간되면 AttackCount 리셋시켜야함
+		CombatComp->IncrementAttackCount();
 	}
 }
 
@@ -250,4 +259,71 @@ void AMeleeCharacter::ResetAttack() //애님 노티파이로 호출될 함수.
 	{
 		CombatComp->ResetAttackCount();
 	}
+}
+void AMeleeCharacter::Dodge()
+{
+	if(!CanDodge()) return;
+	PerformDodge(0, false);
+}
+
+void AMeleeCharacter::PerformDodge(int32 MontageIdx, bool bRandomIdx)
+{
+	bDodging = true;
+	int32 Idx = MontageIdx;
+	if(CombatComp && CombatComp->GetEquippedWeapon())
+	{
+		TArray<UAnimMontage*> TempArray = CombatComp->GetEquippedWeapon()->GetDodgeMontage();
+
+		if(bRandomIdx)
+		{
+			int32 ArrayCount = TempArray.Num();
+			if(ArrayCount == 0)
+				Idx = 0;
+			else
+				Idx = FMath::RandRange(0, ArrayCount - 1);
+		}
+
+		//CombatComp->SetIsAttacking(true);
+		if(TempArray.Num() != Idx)
+		{
+			PlayAnimMontage(TempArray[Idx]);
+		}
+		else
+		{
+			//CombatComp->ResetAttackCount();
+			//PlayAnimMontage(TempArray[CombatComp->GetAttackCount()]);
+		}
+		//CombatComp->IncrementAttackCount();
+	}
+}
+
+bool AMeleeCharacter::CanAttack()
+{
+	return (!bTogglingCombat && !bDodging);
+}
+
+bool AMeleeCharacter::CanToggleCombat()
+{
+	return (!CombatComp->GetIsAttacking() && !bDodging);
+}
+
+bool AMeleeCharacter::CanDodge()
+{
+	return (!CombatComp->GetIsAttacking() && !bTogglingCombat && !bDodging);
+}
+
+FRotator AMeleeCharacter::GetDesiredRotation()
+{
+	if(GetCharacterMovement())
+	{
+		FVector LastVector = GetCharacterMovement()->GetLastInputVector();
+		bool VectorResult = UKismetMathLibrary::NotEqual_VectorVector(LastVector, FVector(0.f, 0.f, 0.f), 0.001f);
+		if(VectorResult)
+		{
+			return UKismetMathLibrary::MakeRotFromX(GetLastMovementInputVector());
+		}
+	}
+	
+	
+	return GetActorRotation();
 }

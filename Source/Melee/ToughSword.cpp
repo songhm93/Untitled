@@ -31,7 +31,13 @@ AToughSword::AToughSword()
     static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM3(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack03"));
     if(LightAttackAM3.Succeeded())
         SetAttackMontage(LightAttackAM3.Object);
-    
+
+    static ConstructorHelpers::FObjectFinder<UAnimMontage> DodgeAM(TEXT("/Game/CombatSystem/AnimMontage/AM_Dodge"));
+    if(DodgeAM.Succeeded())
+    {
+        SetDodgeMontage(DodgeAM.Object);
+    }
+        
 
     SetCombatType(ECombatType::LIGHT_SWORD);
     

@@ -49,3 +49,11 @@ void UMeleeAnimInstance::AnimNotify_ResetAttack()
         Character->ResetAttack();
     }
 }
+
+void UMeleeAnimInstance::AnimNotify_FinishDodge()
+{
+     if(Character)
+    {
+        Character->SetDodging(false);
+    }
+}

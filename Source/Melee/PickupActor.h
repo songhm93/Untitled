@@ -23,9 +23,9 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> SpawnActor;
-	UPROPERTY(EditAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Mesh;
-	UPROPERTY(EditAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	USphereComponent* Sphere;
 
 };
