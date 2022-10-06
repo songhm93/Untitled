@@ -30,6 +30,7 @@ public:
 	virtual void ResetAttack() override;
 	UFUNCTION(BlueprintCallable)
 	virtual FRotator GetDesiredRotation() override;
+	virtual void ResetCombat() override;
 protected:
 	virtual void BeginPlay() override;
 	void MoveForward(float Value);

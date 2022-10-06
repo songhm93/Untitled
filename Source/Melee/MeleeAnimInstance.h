@@ -33,7 +33,7 @@ private:
 	UFUNCTION()
 	void AnimNotify_ResetAttack();
 	UFUNCTION()
-	void AnimNotify_FinishDodge();
+	void AnimNotify_ResetCombat();
 public:
 	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type; }
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }

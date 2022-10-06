@@ -1,37 +1,132 @@
 [
 	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\BaseEquippable.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\BaseEquippable.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\BaseWeapon.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\BaseWeapon.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\CombatComponent.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\CombatComponent.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\CombatInterface.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\CombatInterface.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\GreatSword.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\GreatSword.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interactable.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interactable.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Melee.Build.cs",
-		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.211.rsp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Melee.cpp",
-		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.211.rsp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Melee.h",
-		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.211.rsp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleeAnimInstance.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleeAnimInstance.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleeCharacter.cpp",
-		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.211.rsp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleeCharacter.h",
-		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.211.rsp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleeGameMode.cpp",
-		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.211.rsp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleeGameMode.h",
-		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.211.rsp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\PickupActor.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\PickupActor.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\ToughSword.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\ToughSword.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Types.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	}
 ]

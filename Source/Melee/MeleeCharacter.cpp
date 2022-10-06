@@ -193,7 +193,7 @@ void AMeleeCharacter::InteractButtonPressed()
 	}
 }
 
-void AMeleeCharacter::LightAttack() //todo:공격중에 회피하면 콤보가 초기화가 안됨.
+void AMeleeCharacter::LightAttack()
 {
 	if(!CanAttack()) return;
 	if(CombatComp && CombatComp->GetCombatState())
@@ -312,7 +312,7 @@ bool AMeleeCharacter::CanDodge()
 	return (!CombatComp->GetIsAttacking() && !bTogglingCombat && !bDodging);
 }
 
-FRotator AMeleeCharacter::GetDesiredRotation()
+FRotator AMeleeCharacter::GetDesiredRotation() //구르기시 캐릭터가 움직이고 있는 방향의 회전값을 반환
 {
 	if(GetCharacterMovement())
 	{
@@ -323,7 +323,12 @@ FRotator AMeleeCharacter::GetDesiredRotation()
 			return UKismetMathLibrary::MakeRotFromX(GetLastMovementInputVector());
 		}
 	}
-	
-	
 	return GetActorRotation();
+}
+
+void AMeleeCharacter::ResetCombat()
+{
+	ResetAttack();
+	bTogglingCombat = false;
+	bDodging = false;
 }
