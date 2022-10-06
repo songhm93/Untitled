@@ -19,4 +19,5 @@ public:
 	virtual void ContinueAttack() = 0;
 	virtual void ResetAttack() = 0;
 	virtual FRotator GetDesiredRotation() = 0;
+	virtual void ResetCombat() = 0;
 };

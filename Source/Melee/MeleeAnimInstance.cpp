@@ -42,18 +42,10 @@ void UMeleeAnimInstance::AnimNotify_ContinueAttack()
     }
 }
 
-void UMeleeAnimInstance::AnimNotify_ResetAttack()
+void UMeleeAnimInstance::AnimNotify_ResetCombat()
 {
     if(Character)
     {
-        Character->ResetAttack();
-    }
-}
-
-void UMeleeAnimInstance::AnimNotify_FinishDodge()
-{
-     if(Character)
-    {
-        Character->SetDodging(false);
+        Character->ResetCombat();
     }
 }
