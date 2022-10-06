@@ -3,10 +3,13 @@
 #include "MeleeAnimInstance.h"
 #include "Types.h"
 #include "CombatComponent.h"
+#include "CollisionComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABaseWeapon::ABaseWeapon()
 {
-
+    CollisionComponent = CreateDefaultSubobject<UCollisionComponent>(TEXT("CollisionComponent"));
+    Damage = 10.f;
 }
 
 void ABaseWeapon::OnEquipped()
@@ -24,7 +27,8 @@ void ABaseWeapon::OnEquipped()
             Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetCombatType(GetCombatType());
         }
     }
-   
+    CollisionComponent->SetCollisionMeshComponent(GetItemMesh());
+    
 }
 
 void ABaseWeapon::AttachWeapon(AMeleeCharacter* Character)
@@ -41,14 +45,15 @@ void ABaseWeapon::AttachWeapon(AMeleeCharacter* Character)
     }
 } 
 
-void ABaseWeapon::SetAttackMontage(UAnimMontage* Montage)
+void ABaseWeapon::OnHit(FHitResult& HitResult)
 {
-    if(Montage)
-        AttackMontage.Add(Montage);
-}
+	//UE_LOG(LogTemp, Warning, TEXT("OnHit! %s"), *HitResult.GetActor()->GetName());
+	//AActor* DamagedActor, float BaseDamage, AController* EventInstigator, AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass
+	AController* Controller = Cast<APawn>(GetOwner())->GetController();
+    FVector HitFromDirection = GetOwner()->GetActorForwardVector();
+	//UGameplayStatics::ApplyDamage(HitResult.GetActor(), Damage, Controller, GetOwner(), UDamageType::StaticClass());
 
-void ABaseWeapon::SetDodgeMontage(UAnimMontage* Montage)
-{
-    if(Montage)
-        DodgeMontage.Add(Montage);
+    //AActor* DamagedActor, float BaseDamage, FVector const& HitFromDirection, FHitResult const& HitInfo, AController* EventInstigator, AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass
+    UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), Damage, HitFromDirection, HitResult, Controller, this, UDamageType::StaticClass());
+    
 }

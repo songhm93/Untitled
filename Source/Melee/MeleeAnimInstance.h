@@ -31,8 +31,6 @@ private:
 	UFUNCTION()
 	void AnimNotify_ContinueAttack();
 	UFUNCTION()
-	void AnimNotify_ResetAttack();
-	UFUNCTION()
 	void AnimNotify_ResetCombat();
 public:
 	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type; }

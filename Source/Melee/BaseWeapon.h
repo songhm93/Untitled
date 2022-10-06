@@ -6,6 +6,7 @@
 #include "BaseWeapon.generated.h"
 
 class UAnimMontage;
+class UCollisionComponent;
 
 UCLASS()
 class MELEE_API ABaseWeapon : public ABaseEquippable
@@ -26,17 +27,16 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
 	ECombatType CombatType;
-	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> AttackMontage; //공격 애니메이션 몽타주를 배열에 넣어서 관리. 콤보공격을 위함. 무기 타입마다 몽타주 추가 해주기.
-	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> DodgeMontage; //회피 애니메이션 몽타주
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
+	UCollisionComponent* CollisionComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
+	float Damage;
 public: //get
 	FORCEINLINE UAnimMontage* GetEnterCombatAM() const { return EnterCombatMontage; }
 	FORCEINLINE UAnimMontage* GetExitCombatAM() const { return ExitCombatMontage; }
 	FORCEINLINE FName GetHandSocketName() const { return HandSocketName; }
 	FORCEINLINE ECombatType GetCombatType() const { return CombatType; }
-	FORCEINLINE TArray<UAnimMontage*> GetAttackMontage() const { return AttackMontage; }
-	FORCEINLINE TArray<UAnimMontage*> GetDodgeMontage() const { return DodgeMontage; }
+	
 public: //set
 	FORCEINLINE void SetEnterCombatAM(UAnimMontage* AM) { EnterCombatMontage = AM;}
 	FORCEINLINE void SetExitCombatAM(UAnimMontage* AM) { ExitCombatMontage = AM;}
@@ -46,7 +46,6 @@ public: //set
 public:
 	UFUNCTION(BlueprintCallable)
 	void AttachWeapon(AMeleeCharacter* Character);
-	void SetAttackMontage(UAnimMontage* Montage);
-	void SetDodgeMontage(UAnimMontage* Montage);
+	void OnHit(FHitResult& HitResult);
 };	
 

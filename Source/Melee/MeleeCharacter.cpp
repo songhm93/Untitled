@@ -12,6 +12,9 @@
 #include "Interactable.h"
 #include "MeleeAnimInstance.h"
 #include "CombatComponent.h"
+#include "Types.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystem.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AMeleeCharacter
@@ -48,12 +51,53 @@ AMeleeCharacter::AMeleeCharacter()
 
 	bTogglingCombat = false;
 	bDodging = false;
+	bIsDisabled = false;
+
+	// static ConstructorHelpers::FObjectFinder<UAnimMontage> DodgeAM(TEXT("/Game/CombatSystem/AnimMontage/AM_Dodge"));
+    // if(DodgeAM.Succeeded())
+    //     DodgeMontage.Add(DodgeAM.Object);
+
+	// static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM3(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack03"));
+    // if(LightAttackAM3.Succeeded())
+    //     LightAttackMontage.Add(LightAttackAM3.Object);
+
+	// static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM2(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack02"));
+    // if(LightAttackAM2.Succeeded())
+    //     LightAttackMontage.Add(LightAttackAM2.Object);
+	
+	// static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM1(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack01"));
+    // if(LightAttackAM1.Succeeded())
+    // 	LightAttackMontage.Add(LightAttackAM1.Object);
+    
+	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/ResourceTable"));
+	UDataTable* TableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+	if(TableObject)
+	{
+		FResourceTable* Row = TableObject->FindRow<FResourceTable>(FName("Resource"), TEXT(""));
+		if(Row)
+		{
+			for(auto Montage : Row->LightAttackMontage)
+			{
+				LightAttackMontage.Add(Montage);
+			}
+			for(auto Montage : Row->GreatAttackMontage)
+			{
+				GreatAttackMontage.Add(Montage);
+			}
+			DodgeMontage = Row->DodgeMontage;
+			ImpactSound = Row->ImpactSound;
+			ImpactParticle = Row->ImpactParticle;
+			HitReactMontage = Row->HitReactMontage;
+		}
+	}
+    ResetCombat();
 }
 
 void AMeleeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	OnTakePointDamage.AddDynamic(this, &AMeleeCharacter::ReceiveDamage);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -215,8 +259,17 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx)
 	int32 Idx = AttackIdx;
 	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
-		TArray<UAnimMontage*> TempArray = CombatComp->GetEquippedWeapon()->GetAttackMontage();
-
+		TArray<UAnimMontage*> TempArray;
+		ECombatType WeaponType = CombatComp->GetEquippedWeapon()->GetCombatType();
+		switch (WeaponType)
+		{
+		case ECombatType::LIGHT_SWORD:
+			TempArray = LightAttackMontage;
+			break;
+		case ECombatType::GREAT_SWORD:
+			TempArray = GreatAttackMontage;
+			break;
+		}
 		if(bRandomIdx)
 		{
 			int32 ArrayCount = TempArray.Num();
@@ -269,32 +322,8 @@ void AMeleeCharacter::Dodge()
 void AMeleeCharacter::PerformDodge(int32 MontageIdx, bool bRandomIdx)
 {
 	bDodging = true;
-	int32 Idx = MontageIdx;
-	if(CombatComp && CombatComp->GetEquippedWeapon())
-	{
-		TArray<UAnimMontage*> TempArray = CombatComp->GetEquippedWeapon()->GetDodgeMontage();
-
-		if(bRandomIdx)
-		{
-			int32 ArrayCount = TempArray.Num();
-			if(ArrayCount == 0)
-				Idx = 0;
-			else
-				Idx = FMath::RandRange(0, ArrayCount - 1);
-		}
-
-		//CombatComp->SetIsAttacking(true);
-		if(TempArray.Num() != Idx)
-		{
-			PlayAnimMontage(TempArray[Idx]);
-		}
-		else
-		{
-			//CombatComp->ResetAttackCount();
-			//PlayAnimMontage(TempArray[CombatComp->GetAttackCount()]);
-		}
-		//CombatComp->IncrementAttackCount();
-	}
+	if(DodgeMontage)
+		PlayAnimMontage(DodgeMontage);
 }
 
 bool AMeleeCharacter::CanAttack()
@@ -331,4 +360,49 @@ void AMeleeCharacter::ResetCombat()
 	ResetAttack();
 	bTogglingCombat = false;
 	bDodging = false;
+	bIsDisabled = false;
+}
+
+void AMeleeCharacter::SetLightAttackMontage(UAnimMontage* Montage)
+{
+    if(Montage)
+        LightAttackMontage.Add(Montage);
+}
+
+void AMeleeCharacter::SetGreatAttackMontage(UAnimMontage* Montage)
+{
+    if(Montage)
+        GreatAttackMontage.Add(Montage);
+}
+
+void AMeleeCharacter::SetDodgeMontage(UAnimMontage* Montage)
+{
+    if(Montage)
+        DodgeMontage = Montage;
+}
+
+void AMeleeCharacter::ReceiveDamage(
+	AActor* DamagedActor, 
+	float Damage,
+	AController* InstigatedBy, 
+	FVector HitLocation, 
+	UPrimitiveComponent* FHitComponent, 
+	FName BoneName, 
+	FVector ShotFromDirection, 
+	const UDamageType* DamageType, 
+	AActor* DamageCauser)
+{
+	if(ImpactSound)
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation);
+
+	if(ImpactParticle)
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
+
+	if(HitReactMontage)
+		PlayAnimMontage(HitReactMontage);
+
+	bIsDisabled = true; //맞았을 때 아무것도 못하게. 변수만 추가한 상태. 아무 영향 없음
+
+
+
 }
