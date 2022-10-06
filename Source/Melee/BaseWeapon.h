@@ -24,13 +24,23 @@ private:
 	UAnimMontage* EnterCombatMontage;
 	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ExitCombatMontage;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
+
 	ECombatType CombatType;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCollisionComponent* CollisionComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	float Damage;
+
+	UPROPERTY()
+	AController* Controller;
+	FVector HitFromDirection;
+
+	
 public: //get
 	FORCEINLINE UAnimMontage* GetEnterCombatAM() const { return EnterCombatMontage; }
 	FORCEINLINE UAnimMontage* GetExitCombatAM() const { return ExitCombatMontage; }
@@ -47,5 +57,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttachWeapon(AMeleeCharacter* Character);
 	void OnHit(FHitResult& HitResult);
+	void SimulateWeaponPhysics();
 };	
 

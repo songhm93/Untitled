@@ -20,4 +20,5 @@ public:
 	virtual void ResetAttack() = 0;
 	virtual FRotator GetDesiredRotation() = 0;
 	virtual void ResetCombat() = 0;
+	virtual bool CanRecieveDamage() = 0;
 };

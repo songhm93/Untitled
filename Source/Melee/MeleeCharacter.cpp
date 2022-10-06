@@ -16,9 +16,6 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
 
-//////////////////////////////////////////////////////////////////////////
-// AMeleeCharacter
-
 AMeleeCharacter::AMeleeCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -52,6 +49,10 @@ AMeleeCharacter::AMeleeCharacter()
 	bTogglingCombat = false;
 	bDodging = false;
 	bIsDisabled = false;
+	HP = 100.f;
+	bIsDead = false;
+	PelvisBoneName = TEXT("pelvis");
+	DestroyDeadTime = 4.f;
 
 	// static ConstructorHelpers::FObjectFinder<UAnimMontage> DodgeAM(TEXT("/Game/CombatSystem/AnimMontage/AM_Dodge"));
     // if(DodgeAM.Succeeded())
@@ -96,22 +97,20 @@ AMeleeCharacter::AMeleeCharacter()
 void AMeleeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	ResetCombat();
 	OnTakePointDamage.AddDynamic(this, &AMeleeCharacter::ReceiveDamage);
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Input
 
 void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("ToggleCombat", IE_Pressed, this, &ThisClass::ToggleCombat);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::InteractButtonPressed);
 	PlayerInputComponent->BindAction("LightAttack", IE_Pressed, this, &ThisClass::LightAttack);
 	PlayerInputComponent->BindAction("Dodge", IE_Pressed, this, &ThisClass::Dodge);
+	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 	
 
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AMeleeCharacter::MoveForward);
@@ -124,6 +123,12 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AMeleeCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AMeleeCharacter::TouchStopped);
+}
+
+void AMeleeCharacter::Jump()
+{
+	if(bIsDisabled || bDodging || (CombatComp && CombatComp->GetIsAttacking())) return;
+	Super::Jump();
 }
 
 void AMeleeCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -199,7 +204,6 @@ void AMeleeCharacter::ToggleCombat()
 			}
 		}
 	}
-	bTogglingCombat = false;
 }
 
 void AMeleeCharacter::InteractButtonPressed()
@@ -328,17 +332,17 @@ void AMeleeCharacter::PerformDodge(int32 MontageIdx, bool bRandomIdx)
 
 bool AMeleeCharacter::CanAttack()
 {
-	return (!bTogglingCombat && !bDodging);
+	return (!bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
 }
 
 bool AMeleeCharacter::CanToggleCombat()
 {
-	return (!CombatComp->GetIsAttacking() && !bDodging);
+	return (!CombatComp->GetIsAttacking() && !bDodging && !bIsDisabled && !bIsDead);
 }
 
 bool AMeleeCharacter::CanDodge()
 {
-	return (!CombatComp->GetIsAttacking() && !bTogglingCombat && !bDodging);
+	return (!CombatComp->GetIsAttacking() && !bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
 }
 
 FRotator AMeleeCharacter::GetDesiredRotation() //구르기시 캐릭터가 움직이고 있는 방향의 회전값을 반환
@@ -403,6 +407,67 @@ void AMeleeCharacter::ReceiveDamage(
 
 	bIsDisabled = true; //맞았을 때 아무것도 못하게. 변수만 추가한 상태. 아무 영향 없음
 
+	CauseDamage(Damage);
+}
 
+void AMeleeCharacter::CauseDamage(float Damage)
+{
+	HP = FMath::Clamp(HP - Damage, 0.f, HP - Damage);
+	if(HP <= 0)
+	{
+		Dead();
+	}
+}
 
+void AMeleeCharacter::Dead()
+{
+	bIsDead = true;
+	EnableRagdoll();
+	ApplyHitReactionPhysicsVelocity(2000.f);
+	if(CombatComp && CombatComp->GetEquippedWeapon())
+	{
+		CombatComp->GetEquippedWeapon()->SimulateWeaponPhysics();
+	}
+	GetWorldTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
+}
+
+void AMeleeCharacter::EnableRagdoll()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	FAttachmentTransformRules Rules = FAttachmentTransformRules::KeepWorldTransform;
+	CameraBoom->AttachToComponent(GetMesh(), Rules, PelvisBoneName);
+	CameraBoom->bDoCollisionTest = false;
+	GetMesh()->SetCollisionProfileName(TEXT("ragdoll"));
+	GetMesh()->SetAllBodiesBelowSimulatePhysics(PelvisBoneName, true);
+	GetMesh()->SetAllBodiesBelowPhysicsBlendWeight(PelvisBoneName, 1.f);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	
+}
+
+void AMeleeCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
+{
+	FVector NewVel = GetActorForwardVector() * (InitSpeed * -1.f);
+	
+	GetMesh()->SetPhysicsLinearVelocity(NewVel, false, PelvisBoneName);
+}
+
+void AMeleeCharacter::Test()
+{	
+	//테스트할 함수 넣기. Key Mapping : Tab
+	Dead();
+}
+
+bool AMeleeCharacter::CanRecieveDamage()
+{
+	return !bIsDead;
+}
+
+void AMeleeCharacter::DestroyDead()
+{
+	if(CombatComp && CombatComp->GetEquippedWeapon())
+	{
+		CombatComp->GetEquippedWeapon()->Destroy();
+	}
+	Destroy();
 }
