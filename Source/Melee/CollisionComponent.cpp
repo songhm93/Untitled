@@ -42,7 +42,7 @@ void UCollisionComponent::DisableCollision()
 
 void UCollisionComponent::CollisionTrace()
 {	
-	FName StartSocketName = TEXT("WeaponStart");
+	FName StartSocketName = TEXT("WeaponStart"); //무기 메시에 소켓 추가
 	FName EndSocketName = TEXT("WeaponEnd");
 	FVector Start = CollisionMeshComponent->GetSocketLocation(StartSocketName);
 	FVector End = CollisionMeshComponent->GetSocketLocation(EndSocketName);

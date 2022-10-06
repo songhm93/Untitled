@@ -10,6 +10,12 @@ ABaseWeapon::ABaseWeapon()
 {
     CollisionComponent = CreateDefaultSubobject<UCollisionComponent>(TEXT("CollisionComponent"));
     Damage = 10.f;
+
+    if(GetOwner())
+    {
+        Controller = Cast<APawn>(GetOwner())->GetController();
+    }
+    HitFromDirection = FVector::ZeroVector;
 }
 
 void ABaseWeapon::OnEquipped()
@@ -47,13 +53,23 @@ void ABaseWeapon::AttachWeapon(AMeleeCharacter* Character)
 
 void ABaseWeapon::OnHit(FHitResult& HitResult)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("OnHit! %s"), *HitResult.GetActor()->GetName());
-	//AActor* DamagedActor, float BaseDamage, AController* EventInstigator, AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass
-	AController* Controller = Cast<APawn>(GetOwner())->GetController();
-    FVector HitFromDirection = GetOwner()->GetActorForwardVector();
-	//UGameplayStatics::ApplyDamage(HitResult.GetActor(), Damage, Controller, GetOwner(), UDamageType::StaticClass());
+    Controller = Controller == nullptr ? Cast<APawn>(GetOwner())->GetController() : Controller;
+    HitFromDirection = GetOwner()->GetActorForwardVector();
+	
+    if(HitResult.GetActor())
+    {
+        if(Cast<AMeleeCharacter>(HitResult.GetActor())->CanRecieveDamage())
+        {
+            UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), Damage, HitFromDirection, HitResult, Controller, this, UDamageType::StaticClass());
+        }
+    }
+}
 
-    //AActor* DamagedActor, float BaseDamage, FVector const& HitFromDirection, FHitResult const& HitInfo, AController* EventInstigator, AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass
-    UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), Damage, HitFromDirection, HitResult, Controller, this, UDamageType::StaticClass());
-    
+void ABaseWeapon::SimulateWeaponPhysics()
+{
+    GetItemMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
+    GetItemMesh()->SetSimulatePhysics(true);
+    GetItemMesh()->SetMassOverrideInKg(NAME_None, 350.f);
+    GetItemMesh()->SetLinearDamping(-0.5f);
+    GetItemMesh()->SetAngularDamping(5.f);
 }
