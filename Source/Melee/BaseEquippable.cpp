@@ -57,5 +57,5 @@ void ABaseEquippable::AttachActor(FName SocketName)
 
 void ABaseEquippable::Interact(AActor* Caller)
 {
-    UE_LOG(LogTemp, Warning, TEXT("머시여"));
+	
 }
