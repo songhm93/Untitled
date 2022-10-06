@@ -19,25 +19,6 @@ AToughSword::AToughSword()
     static ConstructorHelpers::FObjectFinder<UAnimMontage> ExitCombatAM(TEXT("/Game/CombatSystem/AnimMontage/AM_LightWeaponUnequip"));
     if(ExitCombatAM.Succeeded())
         SetExitCombatAM(ExitCombatAM.Object);
-    
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM1(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack01"));
-    if(LightAttackAM1.Succeeded())
-        SetAttackMontage(LightAttackAM1.Object);
-    
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM2(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack02"));
-    if(LightAttackAM2.Succeeded())
-        SetAttackMontage(LightAttackAM2.Object);
-    
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM3(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack03"));
-    if(LightAttackAM3.Succeeded())
-        SetAttackMontage(LightAttackAM3.Object);
-
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> DodgeAM(TEXT("/Game/CombatSystem/AnimMontage/AM_Dodge"));
-    if(DodgeAM.Succeeded())
-    {
-        SetDodgeMontage(DodgeAM.Object);
-    }
-        
 
     SetCombatType(ECombatType::LIGHT_SWORD);
     
