@@ -52,11 +52,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
+	virtual void Jump() override;
 	virtual void ContinueAttack() override;
 	virtual void ResetAttack() override;
 	UFUNCTION(BlueprintCallable)
 	virtual FRotator GetDesiredRotation() override;
 	virtual void ResetCombat() override;
+	virtual bool CanRecieveDamage() override;
 protected:
 	virtual void BeginPlay() override;
 	void MoveForward(float Value);
@@ -87,6 +89,8 @@ protected:
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 private:
+	void Test(); //테스트할 함수
+
 	void InteractButtonPressed();
 	UFUNCTION()
 	void ReceiveDamage(
@@ -117,8 +121,22 @@ private:
 	UAnimMontage* HitReactMontage;
 	USoundCue* ImpactSound;
 	UParticleSystem* ImpactParticle;
+	
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	bool bIsDisabled; //맞았을 때 아무것도 못하게
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	float HP;
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	bool bIsDead;
+	void Dead();
+	void CauseDamage(float Damage);
+	void EnableRagdoll();
+	FName PelvisBoneName;
+	void ApplyHitReactionPhysicsVelocity(float InitSpeed);
+
+	FTimerHandle DestroyDeadTimerHandle; //죽은 캐릭터, 무기 destory
+	float DestroyDeadTime;
+	void DestroyDead();
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
@@ -128,9 +146,11 @@ public: //get
 	FORCEINLINE UAnimMontage* GetDodgeMontage() const { return DodgeMontage; }
 public: //set
 	FORCEINLINE void SetDodging(bool Boolean) { bDodging = Boolean; }
+	FORCEINLINE void SetTogglingCombat(bool Boolean) { bTogglingCombat = Boolean; }
 public:
 	void SetLightAttackMontage(UAnimMontage* Montage);
 	void SetGreatAttackMontage(UAnimMontage* Montage);
 	void SetDodgeMontage(UAnimMontage* Montage);
+	
 };
 

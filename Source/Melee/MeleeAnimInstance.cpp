@@ -23,6 +23,7 @@ void UMeleeAnimInstance::AnimNotify_Equip()
     if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon())
     {
        Character->GetCombatComp()->GetEquippedWeapon()->AttachWeapon(Character);
+       Character->SetTogglingCombat(false);
     }
 }
 
@@ -31,6 +32,7 @@ void UMeleeAnimInstance::AnimNotify_UnEquip()
     if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon())
     {
        Character->GetCombatComp()->GetEquippedWeapon()->AttachWeapon(Character);
+       Character->SetTogglingCombat(false);
     }
 }
 
