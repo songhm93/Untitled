@@ -5,11 +5,37 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CombatInterface.h"
+#include "Engine/DataTable.h"
 #include "MeleeCharacter.generated.h"
+
 
 class AToughSword;
 class ABaseWeapon;
 class UCombatComponent;
+class UDamageType;
+class AController;
+class UPrimitiveComponent;
+class USoundCue;
+class UParticleSystem;
+
+USTRUCT(BlueprintType)
+struct FResourceTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UAnimMontage*> LightAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UAnimMontage*> GreatAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* HitReactMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* DodgeMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundCue* ImpactSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystem* ImpactParticle;
+};
 
 UCLASS(config=Game)
 class AMeleeCharacter : public ACharacter, public ICombatInterface
@@ -62,17 +88,49 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 private:
 	void InteractButtonPressed();
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UFUNCTION()
+	void ReceiveDamage(
+		AActor* DamagedActor, 
+		float Damage, 
+		AController* InstigatedBy, 
+		FVector HitLocation, 
+		UPrimitiveComponent* FHitComponent, 
+		FName BoneName, 
+		FVector ShotFromDirection, 
+		const UDamageType* DamageType, 
+		AActor* DamageCauser);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatComp;
+
 	bool bTogglingCombat;
+
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	bool bDodging;
+
+	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> LightAttackMontage; //공격 애니메이션 몽타주를 배열에 넣어서 관리. 콤보공격을 위함. 무기 타입마다 몽타주 추가 해주기.
+	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> GreatAttackMontage;
+	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DodgeMontage; //회피 애니메이션 몽타주
+	UAnimMontage* HitReactMontage;
+	USoundCue* ImpactSound;
+	UParticleSystem* ImpactParticle;
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	bool bIsDisabled; //맞았을 때 아무것도 못하게
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE UCombatComponent* GetCombatComp() const { return CombatComp; }
+	FORCEINLINE TArray<UAnimMontage*> GetLightAttackMontage() const { return LightAttackMontage; }
+	FORCEINLINE TArray<UAnimMontage*> GetGreatAttackMontage() const { return GreatAttackMontage; }
+	FORCEINLINE UAnimMontage* GetDodgeMontage() const { return DodgeMontage; }
 public: //set
 	FORCEINLINE void SetDodging(bool Boolean) { bDodging = Boolean; }
 public:
+	void SetLightAttackMontage(UAnimMontage* Montage);
+	void SetGreatAttackMontage(UAnimMontage* Montage);
+	void SetDodgeMontage(UAnimMontage* Montage);
 };
 
