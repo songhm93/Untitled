@@ -15,6 +15,7 @@
 #include "Types.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
+#include "StateManagerComponent.h"
 
 AMeleeCharacter::AMeleeCharacter()
 {
@@ -45,12 +46,16 @@ AMeleeCharacter::AMeleeCharacter()
 	FollowCamera->bUsePawnControlRotation = false; 
 
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
+	StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerComp"));
 
-	bTogglingCombat = false;
-	bDodging = false;
-	bIsDisabled = false;
+	// bTogglingCombat = false;
+	// bDodging = false;
+	// bIsDisabled = false;
+	// bIsDead = false;
+	if(StateManagerComp)
+		StateManagerComp->SetCurrentState(ECharacterState::NOTHING);
 	HP = 100.f;
-	bIsDead = false;
+	
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
@@ -99,6 +104,11 @@ void AMeleeCharacter::BeginPlay()
 	Super::BeginPlay();
 	ResetCombat();
 	OnTakePointDamage.AddDynamic(this, &AMeleeCharacter::ReceiveDamage);
+	if(StateManagerComp)
+	{
+		StateManagerComp->OnStateBegin.AddDynamic(this, &ThisClass::CharacterStateBegin);
+		StateManagerComp->OnStateEnd.AddDynamic(this, &ThisClass::CharacterStateEnd);
+	}
 }
 
 void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -127,7 +137,13 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 
 void AMeleeCharacter::Jump()
 {
-	if(bIsDisabled || bDodging || (CombatComp && CombatComp->GetIsAttacking())) return;
+	TArray<ECharacterState> CharacterStates;
+	CharacterStates.Add(ECharacterState::ATTACKING);
+	CharacterStates.Add(ECharacterState::DODGING);
+	CharacterStates.Add(ECharacterState::DISABLED);
+	
+	if(StateManagerComp && StateManagerComp->IsCurrentStateEqualToThis(CharacterStates)) return;
+	//if(bIsDisabled || bDodging || (CombatComp && CombatComp->GetIsAttacking())) return;
 	Super::Jump();
 }
 
@@ -178,7 +194,10 @@ void AMeleeCharacter::MoveRight(float Value)
 void AMeleeCharacter::ToggleCombat()
 {
 	if(!CanToggleCombat()) return;
-	bTogglingCombat = true;
+	//bTogglingCombat = true;
+	if(StateManagerComp)
+		StateManagerComp->SetCurrentState(ECharacterState::GENERAL_ACTION_STATE);
+	
 	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
 		if(CombatComp->GetEquippedWeapon()->GetEnterCombatAM() && CombatComp->GetEquippedWeapon()->GetExitCombatAM())
@@ -244,9 +263,9 @@ void AMeleeCharacter::InteractButtonPressed()
 void AMeleeCharacter::LightAttack()
 {
 	if(!CanAttack()) return;
-	if(CombatComp && CombatComp->GetCombatState())
+	if(CombatComp && CombatComp->GetCombatState() && StateManagerComp)
 	{
-		if(CombatComp->GetIsAttacking())
+		if(StateManagerComp->GetCurrentState() == ECharacterState::ATTACKING)
 		{
 			CombatComp->SetIsAttackSaved(true);
 		}
@@ -283,7 +302,8 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx)
 				Idx = FMath::RandRange(0, ArrayCount - 1);
 		}
 
-		CombatComp->SetIsAttacking(true);
+		//CombatComp->SetIsAttacking(true);
+		StateManagerComp->SetCurrentState(ECharacterState::ATTACKING);
 		if(TempArray.Num() != Idx)
 		{
 			PlayAnimMontage(TempArray[Idx]);
@@ -299,9 +319,10 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx)
 
 void AMeleeCharacter::ContinueAttack() //애님 노티파이로 호출될 함수. 공격중에 또 공격 버튼을 눌렀을 때 바로 다음 공격이 발생하는 것을 막기 위함.
 {
-	if(CombatComp)
+	if(CombatComp && StateManagerComp)
 	{
-		CombatComp->SetIsAttacking(false);
+		//CombatComp->SetIsAttacking(false);
+		StateManagerComp->SetCurrentState(ECharacterState::NOTHING);
 		if(CombatComp->GetIsAttackSaved())
 		{
 			CombatComp->SetIsAttackSaved(false);
@@ -325,24 +346,55 @@ void AMeleeCharacter::Dodge()
 
 void AMeleeCharacter::PerformDodge(int32 MontageIdx, bool bRandomIdx)
 {
-	bDodging = true;
+	//bDodging = true;
+	if(StateManagerComp)
+		StateManagerComp->SetCurrentState(ECharacterState::DODGING);
 	if(DodgeMontage)
 		PlayAnimMontage(DodgeMontage);
 }
 
 bool AMeleeCharacter::CanAttack()
 {
-	return (!bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
+	TArray<ECharacterState> CharacterStates;
+	CharacterStates.Add(ECharacterState::ATTACKING);
+	CharacterStates.Add(ECharacterState::DODGING);
+	CharacterStates.Add(ECharacterState::DEAD);
+	CharacterStates.Add(ECharacterState::DISABLED);
+	CharacterStates.Add(ECharacterState::GENERAL_ACTION_STATE);
+	bool ReturnValue = false;
+	if(StateManagerComp && GetCharacterMovement())
+		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates))  && (!GetCharacterMovement()->IsFalling());
+	//return (!bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
+	return ReturnValue;
 }
 
 bool AMeleeCharacter::CanToggleCombat()
 {
-	return (!CombatComp->GetIsAttacking() && !bDodging && !bIsDisabled && !bIsDead);
+	TArray<ECharacterState> CharacterStates;
+	CharacterStates.Add(ECharacterState::ATTACKING);
+	CharacterStates.Add(ECharacterState::DODGING);
+	CharacterStates.Add(ECharacterState::DEAD);
+	CharacterStates.Add(ECharacterState::DISABLED);
+	bool ReturnValue = false;
+	if(StateManagerComp && GetCharacterMovement())
+		ReturnValue = !StateManagerComp->IsCurrentStateEqualToThis(CharacterStates);
+	//return (!CombatComp->GetIsAttacking() && !bDodging && !bIsDisabled && !bIsDead);
+	return ReturnValue;
 }
 
 bool AMeleeCharacter::CanDodge()
 {
-	return (!CombatComp->GetIsAttacking() && !bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
+	TArray<ECharacterState> CharacterStates;
+	CharacterStates.Add(ECharacterState::ATTACKING);
+	CharacterStates.Add(ECharacterState::DODGING);
+	CharacterStates.Add(ECharacterState::DEAD);
+	CharacterStates.Add(ECharacterState::DISABLED);
+	CharacterStates.Add(ECharacterState::GENERAL_ACTION_STATE);
+	bool ReturnValue = false;
+	if(StateManagerComp && GetCharacterMovement())
+		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates))  && (!GetCharacterMovement()->IsFalling());
+	//return (!CombatComp->GetIsAttacking() && !bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
+	return ReturnValue;
 }
 
 FRotator AMeleeCharacter::GetDesiredRotation() //구르기시 캐릭터가 움직이고 있는 방향의 회전값을 반환
@@ -362,9 +414,12 @@ FRotator AMeleeCharacter::GetDesiredRotation() //구르기시 캐릭터가 움�
 void AMeleeCharacter::ResetCombat()
 {
 	ResetAttack();
-	bTogglingCombat = false;
-	bDodging = false;
-	bIsDisabled = false;
+	if(StateManagerComp)
+		StateManagerComp->ResetState();
+	
+	// bTogglingCombat = false;
+	// bDodging = false;
+	// bIsDisabled = false;
 }
 
 void AMeleeCharacter::SetLightAttackMontage(UAnimMontage* Montage)
@@ -405,9 +460,12 @@ void AMeleeCharacter::ReceiveDamage(
 	if(HitReactMontage)
 		PlayAnimMontage(HitReactMontage);
 
-	bIsDisabled = true; //맞았을 때 아무것도 못하게. 변수만 추가한 상태. 아무 영향 없음
+	//bIsDisabled = true; //맞았을 때 아무것도 못하게. 변수만 추가한 상태. 아무 영향 없음
+	if(StateManagerComp)
+		StateManagerComp->SetCurrentState(ECharacterState::DISABLED);
+	
 
-	CauseDamage(Damage);
+	CauseDamage(Damage); //대미지 적용
 }
 
 void AMeleeCharacter::CauseDamage(float Damage)
@@ -415,13 +473,14 @@ void AMeleeCharacter::CauseDamage(float Damage)
 	HP = FMath::Clamp(HP - Damage, 0.f, HP - Damage);
 	if(HP <= 0)
 	{
-		Dead();
+		if(StateManagerComp)
+			StateManagerComp->SetCurrentState(ECharacterState::DEAD);
 	}
 }
 
 void AMeleeCharacter::Dead()
 {
-	bIsDead = true;
+	//bIsDead = true;
 	EnableRagdoll();
 	ApplyHitReactionPhysicsVelocity(2000.f);
 	if(CombatComp && CombatComp->GetEquippedWeapon())
@@ -456,11 +515,15 @@ void AMeleeCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : Tab
 	Dead();
+
 }
 
 bool AMeleeCharacter::CanRecieveDamage()
 {
-	return !bIsDead;
+	if(StateManagerComp && StateManagerComp->GetCurrentState() != ECharacterState::DEAD)
+		return true;
+	else 
+		return false;
 }
 
 void AMeleeCharacter::DestroyDead()
@@ -470,4 +533,54 @@ void AMeleeCharacter::DestroyDead()
 		CombatComp->GetEquippedWeapon()->Destroy();
 	}
 	Destroy();
+}
+
+void AMeleeCharacter::CharacterStateBegin(ECharacterState State)
+{
+	switch (State)
+	{
+	case ECharacterState::NOTHING:
+		
+		break;
+	case ECharacterState::ATTACKING:
+		
+		break;
+	case ECharacterState::DODGING:
+		
+		break;
+	case ECharacterState::GENERAL_ACTION_STATE:
+		
+		break;
+	case ECharacterState::DEAD:
+			Dead();
+		break;
+	case ECharacterState::DISABLED:
+		
+		break;
+	}
+}
+
+void AMeleeCharacter::CharacterStateEnd(ECharacterState State)
+{
+	switch (State)
+	{
+	case ECharacterState::NOTHING:
+		
+		break;
+	case ECharacterState::ATTACKING:
+		
+		break;
+	case ECharacterState::DODGING:
+		
+		break;
+	case ECharacterState::GENERAL_ACTION_STATE:
+		
+		break;
+	case ECharacterState::DEAD:
+			
+		break;
+	case ECharacterState::DISABLED:
+		
+		break;
+	}
 }
