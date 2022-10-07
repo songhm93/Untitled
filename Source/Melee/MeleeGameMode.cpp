@@ -2,7 +2,7 @@
 
 #include "MeleeGameMode.h"
 #include "MeleeCharacter.h"
-#include "UObject/ConstructorHelpers.h"
+#include "MeleePlayerController.h"
 
 AMeleeGameMode::AMeleeGameMode()
 {
@@ -13,4 +13,5 @@ AMeleeGameMode::AMeleeGameMode()
 	// 	DefaultPawnClass = PlayerPawnBPClass.Class;
 	// }
 	DefaultPawnClass = AMeleeCharacter::StaticClass();
+	PlayerControllerClass = AMeleePlayerController::StaticClass();
 }
