@@ -6,12 +6,14 @@
 #include "GameFramework/Character.h"
 #include "CombatInterface.h"
 #include "Engine/DataTable.h"
+#include "Types.h"
 #include "MeleeCharacter.generated.h"
 
 
 class AToughSword;
 class ABaseWeapon;
 class UCombatComponent;
+class UStateManagerComponent;
 class UDamageType;
 class AController;
 class UPrimitiveComponent;
@@ -35,7 +37,7 @@ struct FResourceTable : public FTableRowBase
 	USoundCue* ImpactSound;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UParticleSystem* ImpactParticle;
-};
+}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
 
 UCLASS(config=Game)
 class AMeleeCharacter : public ACharacter, public ICombatInterface
@@ -61,6 +63,7 @@ public:
 	virtual bool CanRecieveDamage() override;
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
@@ -85,12 +88,8 @@ protected:
 	void Dodge();
 	void PerformDodge(int32 MontageIdx, bool bRandomIdx);
 	bool CanDodge();
-	
-protected:
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 private:
 	void Test(); //테스트할 함수
-
 	void InteractButtonPressed();
 	UFUNCTION()
 	void ReceiveDamage(
@@ -107,11 +106,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatComp;
 
-	bool bTogglingCombat;
-
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	bool bDodging;
-
 	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> LightAttackMontage; //공격 애니메이션 몽타주를 배열에 넣어서 관리. 콤보공격을 위함. 무기 타입마다 몽타주 추가 해주기.
 	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
@@ -123,11 +117,7 @@ private:
 	UParticleSystem* ImpactParticle;
 	
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	bool bIsDisabled; //맞았을 때 아무것도 못하게
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float HP;
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	bool bIsDead;
 	void Dead();
 	void CauseDamage(float Damage);
 	void EnableRagdoll();
@@ -137,6 +127,14 @@ private:
 	FTimerHandle DestroyDeadTimerHandle; //죽은 캐릭터, 무기 destory
 	float DestroyDeadTime;
 	void DestroyDead();
+	
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UStateManagerComponent* StateManagerComp;
+
+	UFUNCTION()
+	void CharacterStateBegin(ECharacterState State);
+	UFUNCTION()
+	void CharacterStateEnd(ECharacterState State);
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
@@ -144,9 +142,8 @@ public: //get
 	FORCEINLINE TArray<UAnimMontage*> GetLightAttackMontage() const { return LightAttackMontage; }
 	FORCEINLINE TArray<UAnimMontage*> GetGreatAttackMontage() const { return GreatAttackMontage; }
 	FORCEINLINE UAnimMontage* GetDodgeMontage() const { return DodgeMontage; }
+	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp;}
 public: //set
-	FORCEINLINE void SetDodging(bool Boolean) { bDodging = Boolean; }
-	FORCEINLINE void SetTogglingCombat(bool Boolean) { bTogglingCombat = Boolean; }
 public:
 	void SetLightAttackMontage(UAnimMontage* Montage);
 	void SetGreatAttackMontage(UAnimMontage* Montage);
