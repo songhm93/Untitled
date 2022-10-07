@@ -4,6 +4,8 @@
 #include "ToughSword.h"
 #include "GreatSword.h"
 #include "CombatComponent.h"
+#include "StateManagerComponent.h"
+#include "Types.h"
 
 void UMeleeAnimInstance::NativeInitializeAnimation()
 {
@@ -20,19 +22,19 @@ void UMeleeAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 void UMeleeAnimInstance::AnimNotify_Equip()
 {
-    if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon())
+    if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon() && Character->GetStateManagerComp())
     {
        Character->GetCombatComp()->GetEquippedWeapon()->AttachWeapon(Character);
-       Character->SetTogglingCombat(false);
+       Character->GetStateManagerComp()->SetCurrentState(ECharacterState::NOTHING);
     }
 }
 
 void UMeleeAnimInstance::AnimNotify_UnEquip()
 {
-    if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon())
+    if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon() && Character->GetStateManagerComp())
     {
        Character->GetCombatComp()->GetEquippedWeapon()->AttachWeapon(Character);
-       Character->SetTogglingCombat(false);
+       Character->GetStateManagerComp()->SetCurrentState(ECharacterState::NOTHING);
     }
 }
 
@@ -46,8 +48,9 @@ void UMeleeAnimInstance::AnimNotify_ContinueAttack()
 
 void UMeleeAnimInstance::AnimNotify_ResetCombat()
 {
-    if(Character)
+    if(Character && Character->GetStateManagerComp())
     {
-        Character->ResetCombat();
+        if(Character->GetStateManagerComp()->GetCurrentState() != ECharacterState::DEAD)
+            Character->ResetCombat();
     }
 }
