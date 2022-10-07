@@ -12,15 +12,8 @@ AToughSword::AToughSword()
     SetAttachSocketName(TEXT("SwordHipAttachSocket"));
     SetHandSocketName(TEXT("WeaponSocket"));
 
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> EnterCombatAM(TEXT("/Game/CombatSystem/AnimMontage/AM_LightWeaponEquip"));
-    if(EnterCombatAM.Succeeded())
-        SetEnterCombatAM(EnterCombatAM.Object);
-    
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> ExitCombatAM(TEXT("/Game/CombatSystem/AnimMontage/AM_LightWeaponUnequip"));
-    if(ExitCombatAM.Succeeded())
-        SetExitCombatAM(ExitCombatAM.Object);
 
-    SetCombatType(ECombatType::LIGHT_SWORD);
+    SetWeaponType(EWeaponType::LIGHT_SWORD);
     
 }
 

@@ -3,6 +3,7 @@
 #include "MeleeAnimInstance.h"
 #include "Types.h"
 #include "CombatComponent.h"
+#include "StateManagerComponent.h"
 #include "CollisionComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -30,7 +31,7 @@ void ABaseWeapon::OnEquipped()
         Character->GetCombatComp()->SetEquippedWeapon(this);
         if(Character->GetMesh() &&  Character->GetMesh()->GetAnimInstance())
         {
-            Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetCombatType(GetCombatType());
+            Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetWeaponType(GetWeaponType());
         }
     }
     CollisionComponent->SetCollisionMeshComponent(GetItemMesh());

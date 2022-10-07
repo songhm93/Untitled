@@ -13,16 +13,6 @@ AGreatSword::AGreatSword()
     SetAttachSocketName(TEXT("GreatSwordBackSocket"));
     SetHandSocketName(TEXT("GreatSwordHandSocket"));
 
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> EnterCombatAM(TEXT("/Game/CombatSystem/AnimMontage/AM_HeavySword_EnterCombat"));
-    if(EnterCombatAM.Succeeded())
-    {
-        SetEnterCombatAM(EnterCombatAM.Object);
-    }
-    static ConstructorHelpers::FObjectFinder<UAnimMontage> ExitCombatAM(TEXT("/Game/CombatSystem/AnimMontage/AM_HeavySword_ExitCombat"));
-    if(ExitCombatAM.Succeeded())
-    {
-        SetExitCombatAM(ExitCombatAM.Object);
-    }
 
-     SetCombatType(ECombatType::GREAT_SWORD);
+     SetWeaponType(EWeaponType::GREAT_SWORD);
 }
