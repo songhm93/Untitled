@@ -48,54 +48,33 @@ AMeleeCharacter::AMeleeCharacter()
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 	StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerComp"));
 
-	// bTogglingCombat = false;
-	// bDodging = false;
-	// bIsDisabled = false;
-	// bIsDead = false;
 	if(StateManagerComp)
 		StateManagerComp->SetCurrentState(ECharacterState::NOTHING);
+
 	HP = 100.f;
-	
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
-	// static ConstructorHelpers::FObjectFinder<UAnimMontage> DodgeAM(TEXT("/Game/CombatSystem/AnimMontage/AM_Dodge"));
-    // if(DodgeAM.Succeeded())
-    //     DodgeMontage.Add(DodgeAM.Object);
-
-	// static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM3(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack03"));
-    // if(LightAttackAM3.Succeeded())
-    //     LightAttackMontage.Add(LightAttackAM3.Object);
-
-	// static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM2(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack02"));
-    // if(LightAttackAM2.Succeeded())
-    //     LightAttackMontage.Add(LightAttackAM2.Object);
+	CurrentMovementType = EMovementType::JOGGING;
+	WalkSpeed = 300.f;
+	JogSpeed = 500.f;
+	SprintSpeed = 700;
+	bHeavyAttack = false;
 	
-	// static ConstructorHelpers::FObjectFinder<UAnimMontage> LightAttackAM1(TEXT("/Game/CombatSystem/AnimMontage/AM_LightAttack01"));
-    // if(LightAttackAM1.Succeeded())
-    // 	LightAttackMontage.Add(LightAttackAM1.Object);
-    
-	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/ResourceTable"));
-	UDataTable* TableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
-	if(TableObject)
-	{
-		FResourceTable* Row = TableObject->FindRow<FResourceTable>(FName("Resource"), TEXT(""));
-		if(Row)
-		{
-			for(auto Montage : Row->LightAttackMontage)
-			{
-				LightAttackMontage.Add(Montage);
-			}
-			for(auto Montage : Row->GreatAttackMontage)
-			{
-				GreatAttackMontage.Add(Montage);
-			}
-			DodgeMontage = Row->DodgeMontage;
-			ImpactSound = Row->ImpactSound;
-			ImpactParticle = Row->ImpactParticle;
-			HitReactMontage = Row->HitReactMontage;
-		}
-	}
+
+	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/CommonTable"));
+	InitDataTable(Path, EDataTableType::COMMON_TABLE);
+
+	Path = FString(TEXT("/Game/CombatSystem/DataTable/LightSwordTable"));
+	InitDataTable(Path, EDataTableType::LIGHT_SWORD_TABLE);
+
+	Path = FString(TEXT("/Game/CombatSystem/DataTable/GreatSwordTable"));
+	InitDataTable(Path, EDataTableType::GREAT_SWORD_TABLE);
+
+	Path = FString(TEXT("/Game/CombatSystem/DataTable/DualSwordTable"));
+	InitDataTable(Path, EDataTableType::DUAL_SWORD_TABLE);
+	
+
     ResetCombat();
 }
 
@@ -108,6 +87,8 @@ void AMeleeCharacter::BeginPlay()
 	{
 		StateManagerComp->OnStateBegin.AddDynamic(this, &ThisClass::CharacterStateBegin);
 		StateManagerComp->OnStateEnd.AddDynamic(this, &ThisClass::CharacterStateEnd);
+		StateManagerComp->OnActionBegin.AddDynamic(this, &ThisClass::CharacterActionBegin);
+		StateManagerComp->OnActionEnd.AddDynamic(this, &ThisClass::CharacterActionEnd);
 	}
 }
 
@@ -118,8 +99,12 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("ToggleCombat", IE_Pressed, this, &ThisClass::ToggleCombat);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ThisClass::InteractButtonPressed);
-	PlayerInputComponent->BindAction("LightAttack", IE_Pressed, this, &ThisClass::LightAttack);
 	PlayerInputComponent->BindAction("Dodge", IE_Pressed, this, &ThisClass::Dodge);
+	PlayerInputComponent->BindAction("ToggleWalk", IE_Pressed, this, &ThisClass::ToggleWalk);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ThisClass::SprintButtonPressed);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::SprintButtonReleased);
+	PlayerInputComponent->BindAction("HeavyAttack", IE_Released, this, &ThisClass::HeavyAttack);
+
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 	
 
@@ -138,13 +123,13 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 void AMeleeCharacter::Jump()
 {
 	TArray<ECharacterState> CharacterStates;
-	CharacterStates.Add(ECharacterState::ATTACKING);
 	CharacterStates.Add(ECharacterState::DODGING);
 	CharacterStates.Add(ECharacterState::DISABLED);
 	
-	if(StateManagerComp && StateManagerComp->IsCurrentStateEqualToThis(CharacterStates)) return;
-	//if(bIsDisabled || bDodging || (CombatComp && CombatComp->GetIsAttacking())) return;
+	if(StateManagerComp && StateManagerComp->IsCurrentStateEqualToThis(CharacterStates) && StateManagerComp->GetCurrentAction() == ECharacterAction::CHARGED_ATTACK) return;
+	StopAnimMontage();
 	Super::Jump();
+	ResetCombat();
 }
 
 void AMeleeCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -191,35 +176,113 @@ void AMeleeCharacter::MoveRight(float Value)
 	}
 }
 
+void AMeleeCharacter::InitDataTable(FString Path, EDataTableType TableType)
+{
+	
+	UDataTable* TableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *Path));
+	if(TableObject)
+	{
+		if(TableType == EDataTableType::COMMON_TABLE)
+		{
+			FCommonTable* CommonRow = TableObject->FindRow<FCommonTable>(FName("Common"), TEXT(""));
+			if(CommonRow)
+			{
+				DodgeMontage = CommonRow->DodgeMontage;
+				HitReactMontage = CommonRow->HitReactMontage;
+				ChargedAttackMontage = CommonRow->ChargedAttackMontage;
+				ImpactSound = CommonRow->ImpactSound;
+				ImpactParticle = CommonRow->ImpactParticle;
+			}
+		}
+		else if(TableType == EDataTableType::LIGHT_SWORD_TABLE)
+		{
+			FLightSwordTable* LightSwordRow = TableObject->FindRow<FLightSwordTable>(FName("LightSword"), TEXT(""));
+			if(LightSwordRow)
+			{
+				for(auto Montage : LightSwordRow->LightAttackMontage)
+				{
+					LSLightAttackMontages.Add(Montage);
+				}
+				LSHeavyAttackMontage = LightSwordRow->HeavyAttackMontage;
+				LSEnterCombatMontage = LightSwordRow->EnterCombatMontage;
+				LSExitCombatMontage = LightSwordRow->ExitCombatMontage;
+				LSSprintAttackMontage = LightSwordRow->SprintAttackMontage;
+			}
+		}
+		else if(TableType == EDataTableType::GREAT_SWORD_TABLE)
+		{
+			FGreatSwordTable* GreatSwordRow = TableObject->FindRow<FGreatSwordTable>(FName("GreatSword"), TEXT(""));
+			if(GreatSwordRow)
+			{
+				for(auto Montage : GreatSwordRow->LightAttackMontage)
+				{
+					GSLightAttackMontages.Add(Montage);
+				}
+				GSHeavyAttackMontage = GreatSwordRow->HeavyAttackMontage;
+				GSEnterCombatMontage = GreatSwordRow->EnterCombatMontage;
+				GSExitCombatMontage = GreatSwordRow->ExitCombatMontage;
+			}
+		}
+		else if(TableType == EDataTableType::DUAL_SWORD_TABLE)
+		{
+			FDualSwordTable* DualSwordRow = TableObject->FindRow<FDualSwordTable>(FName("DualSword"), TEXT(""));
+			if(DualSwordRow)
+			{
+				for(auto Montage : DualSwordRow->LightAttackMontage)
+				{
+					DSLightAttackMontages.Add(Montage);
+				}
+				DSHeavyAttackMontage = DualSwordRow->HeavyAttackMontage;
+				DSEnterCombatMontage = DualSwordRow->EnterCombatMontage;
+				DSExitCombatMontage = DualSwordRow->ExitCombatMontage;	
+			}
+		}
+	}
+}
+
 void AMeleeCharacter::ToggleCombat()
 {
-	if(!CanToggleCombat()) return;
-	//bTogglingCombat = true;
+	if(!CanToggleCombat() || (CombatComp && !CombatComp->GetEquippedWeapon())) return;
+
+	EWeaponType WeaponType = CombatComp->GetEquippedWeapon()->GetWeaponType();
+
 	if(StateManagerComp)
-		StateManagerComp->SetCurrentState(ECharacterState::GENERAL_ACTION_STATE);
-	
-	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
-		if(CombatComp->GetEquippedWeapon()->GetEnterCombatAM() && CombatComp->GetEquippedWeapon()->GetExitCombatAM())
+		StateManagerComp->SetCurrentState(ECharacterState::GENERAL_STATE);
+		
+		UAnimMontage* EnterCombatMontage = nullptr;
+		UAnimMontage* ExitCombatMontage = nullptr;
+		TArray<UAnimMontage*> TempArray;
+		switch (WeaponType)
 		{
-			if(!CombatComp->GetCombatState()) //손에 장착 상태가 아니면
+		case EWeaponType::LIGHT_SWORD:
+			EnterCombatMontage = LSEnterCombatMontage;
+			ExitCombatMontage = LSExitCombatMontage;
+			break;
+		case EWeaponType::GREAT_SWORD:
+			EnterCombatMontage = GSEnterCombatMontage;
+			ExitCombatMontage = GSExitCombatMontage;
+			break;
+		}
+		if(!CombatComp->GetCombatState()) //손에 장착 상태가 아니면
+		{
+			TempArray.Add(EnterCombatMontage);
+			PerformAction(0, TempArray, ECharacterState::GENERAL_STATE, ECharacterAction::ENTER_COMBAT);
+			CombatComp->SetCombatState(true);
+			if(GetMesh() && GetMesh()->GetAnimInstance())
 			{
-				PlayAnimMontage(CombatComp->GetEquippedWeapon()->GetEnterCombatAM());
-				CombatComp->SetCombatState(true);
-				if(GetMesh() && GetMesh()->GetAnimInstance())
-				{
-					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(true);
-				}
+				Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(true);
 			}
-			else
+		}
+		else
+		{
+			TempArray.Add(ExitCombatMontage);
+			PerformAction(0, TempArray, ECharacterState::GENERAL_STATE, ECharacterAction::EXIT_COMBAT);
+			CombatComp->ResetAttackCount();
+			CombatComp->SetCombatState(false);
+			if(GetMesh() && GetMesh()->GetAnimInstance())
 			{
-				PlayAnimMontage(CombatComp->GetEquippedWeapon()->GetExitCombatAM());
-				CombatComp->ResetAttackCount();
-				CombatComp->SetCombatState(false);
-				if(GetMesh() && GetMesh()->GetAnimInstance())
-				{
-					Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(false);
-				}
+				Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(false);
 			}
 		}
 	}
@@ -262,8 +325,9 @@ void AMeleeCharacter::InteractButtonPressed()
 
 void AMeleeCharacter::LightAttack()
 {
+	bHeavyAttack = false;
 	if(!CanAttack()) return;
-	if(CombatComp && CombatComp->GetCombatState() && StateManagerComp)
+	if(CombatComp && StateManagerComp && (StateManagerComp->GetCurrentState() == ECharacterState::NOTHING))
 	{
 		if(StateManagerComp->GetCurrentState() == ECharacterState::ATTACKING)
 		{
@@ -271,40 +335,103 @@ void AMeleeCharacter::LightAttack()
 		}
 		else
 		{
-			PerformAttack(CombatComp->GetAttackCount(), false);
+			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::LIGHT_ATTACK);
 		}
 	}
 }
 
-void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx)
+void AMeleeCharacter::HeavyAttack()
+{
+	bHeavyAttack = true;
+	if(!CanAttack()) return;
+	if(CombatComp && StateManagerComp && (StateManagerComp->GetCurrentState() == ECharacterState::NOTHING))
+	{
+		if(StateManagerComp->GetCurrentState() == ECharacterState::ATTACKING)
+		{
+			CombatComp->SetIsAttackSaved(true);
+		}
+		else
+		{
+			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::HEAVY_ATTACK);
+		}
+	}
+}
+
+void AMeleeCharacter::ChargedAttack()
+{
+	bHeavyAttack = false;
+	if(!CanAttack()) return;
+	if(CombatComp && StateManagerComp && (StateManagerComp->GetCurrentState() == ECharacterState::NOTHING))
+	{
+		if(StateManagerComp->GetCurrentState() == ECharacterState::ATTACKING)
+		{
+			CombatComp->SetIsAttackSaved(true);
+		}
+		else
+		{
+			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::CHARGED_ATTACK);
+		}
+	}
+}
+
+void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacterAction Action)
 {
 	if(!CanAttack()) return;
 	int32 Idx = AttackIdx;
-	if(CombatComp && CombatComp->GetEquippedWeapon())
+	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp)
 	{
 		TArray<UAnimMontage*> TempArray;
-		ECombatType WeaponType = CombatComp->GetEquippedWeapon()->GetCombatType();
-		switch (WeaponType)
+		EWeaponType WeaponType = CombatComp->GetEquippedWeapon()->GetWeaponType();
+		if(WeaponType == EWeaponType::LIGHT_SWORD)
 		{
-		case ECombatType::LIGHT_SWORD:
-			TempArray = LightAttackMontage;
-			break;
-		case ECombatType::GREAT_SWORD:
-			TempArray = GreatAttackMontage;
-			break;
-		}
-		if(bRandomIdx)
-		{
-			int32 ArrayCount = TempArray.Num();
-			if(ArrayCount == 0)
+			switch(Action)
+			{
+				case ECharacterAction::LIGHT_ATTACK:
+					TempArray = LSLightAttackMontages;
+				break;
+				case ECharacterAction::HEAVY_ATTACK:
+					TempArray.Add(LSHeavyAttackMontage);
+					Idx = 0;
+				case ECharacterAction::CHARGED_ATTACK:
+					TempArray.Add(ChargedAttackMontage);
+					Idx = 0;
+				break;
+			}
+			if(CurrentMovementType == EMovementType::SPRINTING)
+			{
+				TempArray.Empty();
+				TempArray.Add(LSSprintAttackMontage);
 				Idx = 0;
-			else
-				Idx = FMath::RandRange(0, ArrayCount - 1);
+			}
 		}
-
-		//CombatComp->SetIsAttacking(true);
+		else if(WeaponType == EWeaponType::GREAT_SWORD)
+		{
+			switch(Action)
+			{
+				case ECharacterAction::LIGHT_ATTACK:
+					TempArray = GSLightAttackMontages;
+				break;
+				case ECharacterAction::HEAVY_ATTACK:
+					TempArray.Add(GSHeavyAttackMontage);
+					Idx = 0;
+				case ECharacterAction::CHARGED_ATTACK:
+					TempArray.Add(ChargedAttackMontage);
+					Idx = 0;
+				break;
+			}
+		}
+		if(TempArray.IsEmpty()) return;
 		StateManagerComp->SetCurrentState(ECharacterState::ATTACKING);
-		if(TempArray.Num() != Idx)
+		StateManagerComp->SetCurrentAction(Action);
+		// if(bRandomIdx)
+		// {
+		// 	int32 ArrayCount = TempArray.Num();
+		// 	if(ArrayCount == 0)
+		// 		Idx = 0;
+		// 	else
+		// 		Idx = FMath::RandRange(0, ArrayCount - 1);
+		// }
+		if(TempArray.Num() > Idx)
 		{
 			PlayAnimMontage(TempArray[Idx]);
 		}
@@ -321,12 +448,11 @@ void AMeleeCharacter::ContinueAttack() //애님 노티파이로 호출될 함수
 {
 	if(CombatComp && StateManagerComp)
 	{
-		//CombatComp->SetIsAttacking(false);
 		StateManagerComp->SetCurrentState(ECharacterState::NOTHING);
 		if(CombatComp->GetIsAttackSaved())
 		{
 			CombatComp->SetIsAttackSaved(false);
-			PerformAttack(CombatComp->GetAttackCount(), false);
+			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::LIGHT_ATTACK);
 		}
 	}
 }
@@ -340,31 +466,34 @@ void AMeleeCharacter::ResetAttack() //애님 노티파이로 호출될 함수.
 }
 void AMeleeCharacter::Dodge()
 {
-	if(!CanDodge()) return;
-	PerformDodge(0, false);
+	if(!CanDodge() || (CombatComp && !CombatComp->GetEquippedWeapon())) return;
+	PerformDodge();
 }
 
-void AMeleeCharacter::PerformDodge(int32 MontageIdx, bool bRandomIdx)
+void AMeleeCharacter::PerformDodge()
 {
-	//bDodging = true;
 	if(StateManagerComp)
+	{
 		StateManagerComp->SetCurrentState(ECharacterState::DODGING);
+		StateManagerComp->SetCurrentAction(ECharacterAction::DODGE);
+	}
+	
 	if(DodgeMontage)
 		PlayAnimMontage(DodgeMontage);
 }
 
 bool AMeleeCharacter::CanAttack()
 {
+	if(CombatComp && !CombatComp->GetEquippedWeapon() || !CombatComp->GetCombatState()) return false;
 	TArray<ECharacterState> CharacterStates;
 	CharacterStates.Add(ECharacterState::ATTACKING);
 	CharacterStates.Add(ECharacterState::DODGING);
 	CharacterStates.Add(ECharacterState::DEAD);
 	CharacterStates.Add(ECharacterState::DISABLED);
-	CharacterStates.Add(ECharacterState::GENERAL_ACTION_STATE);
+	CharacterStates.Add(ECharacterState::GENERAL_STATE);
 	bool ReturnValue = false;
 	if(StateManagerComp && GetCharacterMovement())
-		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates))  && (!GetCharacterMovement()->IsFalling());
-	//return (!bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
+		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates)) && (!GetCharacterMovement()->IsFalling());
 	return ReturnValue;
 }
 
@@ -378,22 +507,19 @@ bool AMeleeCharacter::CanToggleCombat()
 	bool ReturnValue = false;
 	if(StateManagerComp && GetCharacterMovement())
 		ReturnValue = !StateManagerComp->IsCurrentStateEqualToThis(CharacterStates);
-	//return (!CombatComp->GetIsAttacking() && !bDodging && !bIsDisabled && !bIsDead);
 	return ReturnValue;
 }
 
 bool AMeleeCharacter::CanDodge()
 {
 	TArray<ECharacterState> CharacterStates;
-	CharacterStates.Add(ECharacterState::ATTACKING);
 	CharacterStates.Add(ECharacterState::DODGING);
 	CharacterStates.Add(ECharacterState::DEAD);
 	CharacterStates.Add(ECharacterState::DISABLED);
-	CharacterStates.Add(ECharacterState::GENERAL_ACTION_STATE);
+	CharacterStates.Add(ECharacterState::GENERAL_STATE);
 	bool ReturnValue = false;
 	if(StateManagerComp && GetCharacterMovement())
 		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates))  && (!GetCharacterMovement()->IsFalling());
-	//return (!CombatComp->GetIsAttacking() && !bTogglingCombat && !bDodging && !bIsDisabled && !bIsDead && !GetCharacterMovement()->IsFalling());
 	return ReturnValue;
 }
 
@@ -415,29 +541,10 @@ void AMeleeCharacter::ResetCombat()
 {
 	ResetAttack();
 	if(StateManagerComp)
+	{
 		StateManagerComp->ResetState();
-	
-	// bTogglingCombat = false;
-	// bDodging = false;
-	// bIsDisabled = false;
-}
-
-void AMeleeCharacter::SetLightAttackMontage(UAnimMontage* Montage)
-{
-    if(Montage)
-        LightAttackMontage.Add(Montage);
-}
-
-void AMeleeCharacter::SetGreatAttackMontage(UAnimMontage* Montage)
-{
-    if(Montage)
-        GreatAttackMontage.Add(Montage);
-}
-
-void AMeleeCharacter::SetDodgeMontage(UAnimMontage* Montage)
-{
-    if(Montage)
-        DodgeMontage = Montage;
+		StateManagerComp->ResetAction();
+	}
 }
 
 void AMeleeCharacter::ReceiveDamage(
@@ -460,11 +567,9 @@ void AMeleeCharacter::ReceiveDamage(
 	if(HitReactMontage)
 		PlayAnimMontage(HitReactMontage);
 
-	//bIsDisabled = true; //맞았을 때 아무것도 못하게. 변수만 추가한 상태. 아무 영향 없음
 	if(StateManagerComp)
 		StateManagerComp->SetCurrentState(ECharacterState::DISABLED);
 	
-
 	CauseDamage(Damage); //대미지 적용
 }
 
@@ -480,7 +585,6 @@ void AMeleeCharacter::CauseDamage(float Damage)
 
 void AMeleeCharacter::Dead()
 {
-	//bIsDead = true;
 	EnableRagdoll();
 	ApplyHitReactionPhysicsVelocity(2000.f);
 	if(CombatComp && CombatComp->GetEquippedWeapon())
@@ -513,7 +617,7 @@ void AMeleeCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 
 void AMeleeCharacter::Test()
 {	
-	//테스트할 함수 넣기. Key Mapping : Tab
+	//테스트할 함수 넣기. Key Mapping : t
 	Dead();
 
 }
@@ -548,7 +652,7 @@ void AMeleeCharacter::CharacterStateBegin(ECharacterState State)
 	case ECharacterState::DODGING:
 		
 		break;
-	case ECharacterState::GENERAL_ACTION_STATE:
+	case ECharacterState::GENERAL_STATE:
 		
 		break;
 	case ECharacterState::DEAD:
@@ -573,7 +677,7 @@ void AMeleeCharacter::CharacterStateEnd(ECharacterState State)
 	case ECharacterState::DODGING:
 		
 		break;
-	case ECharacterState::GENERAL_ACTION_STATE:
+	case ECharacterState::GENERAL_STATE:
 		
 		break;
 	case ECharacterState::DEAD:
@@ -584,3 +688,114 @@ void AMeleeCharacter::CharacterStateEnd(ECharacterState State)
 		break;
 	}
 }
+
+void AMeleeCharacter::CharacterActionBegin(ECharacterAction Action)
+{
+	switch(Action)
+	{
+		case ECharacterAction::NOTHING:
+
+			break;
+		case ECharacterAction::LIGHT_ATTACK:
+
+			break;
+		case ECharacterAction::HEAVY_ATTACK:
+
+			break;
+		case ECharacterAction::CHARGED_ATTACK:
+
+			break;
+		case ECharacterAction::DODGE:
+
+			break;
+		case ECharacterAction::ENTER_COMBAT:
+
+			break;
+		case ECharacterAction::EXIT_COMBAT:
+
+			break;
+	}
+}
+
+void AMeleeCharacter::CharacterActionEnd(ECharacterAction Action)
+{
+	switch(Action)
+	{
+		case ECharacterAction::NOTHING:
+
+			break;
+		case ECharacterAction::LIGHT_ATTACK:
+
+			break;
+		case ECharacterAction::HEAVY_ATTACK:
+
+			break;
+		case ECharacterAction::CHARGED_ATTACK:
+
+			break;
+		case ECharacterAction::DODGE:
+
+			break;
+		case ECharacterAction::ENTER_COMBAT:
+
+			break;
+		case ECharacterAction::EXIT_COMBAT:
+
+			break;
+	}
+}
+
+void AMeleeCharacter::PerformAction(int32 MontageIdx, TArray<UAnimMontage*> Montage, ECharacterState State, ECharacterAction Action)
+{
+	int32 Idx = MontageIdx;
+	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp)
+	{
+		StateManagerComp->SetCurrentState(State);
+		StateManagerComp->SetCurrentAction(Action);
+
+		if(!Montage.IsEmpty())	PlayAnimMontage(Montage[0]);
+		
+		//배열로 사용할만큼인지
+	}
+}
+
+void AMeleeCharacter::ToggleWalk()
+{
+	if(CurrentMovementType != EMovementType::WALKING)
+		SetMovementType(EMovementType::WALKING);
+	else
+		SetMovementType(EMovementType::JOGGING);
+}
+
+void AMeleeCharacter::SprintButtonPressed()
+{
+	SetMovementType(EMovementType::SPRINTING);
+}
+
+void AMeleeCharacter::SprintButtonReleased()
+{
+	SetMovementType(EMovementType::JOGGING);
+}
+
+void AMeleeCharacter::SetMovementType(EMovementType Type)
+{
+	if(CurrentMovementType != Type)
+		CurrentMovementType = Type;
+	
+	if(GetCharacterMovement())
+	{
+		switch(CurrentMovementType)
+		{
+			case EMovementType::WALKING:
+				GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+				break;
+			case EMovementType::JOGGING:
+				GetCharacterMovement()->MaxWalkSpeed = JogSpeed;
+				break;
+			case EMovementType::SPRINTING:
+				GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+				break;
+		}
+	}
+}
+

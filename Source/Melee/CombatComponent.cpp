@@ -6,7 +6,6 @@ UCombatComponent::UCombatComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	EquippedWeapon = nullptr;
-	bCombatState = false;
 	AttackCount = 0;
 }
 

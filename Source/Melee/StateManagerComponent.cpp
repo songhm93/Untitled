@@ -26,13 +26,32 @@ void UStateManagerComponent::SetCurrentState(ECharacterState State)
 	}
 }
 
-
 void UStateManagerComponent::ResetState()
 {
 	SetCurrentState(ECharacterState::NOTHING);
 }
 
+void UStateManagerComponent::ResetAction()
+{
+	SetCurrentAction(ECharacterAction::NOTHING);
+}
+
 bool UStateManagerComponent::IsCurrentStateEqualToThis(TArray<ECharacterState> StatesToCheck)
 {
 	return StatesToCheck.Contains(CurrentState);
+}
+
+void UStateManagerComponent::SetCurrentAction(ECharacterAction Action)
+{
+	if(CurrentAction != Action)
+	{
+		OnActionEnd.Broadcast(CurrentAction);
+		CurrentAction = Action;
+		OnActionBegin.Broadcast(CurrentAction);
+	}
+}
+
+bool UStateManagerComponent::IsCurrentActionEqualToThis(TArray<ECharacterAction> StatesToCheck)
+{
+	return StatesToCheck.Contains(CurrentAction);
 }

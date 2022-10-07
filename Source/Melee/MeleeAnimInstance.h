@@ -21,7 +21,7 @@ private:
 	UPROPERTY()
 	AMeleeCharacter* Character;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	ECombatType CombatType;
+	EWeaponType WeaponType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	bool bCombatState;
 	UFUNCTION()
@@ -33,6 +33,6 @@ private:
 	UFUNCTION()
 	void AnimNotify_ResetCombat();
 public:
-	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type; }
+	FORCEINLINE void SetWeaponType(EWeaponType Type) { WeaponType = Type; }
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }
 };

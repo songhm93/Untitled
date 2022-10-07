@@ -21,22 +21,71 @@ class USoundCue;
 class UParticleSystem;
 
 USTRUCT(BlueprintType)
-struct FResourceTable : public FTableRowBase
+struct FCommonTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* HitReactMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* DodgeMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* ChargedAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundCue* ImpactSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystem* ImpactParticle;
+	
+}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
+
+USTRUCT(BlueprintType)
+struct FLightSwordTable : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UAnimMontage*> LightAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UAnimMontage*> GreatAttackMontage;
+	UAnimMontage* HeavyAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HitReactMontage;
+	UAnimMontage* SprintAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* DodgeMontage;
+	UAnimMontage* EnterCombatMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundCue* ImpactSound;
+	UAnimMontage* ExitCombatMontage;
+	
+}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
+
+USTRUCT(BlueprintType)
+struct FGreatSwordTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UParticleSystem* ImpactParticle;
+	TArray<UAnimMontage*> LightAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* HeavyAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* EnterCombatMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* ExitCombatMontage;
+	
+}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
+
+USTRUCT(BlueprintType)
+struct FDualSwordTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UAnimMontage*> LightAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* HeavyAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* EnterCombatMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* ExitCombatMontage;
+	
 }; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
 
 UCLASS(config=Game)
@@ -66,31 +115,28 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
-
-	/** 
-	 * Called via input to turn at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
 	void TurnAtRate(float Rate);
-
-	/**
-	 * Called via input to turn look up/down at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
 	void LookUpAtRate(float Rate);
 	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 	void ToggleCombat();
-	void PerformAttack(int32 AttackIdx, bool bRandomIdx);
-	void LightAttack();
+	void InteractButtonPressed();
+	void PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacterAction Action);
 	bool CanAttack();
 	bool CanToggleCombat();
 	void Dodge();
-	void PerformDodge(int32 MontageIdx, bool bRandomIdx);
+	void PerformDodge();
 	bool CanDodge();
+	void PerformAction(int32 MontageIdx, TArray<UAnimMontage*> Montage, ECharacterState State = ECharacterState::GENERAL_STATE, ECharacterAction Action = ECharacterAction::GENERAL_ACTION);
+	void ToggleWalk();
+	void SprintButtonPressed();
+	void SprintButtonReleased();
+	void HeavyAttack();
+	
 private:
+	void InitDataTable(FString Path, EDataTableType TableType);
 	void Test(); //테스트할 함수
-	void InteractButtonPressed();
+	
 	UFUNCTION()
 	void ReceiveDamage(
 		AActor* DamagedActor, 
@@ -105,17 +151,55 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatComp;
+	/**************   데이터 테이블 변수들 */
 
-	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> LightAttackMontage; //공격 애니메이션 몽타주를 배열에 넣어서 관리. 콤보공격을 위함. 무기 타입마다 몽타주 추가 해주기.
-	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> GreatAttackMontage;
-	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeMontage; //회피 애니메이션 몽타주
+	// Common
+	UPROPERTY()
 	UAnimMontage* HitReactMontage;
+	UPROPERTY()
+	UAnimMontage* DodgeMontage; 
+	UPROPERTY()
+	UAnimMontage* ChargedAttackMontage;
+	UPROPERTY()
 	USoundCue* ImpactSound;
+	UPROPERTY()
 	UParticleSystem* ImpactParticle;
+
+	//Light Sword
+	UPROPERTY()
+	TArray<UAnimMontage*> LSLightAttackMontages;
+	UPROPERTY()
+	UAnimMontage* LSHeavyAttackMontage;
+	UPROPERTY()
+	UAnimMontage* LSSprintAttackMontage;
+	UPROPERTY()
+	UAnimMontage* LSEnterCombatMontage;
+	UPROPERTY()
+	UAnimMontage* LSExitCombatMontage;
+
+	//Great Sword
+	UPROPERTY()
+	TArray<UAnimMontage*> GSLightAttackMontages; 
+	UPROPERTY()
+	UAnimMontage* GSHeavyAttackMontage;
+	UPROPERTY()
+	UAnimMontage* GSEnterCombatMontage;
+	UPROPERTY()
+	UAnimMontage* GSExitCombatMontage;
+
+	//Dual Sword
+	UPROPERTY()
+	TArray<UAnimMontage*> DSLightAttackMontages;
+	UPROPERTY()
+	UAnimMontage* DSHeavyAttackMontage;
+	UPROPERTY()
+	UAnimMontage* DSEnterCombatMontage;
+	UPROPERTY()
+	UAnimMontage* DSExitCombatMontage;
 	
+
+	/*****************************************************/
+
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float HP;
 	void Dead();
@@ -135,19 +219,31 @@ private:
 	void CharacterStateBegin(ECharacterState State);
 	UFUNCTION()
 	void CharacterStateEnd(ECharacterState State);
+	UFUNCTION()
+	void CharacterActionBegin(ECharacterAction Action);
+	UFUNCTION()
+	void CharacterActionEnd(ECharacterAction Action);
+
+	UPROPERTY(VisibleAnywhere)
+	EMovementType CurrentMovementType;
+	float WalkSpeed;
+	float JogSpeed;
+	float SprintSpeed;
+	bool bHeavyAttack;
+
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE UCombatComponent* GetCombatComp() const { return CombatComp; }
-	FORCEINLINE TArray<UAnimMontage*> GetLightAttackMontage() const { return LightAttackMontage; }
-	FORCEINLINE TArray<UAnimMontage*> GetGreatAttackMontage() const { return GreatAttackMontage; }
 	FORCEINLINE UAnimMontage* GetDodgeMontage() const { return DodgeMontage; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp;}
+	FORCEINLINE EMovementType GetMovementType() const { return CurrentMovementType; }
 public: //set
+	void SetMovementType(EMovementType Type);
 public:
-	void SetLightAttackMontage(UAnimMontage* Montage);
-	void SetGreatAttackMontage(UAnimMontage* Montage);
-	void SetDodgeMontage(UAnimMontage* Montage);
+	void LightAttack();
+	void ChargedAttack();
+	
 	
 };
 

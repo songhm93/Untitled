@@ -28,7 +28,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
 
-	ECombatType CombatType;
+	EWeaponType WeaponType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCollisionComponent* CollisionComponent;
@@ -45,13 +45,13 @@ public: //get
 	FORCEINLINE UAnimMontage* GetEnterCombatAM() const { return EnterCombatMontage; }
 	FORCEINLINE UAnimMontage* GetExitCombatAM() const { return ExitCombatMontage; }
 	FORCEINLINE FName GetHandSocketName() const { return HandSocketName; }
-	FORCEINLINE ECombatType GetCombatType() const { return CombatType; }
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 	
 public: //set
 	FORCEINLINE void SetEnterCombatAM(UAnimMontage* AM) { EnterCombatMontage = AM;}
 	FORCEINLINE void SetExitCombatAM(UAnimMontage* AM) { ExitCombatMontage = AM;}
 	FORCEINLINE void SetHandSocketName(FName SocketName) { HandSocketName = SocketName;}
-	FORCEINLINE void SetCombatType(ECombatType Type) { CombatType = Type;}
+	FORCEINLINE void SetWeaponType(EWeaponType Type) { WeaponType = Type;}
 	
 public:
 	UFUNCTION(BlueprintCallable)
