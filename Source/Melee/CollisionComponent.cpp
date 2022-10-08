@@ -53,7 +53,8 @@ void UCollisionComponent::CollisionTrace()
 	CollisionObjectType.Add(Pawn);
 
 	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(GetOwner()->GetOwner());
+	if(Weapon)
+		ActorsToIgnore.Add(Weapon->GetOwner());
 	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::None;
 	TArray<FHitResult> OutHitResult;
 

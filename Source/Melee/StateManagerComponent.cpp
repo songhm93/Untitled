@@ -3,7 +3,7 @@
 
 UStateManagerComponent::UStateManagerComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UStateManagerComponent::BeginPlay()

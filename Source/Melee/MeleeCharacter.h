@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,6 +17,7 @@ class AController;
 class UPrimitiveComponent;
 class USoundCue;
 class UParticleSystem;
+class UStatsComponent;
 
 USTRUCT(BlueprintType)
 struct FCommonTable : public FTableRowBase
@@ -200,8 +199,8 @@ private:
 
 	/*****************************************************/
 
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	float HP;
+	//UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	//float HP;
 	void Dead();
 	void CauseDamage(float Damage);
 	void EnableRagdoll();
@@ -212,7 +211,7 @@ private:
 	float DestroyDeadTime;
 	void DestroyDead();
 	
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere)
 	UStateManagerComponent* StateManagerComp;
 
 	UFUNCTION()
@@ -231,6 +230,9 @@ private:
 	float SprintSpeed;
 	bool bHeavyAttack;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UStatsComponent* StatComp;
+	float LightAttackStaminaCost;
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

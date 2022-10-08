@@ -16,6 +16,8 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
 #include "StateManagerComponent.h"
+#include "StatsComponent.h"
+#include "Stats.h"
 
 AMeleeCharacter::AMeleeCharacter()
 {
@@ -47,11 +49,12 @@ AMeleeCharacter::AMeleeCharacter()
 
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 	StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerComp"));
+	StatComp = CreateDefaultSubobject<UStatsComponent>(TEXT("StatComp"));
 
 	if(StateManagerComp)
 		StateManagerComp->SetCurrentState(ECharacterState::NOTHING);
 
-	HP = 100.f;
+	//HP = 100.f;
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
@@ -60,7 +63,7 @@ AMeleeCharacter::AMeleeCharacter()
 	JogSpeed = 500.f;
 	SprintSpeed = 700;
 	bHeavyAttack = false;
-	
+	LightAttackStaminaCost = 15.f;
 
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/CommonTable"));
 	InitDataTable(Path, EDataTableType::COMMON_TABLE);
@@ -90,6 +93,9 @@ void AMeleeCharacter::BeginPlay()
 		StateManagerComp->OnActionBegin.AddDynamic(this, &ThisClass::CharacterActionBegin);
 		StateManagerComp->OnActionEnd.AddDynamic(this, &ThisClass::CharacterActionEnd);
 	}
+	
+	if(StatComp)
+		StatComp->InitStats();
 }
 
 void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -378,8 +384,9 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 {
 	if(!CanAttack()) return;
 	int32 Idx = AttackIdx;
-	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp)
+	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp && StatComp)
 	{
+		if(StatComp->GetCurrentStatValue(EStats::STAMINA) < LightAttackStaminaCost) return; //스태미너 안되면 리턴
 		TArray<UAnimMontage*> TempArray;
 		EWeaponType WeaponType = CombatComp->GetEquippedWeapon()->GetWeaponType();
 		if(WeaponType == EWeaponType::LIGHT_SWORD)
@@ -441,6 +448,10 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 			PlayAnimMontage(TempArray[CombatComp->GetAttackCount()]);
 		}
 		CombatComp->IncrementAttackCount();
+		
+
+		StatComp->PlusCurrentStatValue(EStats::STAMINA, -(LightAttackStaminaCost));
+		
 	}
 }
 
@@ -575,11 +586,14 @@ void AMeleeCharacter::ReceiveDamage(
 
 void AMeleeCharacter::CauseDamage(float Damage)
 {
-	HP = FMath::Clamp(HP - Damage, 0.f, HP - Damage);
-	if(HP <= 0)
+	if(StatComp)
 	{
-		if(StateManagerComp)
-			StateManagerComp->SetCurrentState(ECharacterState::DEAD);
+		StatComp->PlusCurrentStatValue(EStats::HP, -Damage); //HP계산
+		if(StatComp->GetCurrentStatValue(EStats::HP) <= 0)
+		{
+			if(StateManagerComp)
+				StateManagerComp->SetCurrentState(ECharacterState::DEAD);
+		}
 	}
 }
 
@@ -617,8 +631,21 @@ void AMeleeCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 
 void AMeleeCharacter::Test()
 {	
-	//테스트할 함수 넣기. Key Mapping : t
-	Dead();
+	//테스트할 함수 넣기. Key Mapping : 5
+	
+	if(StatComp)
+	{
+		StatComp->RegenToggle();
+		
+		// TMap<EStats, FBaseStat> BaseStat = StatComp->GetBaseStats();
+		// UE_LOG(LogTemp, Warning, TEXT("BaseStatHP:%f"), BaseStat[EStats::HP].BaseValue);
+		// UE_LOG(LogTemp, Warning, TEXT("BaseStatSTAM:%f"), BaseStat[EStats::STAMINA].BaseValue);
+		// UE_LOG(LogTemp, Warning, TEXT("CurrentStatHP:%f"), StatComp->GetCurrentStatValue(EStats::HP));
+		// UE_LOG(LogTemp, Warning, TEXT("CurrentStatSTAM:%f"), StatComp->GetCurrentStatValue(EStats::STAMINA));
+		// StatComp->PlusCurrentStatValue(EStats::HP, -15);
+
+		// UE_LOG(LogTemp, Warning, TEXT("더한 후CurrentStatHP:%f"), StatComp->GetCurrentStatValue(EStats::HP));
+	}		
 
 }
 

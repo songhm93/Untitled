@@ -1,6 +1,6 @@
 #include "MeleePlayerController.h"
 #include "MeleeCharacter.h"
-
+//#include "Blueprint/UserWidget.h"
 
 AMeleePlayerController::AMeleePlayerController()
 {
@@ -8,17 +8,35 @@ AMeleePlayerController::AMeleePlayerController()
     LeftClickTime = 0.f;
     ChargedTime = 0.3f;
     bCharged = false;
+
+    
 }
 
 void AMeleePlayerController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
-    Character = Cast<AMeleeCharacter>(InPawn);
+    MeleeCharacter = Cast<AMeleeCharacter>(InPawn);
+
 }
 
 void AMeleePlayerController::Tick(float DeltaTime)
 {
    TrackChargedAttack(DeltaTime);
+}
+
+void AMeleePlayerController::BeginPlay()
+{
+    Super::BeginPlay();
+
+    // if(MainHUDClass) //위젯은 블루프린트로 하는걸로
+    // {
+    //     MainHUD = CreateWidget<UUserWidget>(this, MainHUDClass);
+    //     if(MainHUD)
+    //     {
+    //         //
+    //     }
+    // }
+    UE_LOG(LogTemp, Warning, TEXT("플컨"));
 }
 
 void AMeleePlayerController::SetupInputComponent()
@@ -37,9 +55,9 @@ void AMeleePlayerController::LightAttackPressed()
 void AMeleePlayerController::LightAttackReleased() 
 {
     bLeftClickIsPressed = false; 
-    Character = Character == nullptr ? Cast<AMeleeCharacter>(GetPawn()) : Character;
-    if(Character && !bCharged)
-        Character->LightAttack();
+    MeleeCharacter = MeleeCharacter == nullptr ? Cast<AMeleeCharacter>(GetPawn()) : MeleeCharacter;
+    if(MeleeCharacter && !bCharged)
+        MeleeCharacter->LightAttack();
     bCharged = false;
 }
 
@@ -50,8 +68,8 @@ void AMeleePlayerController::TrackChargedAttack(float DeltaTime)
         LeftClickTime += DeltaTime;
         if(LeftClickTime >= ChargedTime)
         {
-            if(Character)
-                Character->ChargedAttack();
+            if(MeleeCharacter)
+                MeleeCharacter->ChargedAttack();
             bCharged = true;
             bLeftClickIsPressed = false;
         }
