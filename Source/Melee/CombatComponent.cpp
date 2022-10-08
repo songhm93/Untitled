@@ -3,7 +3,7 @@
 
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	EquippedWeapon = nullptr;
 	AttackCount = 0;

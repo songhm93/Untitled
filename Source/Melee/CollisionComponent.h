@@ -31,7 +31,6 @@ private:
 	void CollisionTrace();
 	void ClearHitActors();
 
-	void OnHit(FHitResult& HitResult);
 	UPROPERTY()
 	ABaseWeapon* Weapon;
 public:	//get

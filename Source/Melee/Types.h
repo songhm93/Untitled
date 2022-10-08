@@ -61,3 +61,5 @@ enum class EMovementType : uint8
     MAX UMETA(DisplayName = "MAX")
 };
 
+
+
