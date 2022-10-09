@@ -71,16 +71,12 @@ void UCollisionComponent::CollisionTrace()
 		true, 
 		FLinearColor::Red, 
 		FLinearColor::Blue, 
-
-
-		
 		5.f);
 
 	if(Weapon)
 	{
 		for(auto LastHit : OutHitResult)
 		{
-			LastHitResult = LastHit; //필요할지
 			if(!AlreadyHitActors.Contains(LastHit.GetActor()))
 			{
 				AlreadyHitActors.Add(LastHit.GetActor());

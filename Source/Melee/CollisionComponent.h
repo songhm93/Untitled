@@ -23,7 +23,6 @@ private:
 	TArray<AActor*> AlreadyHitActors;
 	UPROPERTY()
 	UPrimitiveComponent* CollisionMeshComponent;
-	FHitResult LastHitResult;
 	UFUNCTION(BlueprintCallable)
 	void EnableCollision();
 	UFUNCTION(BlueprintCallable)

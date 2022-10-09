@@ -36,24 +36,23 @@ UPrimitiveComponent* ABaseEquippable::GetItemMesh()
 	
 }
 
-void ABaseEquippable::OnEquipped()
-{
-	bIsEquipped = true;
-	AttachActor(AttachSocketName);
-}
+// void ABaseEquippable::OnEquipped()
+// {
+// 	bIsEquipped = true;
+// 	AttachActor(AttachSocketName);
+// }
 
-void ABaseEquippable::OnUnequipped()
-{
-	if(bIsEquipped)
-		bIsEquipped = false;
-}
+// void ABaseEquippable::OnUnequipped()
+// {
+// 	if(bIsEquipped)
+// 		bIsEquipped = false;
+// }
 
-void ABaseEquippable::AttachActor(FName SocketName)
-{
-	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
-	AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
-	
-}
+// void ABaseEquippable::AttachActor(FName SocketName)
+// {
+// 	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
+// 	AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+// }
 
 void ABaseEquippable::Interact(AActor* Caller)
 {

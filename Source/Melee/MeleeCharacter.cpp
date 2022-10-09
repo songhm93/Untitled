@@ -426,6 +426,7 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 			{
 				TempArray.Empty();
 				TempArray.Add(LSSprintAttackMontage);
+				AttackActionCorrectionValue = 2.f;
 				Idx = 0;
 			}
 		}
@@ -506,10 +507,6 @@ void AMeleeCharacter::PerformDodge()
 		PlayAnimMontage(DodgeMontage);
 		StatComp->PlusCurrentStatValue(EStats::STAMINA, -(DodgeStaminaCost));
 	}
-	
-		
-
-	
 }
 
 bool AMeleeCharacter::CanAttack()
@@ -582,7 +579,7 @@ void AMeleeCharacter::ResetCombat()
 
 void AMeleeCharacter::ReceiveDamage(
 	AActor* DamagedActor, 
-	float Damage,
+	float EnemyATK,
 	AController* InstigatedBy, 
 	FVector HitLocation, 
 	UPrimitiveComponent* FHitComponent, 
@@ -603,14 +600,18 @@ void AMeleeCharacter::ReceiveDamage(
 	if(StateManagerComp)
 		StateManagerComp->SetCurrentState(ECharacterState::DISABLED);
 	
-	CauseDamage(Damage); //대미지 적용
+	CalcReceiveDamage(EnemyATK);
 }
 
-void AMeleeCharacter::CauseDamage(float Damage)
+void AMeleeCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
 {
+	//대미지 계산
 	if(StatComp)
 	{
-		StatComp->PlusCurrentStatValue(EStats::HP, -Damage); //HP계산
+		float Def = StatComp->GetCurrentStatValue(EStats::DEF);
+		float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		UE_LOG(LogTemp, Warning, TEXT("총 댐지 : %f"), Result);
+		StatComp->PlusCurrentStatValue(EStats::HP, -Result); //HP계산
 		if(StatComp->GetCurrentStatValue(EStats::HP) <= 0)
 		{
 			if(StateManagerComp)
@@ -851,3 +852,11 @@ void AMeleeCharacter::SetMovementType(EMovementType Type)
 	}
 }
 
+void AMeleeCharacter::Equip(ABaseWeapon* Weapon)
+{
+	if(CombatComp && Weapon)
+	{
+		//CombatComp->SetEquippedWeapon(Weapon);
+		CombatComp->OnEquipped(Weapon);
+	}
+}
