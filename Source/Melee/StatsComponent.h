@@ -65,7 +65,6 @@ private:
 	void Regen();
 	float RegenTime;
 	UPROPERTY(VisibleAnywhere)
-	bool bStaminaRegenEnabled;
 	float StaminaRegenRate;
 	float HPRegenRate;
 
@@ -74,7 +73,6 @@ public: //get
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetMaxValue(EStats Stat);
 public: //set
-	FORCEINLINE void RegenToggle() { bStaminaRegenEnabled = bStaminaRegenEnabled == true ? false : true; }
 
 public:
 	void InitStats();

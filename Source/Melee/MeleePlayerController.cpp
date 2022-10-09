@@ -1,6 +1,8 @@
 #include "MeleePlayerController.h"
 #include "MeleeCharacter.h"
-//#include "Blueprint/UserWidget.h"
+#include "Types.h."
+#include "Stats.h"
+#include "StatsComponent.h"
 
 AMeleePlayerController::AMeleePlayerController()
 {
@@ -9,7 +11,7 @@ AMeleePlayerController::AMeleePlayerController()
     ChargedTime = 0.3f;
     bCharged = false;
 
-    
+
 }
 
 void AMeleePlayerController::OnPossess(APawn* InPawn)
@@ -21,22 +23,14 @@ void AMeleePlayerController::OnPossess(APawn* InPawn)
 
 void AMeleePlayerController::Tick(float DeltaTime)
 {
-   TrackChargedAttack(DeltaTime);
+    TrackingChargedAttack(DeltaTime);
+    TrackingSprint();
 }
 
 void AMeleePlayerController::BeginPlay()
 {
     Super::BeginPlay();
-
-    // if(MainHUDClass) //위젯은 블루프린트로 하는걸로
-    // {
-    //     MainHUD = CreateWidget<UUserWidget>(this, MainHUDClass);
-    //     if(MainHUD)
-    //     {
-    //         //
-    //     }
-    // }
-    UE_LOG(LogTemp, Warning, TEXT("플컨"));
+    
 }
 
 void AMeleePlayerController::SetupInputComponent()
@@ -61,7 +55,7 @@ void AMeleePlayerController::LightAttackReleased()
     bCharged = false;
 }
 
-void AMeleePlayerController::TrackChargedAttack(float DeltaTime)
+void AMeleePlayerController::TrackingChargedAttack(float DeltaTime)
 {
     if(bLeftClickIsPressed)
     {
@@ -78,4 +72,16 @@ void AMeleePlayerController::TrackChargedAttack(float DeltaTime)
     {
         LeftClickTime = 0.f;
     }  
+}
+
+void AMeleePlayerController::TrackingSprint()
+{
+    if(MeleeCharacter && MeleeCharacter->GetStatComp() && MeleeCharacter->GetMovementType() == EMovementType::SPRINTING)
+    {   //현재 스태미너가 소모량보다 적은 경우, 달리지 않는데 쉬프트가 눌려 있는 경우
+        if((MeleeCharacter->GetStatComp()->GetCurrentStatValue(EStats::STAMINA) < MeleeCharacter->GetSprintStaminaCost()) || MeleeCharacter->GetVelocity().Size() <= 0.f)
+        {
+            MeleeCharacter->SetMovementType(EMovementType::JOGGING);
+        }
+        MeleeCharacter->GetStatComp()->PlusCurrentStatValue(EStats::STAMINA, -(MeleeCharacter->GetSprintStaminaCost()));
+    }
 }

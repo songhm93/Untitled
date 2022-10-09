@@ -232,7 +232,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UStatsComponent* StatComp;
-	float LightAttackStaminaCost;
+	float DodgeStaminaCost;
+	float SprintStaminaCost;
+	bool bSprintKeyPressed;
+
+	float AttackActionCorrectionValue; //공격 액션마다의 보정치. 1타, 2타, 3타있으면 3타가 가장 세게 적용.
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
@@ -240,6 +244,9 @@ public: //get
 	FORCEINLINE UAnimMontage* GetDodgeMontage() const { return DodgeMontage; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp;}
 	FORCEINLINE EMovementType GetMovementType() const { return CurrentMovementType; }
+	FORCEINLINE float GetSprintStaminaCost() const { return SprintStaminaCost; }
+	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp;}
+	FORCEINLINE float GetAttackActionCorrectionValue() const { return AttackActionCorrectionValue; }
 public: //set
 	void SetMovementType(EMovementType Type);
 public:

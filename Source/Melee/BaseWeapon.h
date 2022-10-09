@@ -34,13 +34,12 @@ private:
 	UCollisionComponent* CollisionComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
-	float Damage;
+	float Damage; 
 
 	UPROPERTY()
 	AController* Controller;
 	FVector HitFromDirection;
 
-	
 public: //get
 	FORCEINLINE UAnimMontage* GetEnterCombatAM() const { return EnterCombatMontage; }
 	FORCEINLINE UAnimMontage* GetExitCombatAM() const { return ExitCombatMontage; }
