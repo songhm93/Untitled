@@ -37,15 +37,18 @@ void APickupActor::Tick(float DeltaTime)
 void APickupActor::Interact(AActor* Caller)
 {
 	UWorld* World = GetWorld();
+	AMeleeCharacter* Character = Cast<AMeleeCharacter>(Caller);
 	if(World && SpawnActor)
 	{
 		FActorSpawnParameters Params; 
 		Params.Owner = Caller;
 		Params.Instigator = Cast<APawn>(Caller);
+
 		ABaseWeapon* Weapon = World->SpawnActor<ABaseWeapon>(SpawnActor, GetActorTransform(), Params);
-		if(Weapon)
+		if(Weapon && Character)
 		{
-			Weapon->OnEquipped();
+			Character->Equip(Weapon);
+			//Weapon->OnEquipped();
 		}
 	}
 }

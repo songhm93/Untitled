@@ -139,7 +139,7 @@ private:
 	UFUNCTION()
 	void ReceiveDamage(
 		AActor* DamagedActor, 
-		float Damage, 
+		float EnemyATK, 
 		AController* InstigatedBy, 
 		FVector HitLocation, 
 		UPrimitiveComponent* FHitComponent, 
@@ -150,6 +150,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatComp;
+	
 	/**************   데이터 테이블 변수들 */
 
 	// Common
@@ -198,11 +199,9 @@ private:
 	
 
 	/*****************************************************/
-
-	//UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	//float HP;
+;
 	void Dead();
-	void CauseDamage(float Damage);
+	void CalcReceiveDamage(float Damage);
 	void EnableRagdoll();
 	FName PelvisBoneName;
 	void ApplyHitReactionPhysicsVelocity(float InitSpeed);
@@ -252,6 +251,7 @@ public: //set
 public:
 	void LightAttack();
 	void ChargedAttack();
+	void Equip(ABaseWeapon* Weapon);
 	
 	
 };

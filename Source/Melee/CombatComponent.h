@@ -5,6 +5,7 @@
 #include "CombatComponent.generated.h"
 
 class ABaseWeapon;
+class AMeleeCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UCombatComponent : public UActorComponent
@@ -25,6 +26,9 @@ private:
 	int32 AttackCount;
 	UPROPERTY(VisibleAnywhere, Meta=(AllowPrivateAccess = "true"))
 	bool bIsAttackSaved;
+	UPROPERTY()
+	AController* Controller;
+	FVector HitFromDirection;
 	
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
@@ -36,8 +40,13 @@ public: //set
 	FORCEINLINE void SetIsAttackSaved(bool Boolean) { bIsAttackSaved = Boolean; }
 	FORCEINLINE void SetAttackCount(int32 Count) { AttackCount = Count; }
 public:
-	void SetEquippedWeapon(ABaseWeapon* NewWeapon);
 	FORCEINLINE void IncrementAttackCount() { ++AttackCount; }
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }
-		
+
+	void OnEquipped(ABaseWeapon* Weapon);
+	void AttachActor(FName SocketName);
+	void AttachWeapon(AMeleeCharacter* Character);
+	void OnUnequipped();
+	void HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon);
+
 };

@@ -5,7 +5,6 @@
 #include "Types.h"
 #include "BaseWeapon.generated.h"
 
-class UAnimMontage;
 class UCollisionComponent;
 
 UCLASS()
@@ -15,16 +14,11 @@ class MELEE_API ABaseWeapon : public ABaseEquippable
 	
 public:
 	ABaseWeapon();
-	virtual void OnEquipped() override; 
+
 protected:
 	
 	
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* EnterCombatMontage;
-	UPROPERTY(VisibleAnywhere, Category = "Anim", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* ExitCombatMontage;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
 
@@ -34,27 +28,19 @@ private:
 	UCollisionComponent* CollisionComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
-	float Damage; 
-
-	UPROPERTY()
-	AController* Controller;
-	FVector HitFromDirection;
+	float ATK; //무기 공격력
 
 public: //get
-	FORCEINLINE UAnimMontage* GetEnterCombatAM() const { return EnterCombatMontage; }
-	FORCEINLINE UAnimMontage* GetExitCombatAM() const { return ExitCombatMontage; }
 	FORCEINLINE FName GetHandSocketName() const { return HandSocketName; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE UCollisionComponent* GetCollisionComp() const { return CollisionComponent; }
+	FORCEINLINE float GetATK() const { return ATK; }
 	
 public: //set
-	FORCEINLINE void SetEnterCombatAM(UAnimMontage* AM) { EnterCombatMontage = AM;}
-	FORCEINLINE void SetExitCombatAM(UAnimMontage* AM) { ExitCombatMontage = AM;}
 	FORCEINLINE void SetHandSocketName(FName SocketName) { HandSocketName = SocketName;}
 	FORCEINLINE void SetWeaponType(EWeaponType Type) { WeaponType = Type;}
 	
 public:
-	UFUNCTION(BlueprintCallable)
-	void AttachWeapon(AMeleeCharacter* Character);
 	void OnHit(FHitResult& HitResult);
 	void SimulateWeaponPhysics();
 };	
