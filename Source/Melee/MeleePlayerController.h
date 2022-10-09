@@ -21,15 +21,14 @@ protected:
 private:
 	void LightAttackPressed();
 	void LightAttackReleased();
-	void TrackChargedAttack(float DeltaTime);
+	void TrackingChargedAttack(float DeltaTime);
 	bool bLeftClickIsPressed;
 	float LeftClickTime;
 	float ChargedTime;
 	UPROPERTY()
 	AMeleeCharacter* MeleeCharacter;
 	bool bCharged;
-	// UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	// TSubclassOf<UUserWidget> MainHUDClass;
-	// UPROPERTY()
-	// UUserWidget* MainHUD;
+
+	void TrackingSprint();
+	
 };

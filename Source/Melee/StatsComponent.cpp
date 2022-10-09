@@ -6,9 +6,10 @@
 UStatsComponent::UStatsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	bStaminaRegenEnabled = false;
+	
+	
+	HPRegenRate = 0.0f;
 	StaminaRegenRate = 1.0f;
-	HPRegenRate = 2.0f;
 }
 
 
@@ -19,7 +20,6 @@ void UStatsComponent::BeginPlay()
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/BaseStatsTable"));
 	InitDataTable(Path);
 	
-	UE_LOG(LogTemp, Warning, TEXT("스탯 비긴플, 테이블 이닛")); //게임 시작시 현재 스테미나 보여줘야함 이것부터하기.
 }
 
 void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -101,12 +101,11 @@ void UStatsComponent::InitDataTable(FString Path)
 		FBaseStatTable* Row = TableObject->FindRow<FBaseStatTable>(FName("HP"), TEXT(""));
 		if(Row)
 			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
-		
 		Row = TableObject->FindRow<FBaseStatTable>(FName("Stamina"), TEXT(""));
 		if(Row)
 			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
 		
-		Row = TableObject->FindRow<FBaseStatTable>(FName("Armor"), TEXT(""));
+		Row = TableObject->FindRow<FBaseStatTable>(FName("Def"), TEXT(""));
 		if(Row)
 			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
 		

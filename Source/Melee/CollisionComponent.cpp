@@ -71,6 +71,9 @@ void UCollisionComponent::CollisionTrace()
 		true, 
 		FLinearColor::Red, 
 		FLinearColor::Blue, 
+
+
+		
 		5.f);
 
 	if(Weapon)
