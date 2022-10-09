@@ -54,7 +54,7 @@ AMeleeCharacter::AMeleeCharacter()
 	if(StateManagerComp)
 		StateManagerComp->SetCurrentState(ECharacterState::NOTHING);
 
-	//HP = 100.f;
+	
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
@@ -63,7 +63,10 @@ AMeleeCharacter::AMeleeCharacter()
 	JogSpeed = 500.f;
 	SprintSpeed = 700;
 	bHeavyAttack = false;
-	LightAttackStaminaCost = 15.f;
+	DodgeStaminaCost = 10.f;
+	SprintStaminaCost = 0.2f;
+	bSprintKeyPressed = false;
+	AttackActionCorrectionValue = 1.f;
 
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/CommonTable"));
 	InitDataTable(Path, EDataTableType::COMMON_TABLE);
@@ -79,6 +82,7 @@ AMeleeCharacter::AMeleeCharacter()
 	
 
     ResetCombat();
+
 }
 
 void AMeleeCharacter::BeginPlay()
@@ -95,7 +99,12 @@ void AMeleeCharacter::BeginPlay()
 	}
 	
 	if(StatComp)
+	{
 		StatComp->InitStats();
+		StatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f); //위젯 띄우는거, 스탯 초기화, 테이블 초기화 순서때문에 게임 시작시 스탯 비어보임을 가리는 꼼수
+		StatComp->PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);
+	}
+	
 }
 
 void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -166,6 +175,7 @@ void AMeleeCharacter::MoveForward(float Value)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		if(bSprintKeyPressed) SetMovementType(EMovementType::SPRINTING);
 		AddMovementInput(Direction, Value);
 	}
 }
@@ -386,7 +396,6 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 	int32 Idx = AttackIdx;
 	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp && StatComp)
 	{
-		if(StatComp->GetCurrentStatValue(EStats::STAMINA) < LightAttackStaminaCost) return; //스태미너 안되면 리턴
 		TArray<UAnimMontage*> TempArray;
 		EWeaponType WeaponType = CombatComp->GetEquippedWeapon()->GetWeaponType();
 		if(WeaponType == EWeaponType::LIGHT_SWORD)
@@ -395,13 +404,22 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 			{
 				case ECharacterAction::LIGHT_ATTACK:
 					TempArray = LSLightAttackMontages;
+					if(Idx == 0)
+						AttackActionCorrectionValue = 1.f;
+					else if(Idx == 1)
+						AttackActionCorrectionValue = 1.5f;
+					else 
+						AttackActionCorrectionValue = 2.f;
 				break;
 				case ECharacterAction::HEAVY_ATTACK:
 					TempArray.Add(LSHeavyAttackMontage);
 					Idx = 0;
+					AttackActionCorrectionValue = 2.f;
+				break;
 				case ECharacterAction::CHARGED_ATTACK:
 					TempArray.Add(ChargedAttackMontage);
 					Idx = 0;
+					AttackActionCorrectionValue = 2.5f;
 				break;
 			}
 			if(CurrentMovementType == EMovementType::SPRINTING)
@@ -449,9 +467,6 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 		}
 		CombatComp->IncrementAttackCount();
 		
-
-		StatComp->PlusCurrentStatValue(EStats::STAMINA, -(LightAttackStaminaCost));
-		
 	}
 }
 
@@ -478,24 +493,30 @@ void AMeleeCharacter::ResetAttack() //애님 노티파이로 호출될 함수.
 void AMeleeCharacter::Dodge()
 {
 	if(!CanDodge() || (CombatComp && !CombatComp->GetEquippedWeapon())) return;
+	
 	PerformDodge();
 }
 
 void AMeleeCharacter::PerformDodge()
 {
-	if(StateManagerComp)
+	if(StateManagerComp && DodgeMontage && StatComp)
 	{
 		StateManagerComp->SetCurrentState(ECharacterState::DODGING);
 		StateManagerComp->SetCurrentAction(ECharacterAction::DODGE);
+		PlayAnimMontage(DodgeMontage);
+		StatComp->PlusCurrentStatValue(EStats::STAMINA, -(DodgeStaminaCost));
 	}
 	
-	if(DodgeMontage)
-		PlayAnimMontage(DodgeMontage);
+		
+
+	
 }
 
 bool AMeleeCharacter::CanAttack()
 {
-	if(CombatComp && !CombatComp->GetEquippedWeapon() || !CombatComp->GetCombatState()) return false;
+	bool Condition = CombatComp && (!CombatComp->GetEquippedWeapon() || !CombatComp->GetCombatState());
+	if(Condition) return false;
+	
 	TArray<ECharacterState> CharacterStates;
 	CharacterStates.Add(ECharacterState::ATTACKING);
 	CharacterStates.Add(ECharacterState::DODGING);
@@ -523,6 +544,7 @@ bool AMeleeCharacter::CanToggleCombat()
 
 bool AMeleeCharacter::CanDodge()
 {
+	if(StatComp && (StatComp->GetCurrentStatValue(EStats::STAMINA) < DodgeStaminaCost)) return false;
 	TArray<ECharacterState> CharacterStates;
 	CharacterStates.Add(ECharacterState::DODGING);
 	CharacterStates.Add(ECharacterState::DEAD);
@@ -635,7 +657,7 @@ void AMeleeCharacter::Test()
 	
 	if(StatComp)
 	{
-		StatComp->RegenToggle();
+		StatComp->PlusCurrentStatValue(EStats::HP, -50);
 		
 		// TMap<EStats, FBaseStat> BaseStat = StatComp->GetBaseStats();
 		// UE_LOG(LogTemp, Warning, TEXT("BaseStatHP:%f"), BaseStat[EStats::HP].BaseValue);
@@ -796,11 +818,14 @@ void AMeleeCharacter::ToggleWalk()
 
 void AMeleeCharacter::SprintButtonPressed()
 {
+	bSprintKeyPressed = true;
+	if(GetVelocity().Size() <= 0.f) return;
 	SetMovementType(EMovementType::SPRINTING);
 }
 
 void AMeleeCharacter::SprintButtonReleased()
 {
+	bSprintKeyPressed = false;
 	SetMovementType(EMovementType::JOGGING);
 }
 
