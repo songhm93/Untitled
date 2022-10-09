@@ -596,6 +596,7 @@ void AMeleeCharacter::ReceiveDamage(
 
 	if(HitReactMontage)
 		PlayAnimMontage(HitReactMontage);
+		
 
 	if(StateManagerComp)
 		StateManagerComp->SetCurrentState(ECharacterState::DISABLED);
