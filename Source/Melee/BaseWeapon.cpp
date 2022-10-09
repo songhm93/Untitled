@@ -10,7 +10,7 @@
 ABaseWeapon::ABaseWeapon()
 {
     CollisionComponent = CreateDefaultSubobject<UCollisionComponent>(TEXT("CollisionComponent"));
-    Damage = 10.f;
+    Damage = 20.f;
 
     if(GetOwner())
     {
@@ -54,14 +54,17 @@ void ABaseWeapon::AttachWeapon(AMeleeCharacter* Character)
 
 void ABaseWeapon::OnHit(FHitResult& HitResult)
 {
-    Controller = Controller == nullptr ? Cast<APawn>(GetOwner())->GetController() : Controller;
-    HitFromDirection = GetOwner()->GetActorForwardVector();
-	
-    if(HitResult.GetActor())
+    if(HitResult.GetActor() && GetOwner())
     {
+        Controller = Controller == nullptr ? Cast<APawn>(GetOwner())->GetController() : Controller;
+        HitFromDirection = GetOwner()->GetActorForwardVector();
+
         if(Cast<AMeleeCharacter>(HitResult.GetActor())->CanRecieveDamage())
         {
-            UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), Damage, HitFromDirection, HitResult, Controller, this, UDamageType::StaticClass());
+            float CalcDamage = Cast<AMeleeCharacter>(GetOwner())->GetAttackActionCorrectionValue() * Damage;
+            UE_LOG(LogTemp, Warning, TEXT("Damage:%f"), CalcDamage);
+            UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcDamage, HitFromDirection, HitResult, Controller, this, UDamageType::StaticClass());
+            //일단 무기가 입히는 기본 대미지와 보정치로 계산.
         }
     }
 }
