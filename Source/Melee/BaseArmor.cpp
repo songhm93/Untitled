@@ -1,5 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BaseArmor.h"
+#include "Types.h"
 
+ABaseArmor::ABaseArmor()
+{
+    SetEquipmentType(EEquipmentType::ARMOR);
+    ArmorDEF = 20.f;
+}

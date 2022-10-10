@@ -6,13 +6,13 @@ AGreatSword::AGreatSword()
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/CourseFiles/Meshes/Weapons/SM_GreatSword"));
     if(Sword.Succeeded())
     {
-        GetItemStaticMesh()->SetStaticMesh(Sword.Object);
+        GetItemStaticMeshComp()->SetStaticMesh(Sword.Object);
     }
-    GetItemStaticMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    GetItemStaticMeshComp()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     SetAttachSocketName(TEXT("GreatSwordBackSocket"));
     SetHandSocketName(TEXT("GreatSwordHandSocket"));
 
 
-     SetWeaponType(EWeaponType::GREAT_SWORD);
+    SetWeaponType(EWeaponType::GREAT_SWORD);
 }
