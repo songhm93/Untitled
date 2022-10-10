@@ -14,6 +14,5 @@ AToughSword::AToughSword()
 
 
     SetWeaponType(EWeaponType::LIGHT_SWORD);
-    
 }
 

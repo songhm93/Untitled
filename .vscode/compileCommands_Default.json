@@ -115,12 +115,47 @@
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleePlayerController.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\MeleePlayerController.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\PickupActor.cpp",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\PickupActor.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\StateManagerComponent.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\StateManagerComponent.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Stats.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\StatsComponent.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\StatsComponent.h",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},

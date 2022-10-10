@@ -64,14 +64,12 @@ private:
 	
 	void Regen();
 	float RegenTime;
-	UPROPERTY(VisibleAnywhere)
 	float StaminaRegenRate;
 	float HPRegenRate;
 
 public: //get	
 	FORCEINLINE TMap<EStats, FBaseStat> GetBaseStats() const { return BaseStats; }
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetMaxValue(EStats Stat);
+	
 public: //set
 
 public:
@@ -80,7 +78,8 @@ public:
 	void SetBaseStatValue(EStats Stat, float Value);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetCurrentStatValue(EStats Stat);
-	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetMaxValue(EStats Stat);
 	void PlusCurrentStatValue(EStats Stat, float Value);
 	bool CurrentCompareMax(EStats Stat); //current 값과 max값을 비교해서 current가 max면 채울 필요없게. 아예 트래킹 차단.
 		
