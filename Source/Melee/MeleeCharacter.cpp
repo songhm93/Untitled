@@ -407,26 +407,26 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 					if(Idx == 0)
 						AttackActionCorrectionValue = 1.f;
 					else if(Idx == 1)
-						AttackActionCorrectionValue = 1.5f;
-					else 
 						AttackActionCorrectionValue = 2.f;
+					else 
+						AttackActionCorrectionValue = 3.f;
 				break;
 				case ECharacterAction::HEAVY_ATTACK:
 					TempArray.Add(LSHeavyAttackMontage);
 					Idx = 0;
-					AttackActionCorrectionValue = 2.f;
+					AttackActionCorrectionValue = 3.f;
 				break;
 				case ECharacterAction::CHARGED_ATTACK:
 					TempArray.Add(ChargedAttackMontage);
 					Idx = 0;
-					AttackActionCorrectionValue = 2.5f;
+					AttackActionCorrectionValue = 4.f;
 				break;
 			}
 			if(CurrentMovementType == EMovementType::SPRINTING)
 			{
 				TempArray.Empty();
 				TempArray.Add(LSSprintAttackMontage);
-				AttackActionCorrectionValue = 2.f;
+				AttackActionCorrectionValue = 3.f;
 				Idx = 0;
 			}
 		}
@@ -611,8 +611,7 @@ void AMeleeCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 �
 	{
 		float Def = StatComp->GetCurrentStatValue(EStats::DEF);
 		float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
-		UE_LOG(LogTemp, Warning, TEXT("총 댐지 : %f"), Result);
-		StatComp->PlusCurrentStatValue(EStats::HP, -Result); //HP계산
+		StatComp->PlusCurrentStatValue(EStats::HP, -Result); //HP 적용
 		if(StatComp->GetCurrentStatValue(EStats::HP) <= 0)
 		{
 			if(StateManagerComp)
@@ -660,15 +659,7 @@ void AMeleeCharacter::Test()
 	if(StatComp)
 	{
 		StatComp->PlusCurrentStatValue(EStats::HP, -50);
-		
-		// TMap<EStats, FBaseStat> BaseStat = StatComp->GetBaseStats();
-		// UE_LOG(LogTemp, Warning, TEXT("BaseStatHP:%f"), BaseStat[EStats::HP].BaseValue);
-		// UE_LOG(LogTemp, Warning, TEXT("BaseStatSTAM:%f"), BaseStat[EStats::STAMINA].BaseValue);
-		// UE_LOG(LogTemp, Warning, TEXT("CurrentStatHP:%f"), StatComp->GetCurrentStatValue(EStats::HP));
-		// UE_LOG(LogTemp, Warning, TEXT("CurrentStatSTAM:%f"), StatComp->GetCurrentStatValue(EStats::STAMINA));
-		// StatComp->PlusCurrentStatValue(EStats::HP, -15);
-
-		// UE_LOG(LogTemp, Warning, TEXT("더한 후CurrentStatHP:%f"), StatComp->GetCurrentStatValue(EStats::HP));
+	
 	}		
 
 }
@@ -853,10 +844,10 @@ void AMeleeCharacter::SetMovementType(EMovementType Type)
 	}
 }
 
-void AMeleeCharacter::Equip(ABaseWeapon* Weapon)
+void AMeleeCharacter::Equip(ABaseEquippable* Equipment)
 {
-	if(CombatComp && Weapon)
+	if(CombatComp && Equipment)
 	{
-		CombatComp->OnEquipped(Weapon);
+		CombatComp->OnEquipped(Equipment);
 	}
 }

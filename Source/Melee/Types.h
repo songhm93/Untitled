@@ -12,6 +12,28 @@ enum class EWeaponType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EEquipmentType : uint8
+{
+    NONE UMETA(DisplayName = "NONE"),
+    WEAPON UMETA(DisplayName="WEAPON"),
+    ARMOR UMETA(DisplayName="ARMOR"),
+
+    MAX UMETA(DisplayName="MAX")
+};
+
+UENUM(BlueprintType)
+enum class EArmorType : uint8
+{
+    NONE UMETA(DisplayName = "NONE"),
+    HELMET UMETA(DisplayName="HELMET"),
+    CHEST UMETA(DisplayName="CHEST"),
+    GAUNTLET UMETA(DisplayName="GAUNTLET"),
+    BOOT UMETA(DisplayName="BOOT"),
+
+    MAX UMETA(DisplayName="MAX")
+};
+
+UENUM(BlueprintType)
 enum class ECharacterState : uint8 //캐릭터의 상태
 {
     NOTHING UMETA(DisplayName = "NOTHING"),

@@ -4,14 +4,14 @@
 
 ABaseEquippable::ABaseEquippable()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	ItemSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemSkeletalMesh"));
-	ItemStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMesh"));
+	ItemSkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemSkeletalMeshComp"));
+	ItemStaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMeshComp"));
 	RootSceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("EmRootSceneCompptyComp"));
 	RootComponent = RootSceneComp;
-	ItemSkeletalMesh->SetupAttachment(RootComponent);
-	ItemStaticMesh->SetupAttachment(RootComponent);
+	ItemSkeletalMeshComp->SetupAttachment(RootComponent);
+	ItemStaticMeshComp->SetupAttachment(RootComponent);
 	AttachSocketName = TEXT("SwordHipAttachSocket");
 	
 }
@@ -28,32 +28,14 @@ void ABaseEquippable::Tick(float DeltaTime)
 
 }
 
-UPrimitiveComponent* ABaseEquippable::GetItemMesh()
+UPrimitiveComponent* ABaseEquippable::GetItemMeshComp()
 {
-	if(ItemStaticMesh)
-		return ItemStaticMesh;
+	if(ItemStaticMeshComp)
+		return ItemStaticMeshComp;
 	else 
-		return ItemSkeletalMesh;
+		return ItemSkeletalMeshComp;
 	
 }
-
-// void ABaseEquippable::OnEquipped()
-// {
-// 	bIsEquipped = true;
-// 	AttachActor(AttachSocketName);
-// }
-
-// void ABaseEquippable::OnUnequipped()
-// {
-// 	if(bIsEquipped)
-// 		bIsEquipped = false;
-// }
-
-// void ABaseEquippable::AttachActor(FName SocketName)
-// {
-// 	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
-// 	AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
-// }
 
 void ABaseEquippable::Interact(AActor* Caller)
 {
