@@ -2,9 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Types.h"
 #include "CombatComponent.generated.h"
 
 class ABaseWeapon;
+class ABaseEquippable;
+class ABaseArmor;
 class AMeleeCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -20,6 +23,15 @@ protected:
 private:	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta=(AllowPrivateAccess = "true"))
 	ABaseWeapon* EquippedWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta=(AllowPrivateAccess = "true"))
+	ABaseArmor* EquippedHelmet;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta=(AllowPrivateAccess = "true"))
+	ABaseArmor* EquippedGauntlet;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta=(AllowPrivateAccess = "true"))
+	ABaseArmor* EquippedChest;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta=(AllowPrivateAccess = "true"))
+	ABaseArmor* EquippedBoot;
+
 	UPROPERTY(VisibleAnywhere, Meta=(AllowPrivateAccess = "true"))
 	bool bCombatState;
 	UPROPERTY(VisibleAnywhere, Meta=(AllowPrivateAccess = "true"))
@@ -29,6 +41,10 @@ private:
 	UPROPERTY()
 	AController* Controller;
 	FVector HitFromDirection;
+	UPROPERTY()
+	AMeleeCharacter* Character;
+	float PlayerATK;
+	float CalcATK;
 	
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
@@ -43,9 +59,9 @@ public:
 	FORCEINLINE void IncrementAttackCount() { ++AttackCount; }
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }
 
-	void OnEquipped(ABaseWeapon* Weapon);
-	void AttachActor(FName SocketName);
-	void AttachWeapon(AMeleeCharacter* Character);
+	void OnEquipped(ABaseEquippable* Equipment);
+	void AttachActor(EEquipmentType Type, FName SocketName);
+	void AttachWeapon();
 	void OnUnequipped();
 	void HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon);
 

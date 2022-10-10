@@ -12,4 +12,4 @@ enum class EStats : uint8
 
     MAX UMETA(DisplayName="MAX")
 };
-//플레이어 스탯, 장비 스탯 등 다 합친 수치
+//스탯의 종류

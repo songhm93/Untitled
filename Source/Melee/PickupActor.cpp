@@ -44,11 +44,10 @@ void APickupActor::Interact(AActor* Caller)
 		Params.Owner = Caller;
 		Params.Instigator = Cast<APawn>(Caller);
 
-		ABaseWeapon* Weapon = World->SpawnActor<ABaseWeapon>(SpawnActor, GetActorTransform(), Params);
-		if(Weapon && Character)
+		ABaseEquippable* Equipment = World->SpawnActor<ABaseEquippable>(SpawnActor, GetActorTransform(), Params);
+		if(Equipment && Character)
 		{
-			Character->Equip(Weapon);
-			//Weapon->OnEquipped();
+			Character->Equip(Equipment);
 		}
 	}
 }

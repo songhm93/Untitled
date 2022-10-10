@@ -27,14 +27,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCollisionComponent* CollisionComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
-	float ATK; //무기 공격력
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
+	float WeaponATK; //무기 공격력
 
 public: //get
 	FORCEINLINE FName GetHandSocketName() const { return HandSocketName; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 	FORCEINLINE UCollisionComponent* GetCollisionComp() const { return CollisionComponent; }
-	FORCEINLINE float GetATK() const { return ATK; }
+	FORCEINLINE float GetWeaponATK() const { return WeaponATK; }
 	
 public: //set
 	FORCEINLINE void SetHandSocketName(FName SocketName) { HandSocketName = SocketName;}

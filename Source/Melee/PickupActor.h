@@ -7,7 +7,7 @@
 
 class USphereComponent;
 class UStaticMeshComponent;
-class ABaseWeapon;
+class ABaseEquippable;
 
 UCLASS()
 class MELEE_API APickupActor : public AActor, public IInteractable
@@ -23,7 +23,7 @@ public:
 	virtual void Interact(AActor* Caller) override;
 private:
 	UPROPERTY(EditAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
-	TSubclassOf<ABaseWeapon> SpawnActor;
+	TSubclassOf<ABaseEquippable> SpawnActor;
 	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Mesh;
 	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))

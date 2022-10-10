@@ -5,9 +5,9 @@ AToughSword::AToughSword()
 {
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/CourseFiles/Meshes/Weapons/SM_ToughSword"));
     if(Sword.Succeeded())
-        GetItemStaticMesh()->SetStaticMesh(Sword.Object);
+        GetItemStaticMeshComp()->SetStaticMesh(Sword.Object);
     
-    GetItemStaticMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    GetItemStaticMeshComp()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     SetAttachSocketName(TEXT("SwordHipAttachSocket"));
     SetHandSocketName(TEXT("WeaponSocket"));

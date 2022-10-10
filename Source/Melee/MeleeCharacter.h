@@ -18,6 +18,7 @@ class UPrimitiveComponent;
 class USoundCue;
 class UParticleSystem;
 class UStatsComponent;
+class ABaseEquippable;
 
 USTRUCT(BlueprintType)
 struct FCommonTable : public FTableRowBase
@@ -251,7 +252,7 @@ public: //set
 public:
 	void LightAttack();
 	void ChargedAttack();
-	void Equip(ABaseWeapon* Weapon);
+	void Equip(ABaseEquippable* Weapon);
 	
 	
 };

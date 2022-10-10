@@ -2,7 +2,9 @@
 #include "MeleeCharacter.h"
 #include "MeleeAnimInstance.h"
 #include "BaseWeapon.h"
+#include "BaseArmor.h"
 #include "CollisionComponent.h"
+#include "StatsComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 UCombatComponent::UCombatComponent()
@@ -10,7 +12,13 @@ UCombatComponent::UCombatComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	EquippedWeapon = nullptr;
+	EquippedHelmet = nullptr;
+	EquippedGauntlet = nullptr;
+	EquippedChest = nullptr;
+	EquippedBoot = nullptr;
 	AttackCount = 0;
+	PlayerATK = 0.f;
+	CalcATK = 0.f;
 	
 	HitFromDirection = FVector::ZeroVector;
 }
@@ -21,7 +29,11 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 
 	if(GetOwner())
+	{
 		Controller = Cast<APawn>(GetOwner())->GetController();
+		Character = Cast<AMeleeCharacter>(GetOwner());
+	}
+		
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -30,41 +42,104 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 }
 
-void UCombatComponent::OnEquipped(ABaseWeapon* Weapon)
+void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 {
-	if(EquippedWeapon)
+	Character = Character == nullptr ? Cast<AMeleeCharacter>(GetOwner()) : Character;
+	if(Equipment && Character && Character->GetStatComp())
 	{
-		EquippedWeapon->Destroy();
-	}
-	EquippedWeapon = Weapon;
-	
-	AMeleeCharacter* Character =  Cast<AMeleeCharacter>(GetOwner());
-	if(EquippedWeapon && Character)
-	{
-		AttachWeapon(Character);
-		
-		if(Character->GetMesh() &&  Character->GetMesh()->GetAnimInstance())
+		if(Equipment->GetEquipmentType() == EEquipmentType::WEAPON)
 		{
-			Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetWeaponType(EquippedWeapon->GetWeaponType());
+			if(EquippedWeapon)
+			{
+				EquippedWeapon->Destroy();
+			}
+			EquippedWeapon = Cast<ABaseWeapon>(Equipment);
+
+			if(EquippedWeapon)
+			{
+				AttachWeapon();
+				
+				if(Character->GetMesh() &&  Character->GetMesh()->GetAnimInstance())
+				{
+					Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetWeaponType(EquippedWeapon->GetWeaponType());
+				}
+				EquippedWeapon->GetCollisionComp()->SetCollisionMeshComponent(EquippedWeapon->GetItemMeshComp());
+				//장착했으니 스탯 적용. 일단
+				Character->GetStatComp()->PlusCurrentStatValue(EStats::ATK, EquippedWeapon->GetWeaponATK());
+			}
 		}
-		EquippedWeapon->GetCollisionComp()->SetCollisionMeshComponent(EquippedWeapon->GetItemMesh());
-		
+		else if(Equipment->GetEquipmentType() == EEquipmentType::ARMOR)
+		{
+			ABaseArmor* Armor = Cast<ABaseArmor>(Equipment); 
+			if(Armor)
+			{
+				if(Armor->GetArmorType() == EArmorType::HELMET)
+				{
+					EquippedHelmet = Armor;
+					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedHelmet->GetArmorDEF());
+					//스탯 적용. 대미지 입힐때랑 받을때 스탯 
+				}	
+				else if(Armor->GetArmorType() == EArmorType::GAUNTLET)
+				{
+					EquippedGauntlet = Armor;	
+					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedGauntlet->GetArmorDEF());
+				}
+				else if(Armor->GetArmorType() == EArmorType::CHEST)
+				{
+					EquippedChest = Armor;
+					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedChest->GetArmorDEF());
+				}
+				else if(Armor->GetArmorType() == EArmorType::BOOT)
+				{
+					EquippedBoot = Armor;
+					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedBoot->GetArmorDEF());
+				}
+			}
+			AttachActor(EEquipmentType::ARMOR, TEXT(""));
+		}
 	}
 }
 
-void UCombatComponent::AttachActor(FName SocketName)
+void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 {
 	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
-	if(EquippedWeapon)
-		EquippedWeapon->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+	switch (Type)
+	{
+	case EEquipmentType::WEAPON:
+		if(EquippedWeapon)
+			EquippedWeapon->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+		break;
+	case EEquipmentType::ARMOR:
+		if(EquippedHelmet)
+		{
+			EquippedHelmet->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+			EquippedHelmet->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
+		}
+		if(EquippedGauntlet)
+		{
+			EquippedGauntlet->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+			EquippedGauntlet->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
+		}
+		if(EquippedChest)
+		{
+			EquippedChest->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+			EquippedChest->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
+		}
+		if(EquippedBoot)
+		{
+			EquippedBoot->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+			EquippedBoot->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
+		}
+		break;
+	}
 }
 
-void UCombatComponent::AttachWeapon(AMeleeCharacter* Character)
+void UCombatComponent::AttachWeapon()
 {
 	if(GetCombatState())
-		AttachActor(EquippedWeapon->GetHandSocketName());
+		AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetHandSocketName());
     else
-        AttachActor(EquippedWeapon->GetAttachSocketName());
+        AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetAttachSocketName());
         
 } 
 
@@ -73,13 +148,19 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon
 	if(HitResult.GetActor() && GetOwner() && Weapon)
     {
         Controller = Controller == nullptr ? Cast<APawn>(GetOwner())->GetController() : Controller;
-        HitFromDirection = GetOwner()->GetActorForwardVector();
+		Character = Character == nullptr ? Cast<AMeleeCharacter>(GetOwner()) : Character;
 
-        if(Cast<AMeleeCharacter>(HitResult.GetActor())->CanRecieveDamage())
-        {
-            float CalcATK = Cast<AMeleeCharacter>(GetOwner())->GetAttackActionCorrectionValue() * Weapon->GetATK(); //일단 액션 보정치, 무기 공격력만 적용
-            UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, Weapon, UDamageType::StaticClass());
-            //일단 무기의 기본 공격력와 보정치로 계산.
-        }
+		if(Controller && Character && Character->GetStatComp())
+		{
+			HitFromDirection = GetOwner()->GetActorForwardVector();
+
+			if(Cast<AMeleeCharacter>(HitResult.GetActor())->CanRecieveDamage())
+			{
+				PlayerATK = Character->GetStatComp()->GetCurrentStatValue(EStats::ATK);
+				CalcATK = Cast<AMeleeCharacter>(GetOwner())->GetAttackActionCorrectionValue() * PlayerATK;
+				UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, Weapon, UDamageType::StaticClass());
+				//일단 무기의 기본 공격력과 보정치로 계산.
+			}
+		}
     }
 }

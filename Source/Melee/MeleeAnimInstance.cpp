@@ -24,7 +24,7 @@ void UMeleeAnimInstance::AnimNotify_Equip()
 {
     if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon() && Character->GetStateManagerComp())
     {
-       Character->GetCombatComp()->AttachWeapon(Character);
+       Character->GetCombatComp()->AttachWeapon();
        Character->GetStateManagerComp()->SetCurrentState(ECharacterState::NOTHING);
     }
 }
@@ -33,7 +33,7 @@ void UMeleeAnimInstance::AnimNotify_UnEquip()
 {
     if(Character && Character->GetCombatComp() && Character->GetCombatComp()->GetEquippedWeapon() && Character->GetStateManagerComp())
     {
-       Character->GetCombatComp()->AttachWeapon(Character);
+       Character->GetCombatComp()->AttachWeapon();
        Character->GetStateManagerComp()->SetCurrentState(ECharacterState::NOTHING);
     }
 }

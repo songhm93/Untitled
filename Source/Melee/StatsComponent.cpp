@@ -101,11 +101,16 @@ void UStatsComponent::InitDataTable(FString Path)
 		FBaseStatTable* Row = TableObject->FindRow<FBaseStatTable>(FName("HP"), TEXT(""));
 		if(Row)
 			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
+
 		Row = TableObject->FindRow<FBaseStatTable>(FName("Stamina"), TEXT(""));
 		if(Row)
 			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
-		
+
 		Row = TableObject->FindRow<FBaseStatTable>(FName("Def"), TEXT(""));
+		if(Row)
+			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
+
+		Row = TableObject->FindRow<FBaseStatTable>(FName("Atk"), TEXT(""));
 		if(Row)
 			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
 		
