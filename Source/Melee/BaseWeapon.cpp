@@ -10,7 +10,8 @@
 ABaseWeapon::ABaseWeapon()
 {
     CollisionComponent = CreateDefaultSubobject<UCollisionComponent>(TEXT("CollisionComponent"));
-    ATK = 20.f;
+    WeaponATK = 20.f;
+    SetEquipmentType(EEquipmentType::WEAPON);
 }
 
 
@@ -24,9 +25,9 @@ void ABaseWeapon::OnHit(FHitResult& HitResult)
 
 void ABaseWeapon::SimulateWeaponPhysics()
 {
-    GetItemMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
-    GetItemMesh()->SetSimulatePhysics(true);
-    GetItemMesh()->SetMassOverrideInKg(NAME_None, 350.f);
-    GetItemMesh()->SetLinearDamping(-0.5f);
-    GetItemMesh()->SetAngularDamping(5.f);
+    GetItemMeshComp()->SetCollisionProfileName(TEXT("PhysicsActor"));
+    GetItemMeshComp()->SetSimulatePhysics(true);
+    GetItemMeshComp()->SetMassOverrideInKg(NAME_None, 350.f);
+    GetItemMeshComp()->SetLinearDamping(-0.5f);
+    GetItemMeshComp()->SetAngularDamping(5.f);
 }
