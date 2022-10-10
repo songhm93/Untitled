@@ -857,7 +857,6 @@ void AMeleeCharacter::Equip(ABaseWeapon* Weapon)
 {
 	if(CombatComp && Weapon)
 	{
-		//CombatComp->SetEquippedWeapon(Weapon);
 		CombatComp->OnEquipped(Weapon);
 	}
 }

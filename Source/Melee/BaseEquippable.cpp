@@ -13,6 +13,7 @@ ABaseEquippable::ABaseEquippable()
 	ItemSkeletalMesh->SetupAttachment(RootComponent);
 	ItemStaticMesh->SetupAttachment(RootComponent);
 	AttachSocketName = TEXT("SwordHipAttachSocket");
+	
 }
 
 void ABaseEquippable::BeginPlay()
