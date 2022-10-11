@@ -62,6 +62,8 @@ public:
 	void OnEquipped(ABaseEquippable* Equipment);
 	void AttachActor(EEquipmentType Type, FName SocketName);
 	void AttachWeapon();
+	void AttachSecondWeapon(FName SocketName);
+
 	void OnUnequipped();
 	void HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon);
 

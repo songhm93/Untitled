@@ -23,20 +23,26 @@ private:
 	TArray<AActor*> AlreadyHitActors;
 	UPROPERTY()
 	UPrimitiveComponent* CollisionMeshComponent;
-	UFUNCTION(BlueprintCallable)
-	void EnableCollision();
-	UFUNCTION(BlueprintCallable)
-	void DisableCollision();
+	
+	
 	void CollisionTrace();
 	void ClearHitActors();
 
 	UPROPERTY()
 	ABaseWeapon* Weapon;
+	FName StartSocketName;
+	FName EndSocketName;
 public:	//get
 	FORCEINLINE	TArray<AActor*> GetAlreayHitActors() const { return AlreadyHitActors; }
 	FORCEINLINE	bool GetIsCollisionEnabled() const { return bIsCollisionEnabled; }
 	FORCEINLINE	UPrimitiveComponent* GetCollisionMeshComponent() const { return CollisionMeshComponent; }
 public:
 	FORCEINLINE void SetCollisionMeshComponent(UPrimitiveComponent* Comp) { CollisionMeshComponent = Comp; }
-		
+	FORCEINLINE void SetStartSocketName(FName SocketName) { StartSocketName = SocketName; }	
+	FORCEINLINE void SetEndSocketName(FName SocketName) { EndSocketName = SocketName; }	
+public:
+	UFUNCTION(BlueprintCallable)
+	void EnableCollision();
+	UFUNCTION(BlueprintCallable)
+	void DisableCollision();
 };

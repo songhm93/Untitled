@@ -2,6 +2,7 @@
 #include "MeleeCharacter.h"
 #include "MeleeAnimInstance.h"
 #include "BaseWeapon.h"
+#include "DualWeapon.h"
 #include "BaseArmor.h"
 #include "CollisionComponent.h"
 #include "StatsComponent.h"
@@ -51,6 +52,7 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 		{
 			if(EquippedWeapon)
 			{
+				Character->GetStatComp()->PlusCurrentStatValue(EStats::ATK, -EquippedWeapon->GetWeaponATK());
 				EquippedWeapon->Destroy();
 			}
 			EquippedWeapon = Cast<ABaseWeapon>(Equipment);
@@ -64,7 +66,15 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 					Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetWeaponType(EquippedWeapon->GetWeaponType());
 				}
 				EquippedWeapon->GetCollisionComp()->SetCollisionMeshComponent(EquippedWeapon->GetItemMeshComp());
-				//장착했으니 스탯 적용. 일단
+				if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
+				{
+					ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
+					if(DualWeapon)
+					{
+						DualWeapon->GetSecondWeaponCollisionComp()->SetCollisionMeshComponent(DualWeapon->GetDualSwordStaticMeshComp());
+						DualWeapon->GetRightFootCollisionComp()->SetCollisionMeshComponent(Character->GetMesh());
+					}
+				}
 				Character->GetStatComp()->PlusCurrentStatValue(EStats::ATK, EquippedWeapon->GetWeaponATK());
 			}
 		}
@@ -77,7 +87,6 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 				{
 					EquippedHelmet = Armor;
 					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedHelmet->GetArmorDEF());
-					//스탯 적용. 대미지 입힐때랑 받을때 스탯 
 				}	
 				else if(Armor->GetArmorType() == EArmorType::GAUNTLET)
 				{
@@ -136,12 +145,37 @@ void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 
 void UCombatComponent::AttachWeapon()
 {
-	if(GetCombatState())
-		AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetHandSocketName());
+	if(GetCombatState() && EquippedWeapon)
+	{
+		if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
+		{
+			AttachSecondWeapon(Cast<ADualWeapon>(EquippedWeapon)->GetSecondWeaponHandSocket());
+			AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetHandSocketName());
+		}
+		else
+		{
+			AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetHandSocketName());
+		}
+	}
     else
-        AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetAttachSocketName());
-        
+	{
+		if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
+		{
+			AttachSecondWeapon(Cast<ADualWeapon>(EquippedWeapon)->GetSecondWeaponAttachSocket());
+			AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetAttachSocketName());
+		}
+		else
+		{
+			AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetAttachSocketName());
+		}
+	}
 } 
+
+void UCombatComponent::AttachSecondWeapon(FName SocketName)
+{
+	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
+	Cast<ADualWeapon>(EquippedWeapon)->GetDualSwordStaticMeshComp()->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
+}
 
 void UCombatComponent::HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon) //내 총 공격력을 계산해서 적용. 대미지 받는 쪽에서 추가 계산
 {
