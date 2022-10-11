@@ -10,7 +10,7 @@
 ABaseWeapon::ABaseWeapon()
 {
     CollisionComponent = CreateDefaultSubobject<UCollisionComponent>(TEXT("CollisionComponent"));
-    WeaponATK = 20.f;
+    
     SetEquipmentType(EEquipmentType::WEAPON);
 }
 

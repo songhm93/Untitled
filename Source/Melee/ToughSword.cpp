@@ -14,5 +14,6 @@ AToughSword::AToughSword()
 
 
     SetWeaponType(EWeaponType::LIGHT_SWORD);
+    WeaponATK = 20.f;
 }
 

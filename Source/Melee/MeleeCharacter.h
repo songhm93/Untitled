@@ -30,8 +30,6 @@ struct FCommonTable : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* DodgeMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* ChargedAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundCue* ImpactSound;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UParticleSystem* ImpactParticle;
@@ -45,6 +43,8 @@ struct FLightSwordTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UAnimMontage*> LightAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* ChargedAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* HeavyAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -64,6 +64,8 @@ struct FGreatSwordTable : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UAnimMontage*> LightAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* ChargedAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* HeavyAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* EnterCombatMontage;
@@ -80,7 +82,11 @@ struct FDualSwordTable : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UAnimMontage*> LightAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* ChargedAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* HeavyAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* SprintAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* EnterCombatMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -160,8 +166,6 @@ private:
 	UPROPERTY()
 	UAnimMontage* DodgeMontage; 
 	UPROPERTY()
-	UAnimMontage* ChargedAttackMontage;
-	UPROPERTY()
 	USoundCue* ImpactSound;
 	UPROPERTY()
 	UParticleSystem* ImpactParticle;
@@ -169,6 +173,8 @@ private:
 	//Light Sword
 	UPROPERTY()
 	TArray<UAnimMontage*> LSLightAttackMontages;
+	UPROPERTY()
+	UAnimMontage* LSChargedAttackMontage;
 	UPROPERTY()
 	UAnimMontage* LSHeavyAttackMontage;
 	UPROPERTY()
@@ -182,6 +188,8 @@ private:
 	UPROPERTY()
 	TArray<UAnimMontage*> GSLightAttackMontages; 
 	UPROPERTY()
+	UAnimMontage* GSChargedAttackMontage;
+	UPROPERTY()
 	UAnimMontage* GSHeavyAttackMontage;
 	UPROPERTY()
 	UAnimMontage* GSEnterCombatMontage;
@@ -192,7 +200,11 @@ private:
 	UPROPERTY()
 	TArray<UAnimMontage*> DSLightAttackMontages;
 	UPROPERTY()
+	UAnimMontage* DSChargedAttackMontage;
+	UPROPERTY()
 	UAnimMontage* DSHeavyAttackMontage;
+	UPROPERTY()
+	UAnimMontage* DSSprintAttackMontage;
 	UPROPERTY()
 	UAnimMontage* DSEnterCombatMontage;
 	UPROPERTY()
