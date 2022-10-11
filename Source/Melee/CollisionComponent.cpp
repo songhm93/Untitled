@@ -8,6 +8,9 @@ UCollisionComponent::UCollisionComponent()
 
 	bIsCollisionEnabled = false;
 	CollisionMeshComponent = CreateDefaultSubobject<UPrimitiveComponent>(TEXT("CollisionMeshComponent"));
+
+	StartSocketName = TEXT("WeaponStart"); //무기 메시에 소켓 추가
+	EndSocketName = TEXT("WeaponEnd");
 }
 
 
@@ -42,8 +45,7 @@ void UCollisionComponent::DisableCollision()
 
 void UCollisionComponent::CollisionTrace()
 {	
-	FName StartSocketName = TEXT("WeaponStart"); //무기 메시에 소켓 추가
-	FName EndSocketName = TEXT("WeaponEnd");
+	
 	FVector Start = CollisionMeshComponent->GetSocketLocation(StartSocketName);
 	FVector End = CollisionMeshComponent->GetSocketLocation(EndSocketName);
 	float TraceRadius = 20.f;

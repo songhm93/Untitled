@@ -40,6 +40,11 @@
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\CollisionPart.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\CombatComponent.cpp",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
@@ -56,6 +61,16 @@
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\CombatInterface.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\DualWeapon.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\DualWeapon.h",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.212.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
