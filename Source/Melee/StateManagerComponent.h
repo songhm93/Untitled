@@ -27,6 +27,7 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	ECharacterState CurrentState;
+
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	ECharacterAction CurrentAction;
 public:	//get

@@ -115,17 +115,17 @@ void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 			EquippedHelmet->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 			EquippedHelmet->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
 		}
-		if(EquippedGauntlet)
+		else if(EquippedGauntlet)
 		{
 			EquippedGauntlet->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 			EquippedGauntlet->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
 		}
-		if(EquippedChest)
+		else if(EquippedChest)
 		{
 			EquippedChest->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 			EquippedChest->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
 		}
-		if(EquippedBoot)
+		else if(EquippedBoot)
 		{
 			EquippedBoot->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 			EquippedBoot->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh());
