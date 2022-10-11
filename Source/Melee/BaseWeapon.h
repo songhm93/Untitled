@@ -16,19 +16,19 @@ public:
 	ABaseWeapon();
 
 protected:
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
+	float WeaponATK; //무기 공격력
 	
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", Meta = (AllowPrivateAccess = "true"))
 	EWeaponType WeaponType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCollisionComponent* CollisionComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
-	float WeaponATK; //무기 공격력
+	
 
 public: //get
 	FORCEINLINE FName GetHandSocketName() const { return HandSocketName; }

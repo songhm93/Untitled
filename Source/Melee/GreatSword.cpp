@@ -15,4 +15,5 @@ AGreatSword::AGreatSword()
 
 
     SetWeaponType(EWeaponType::GREAT_SWORD);
+    WeaponATK = 30.f;
 }

@@ -169,6 +169,7 @@ void AMeleeCharacter::LookUpAtRate(float Rate)
 
 void AMeleeCharacter::MoveForward(float Value)
 {
+	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECharacterState::ATTACKING) return;
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -182,6 +183,7 @@ void AMeleeCharacter::MoveForward(float Value)
 
 void AMeleeCharacter::MoveRight(float Value)
 {
+	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECharacterState::ATTACKING) return;
 	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -205,7 +207,6 @@ void AMeleeCharacter::InitDataTable(FString Path, EDataTableType TableType)
 			{
 				DodgeMontage = CommonRow->DodgeMontage;
 				HitReactMontage = CommonRow->HitReactMontage;
-				ChargedAttackMontage = CommonRow->ChargedAttackMontage;
 				ImpactSound = CommonRow->ImpactSound;
 				ImpactParticle = CommonRow->ImpactParticle;
 			}
@@ -219,6 +220,7 @@ void AMeleeCharacter::InitDataTable(FString Path, EDataTableType TableType)
 				{
 					LSLightAttackMontages.Add(Montage);
 				}
+				LSChargedAttackMontage = LightSwordRow->ChargedAttackMontage;
 				LSHeavyAttackMontage = LightSwordRow->HeavyAttackMontage;
 				LSEnterCombatMontage = LightSwordRow->EnterCombatMontage;
 				LSExitCombatMontage = LightSwordRow->ExitCombatMontage;
@@ -234,6 +236,7 @@ void AMeleeCharacter::InitDataTable(FString Path, EDataTableType TableType)
 				{
 					GSLightAttackMontages.Add(Montage);
 				}
+				GSChargedAttackMontage = GreatSwordRow->ChargedAttackMontage;
 				GSHeavyAttackMontage = GreatSwordRow->HeavyAttackMontage;
 				GSEnterCombatMontage = GreatSwordRow->EnterCombatMontage;
 				GSExitCombatMontage = GreatSwordRow->ExitCombatMontage;
@@ -248,7 +251,9 @@ void AMeleeCharacter::InitDataTable(FString Path, EDataTableType TableType)
 				{
 					DSLightAttackMontages.Add(Montage);
 				}
+				DSChargedAttackMontage = DualSwordRow->ChargedAttackMontage;
 				DSHeavyAttackMontage = DualSwordRow->HeavyAttackMontage;
+				DSSprintAttackMontage= DualSwordRow->SprintAttackMontage;
 				DSEnterCombatMontage = DualSwordRow->EnterCombatMontage;
 				DSExitCombatMontage = DualSwordRow->ExitCombatMontage;	
 			}
@@ -278,6 +283,10 @@ void AMeleeCharacter::ToggleCombat()
 		case EWeaponType::GREAT_SWORD:
 			EnterCombatMontage = GSEnterCombatMontage;
 			ExitCombatMontage = GSExitCombatMontage;
+			break;
+		case EWeaponType::DUAL_SWORD:
+			EnterCombatMontage = DSEnterCombatMontage;
+			ExitCombatMontage = DSExitCombatMontage;
 			break;
 		}
 		if(!CombatComp->GetCombatState()) //손에 장착 상태가 아니면
@@ -417,7 +426,7 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 					AttackActionCorrectionValue = 3.f;
 				break;
 				case ECharacterAction::CHARGED_ATTACK:
-					TempArray.Add(ChargedAttackMontage);
+					TempArray.Add(LSChargedAttackMontage);
 					Idx = 0;
 					AttackActionCorrectionValue = 4.f;
 				break;
@@ -441,9 +450,40 @@ void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacter
 					TempArray.Add(GSHeavyAttackMontage);
 					Idx = 0;
 				case ECharacterAction::CHARGED_ATTACK:
-					TempArray.Add(ChargedAttackMontage);
+					TempArray.Add(GSChargedAttackMontage);
 					Idx = 0;
 				break;
+			}
+		}else if(WeaponType == EWeaponType::DUAL_SWORD)
+		{
+			switch(Action)
+			{
+				case ECharacterAction::LIGHT_ATTACK:
+					TempArray = DSLightAttackMontages;
+					if(Idx == 0)
+						AttackActionCorrectionValue = 1.f;
+					else if(Idx == 1)
+						AttackActionCorrectionValue = 2.f;
+					else 
+						AttackActionCorrectionValue = 3.f;
+				break;
+				case ECharacterAction::HEAVY_ATTACK:
+					TempArray.Add(DSHeavyAttackMontage);
+					Idx = 0;
+					AttackActionCorrectionValue = 3.f;
+				break;
+				case ECharacterAction::CHARGED_ATTACK:
+					TempArray.Add(DSChargedAttackMontage);
+					Idx = 0;
+					AttackActionCorrectionValue = 4.f;
+				break;
+			}
+			if(CurrentMovementType == EMovementType::SPRINTING)
+			{
+				TempArray.Empty();
+				TempArray.Add(DSSprintAttackMontage);
+				AttackActionCorrectionValue = 3.f;
+				Idx = 0;
 			}
 		}
 		if(TempArray.IsEmpty()) return;
