@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Stats.h"
+#include "../Type/Stats.h"
 #include "Engine/DataTable.h"
 #include "StatsComponent.generated.h"
 

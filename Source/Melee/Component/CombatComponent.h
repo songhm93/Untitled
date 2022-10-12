@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Types.h"
+#include "../Type/Types.h"
 #include "CombatComponent.generated.h"
 
 class ABaseWeapon;
@@ -43,8 +43,7 @@ private:
 	FVector HitFromDirection;
 	UPROPERTY()
 	AMeleeCharacter* Character;
-	float PlayerATK;
-	float CalcATK;
+	
 	
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }

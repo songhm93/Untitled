@@ -1,8 +1,8 @@
 #include "MeleePlayerController.h"
 #include "MeleeCharacter.h"
-#include "Types.h."
-#include "Stats.h"
-#include "StatsComponent.h"
+#include "Type/Types.h."
+#include "Type/Stats.h"
+#include "Component/StatsComponent.h"
 
 AMeleePlayerController::AMeleePlayerController()
 {
