@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseEquippable.h"
-#include "Types.h"
+#include "Type/Types.h"
 #include "BaseWeapon.generated.h"
 
 class UCollisionComponent;

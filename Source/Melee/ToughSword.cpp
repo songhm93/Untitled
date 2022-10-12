@@ -1,5 +1,5 @@
 #include "ToughSword.h"
-#include "Types.h"
+#include "Type/Types.h"
 
 AToughSword::AToughSword()
 {

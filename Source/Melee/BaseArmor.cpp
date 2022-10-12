@@ -1,5 +1,5 @@
 #include "BaseArmor.h"
-#include "Types.h"
+#include "Type/Types.h"
 
 ABaseArmor::ABaseArmor()
 {

@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interactable.h"
-#include "Types.h"
+#include "Interface/Interactable.h"
+#include "Type/Types.h"
 #include "BaseEquippable.generated.h"
 
 UCLASS()
