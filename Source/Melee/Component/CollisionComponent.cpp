@@ -1,6 +1,6 @@
 #include "CollisionComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "BaseWeapon.h"
+#include "../BaseWeapon.h"
 
 UCollisionComponent::UCollisionComponent()
 {
@@ -46,8 +46,8 @@ void UCollisionComponent::DisableCollision()
 void UCollisionComponent::CollisionTrace()
 {	
 	
-	FVector Start = CollisionMeshComponent->GetSocketLocation(StartSocketName);
-	FVector End = CollisionMeshComponent->GetSocketLocation(EndSocketName);
+	const FVector Start = CollisionMeshComponent->GetSocketLocation(StartSocketName);
+	const FVector End = CollisionMeshComponent->GetSocketLocation(EndSocketName);
 	float TraceRadius = 20.f;
 
 	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;

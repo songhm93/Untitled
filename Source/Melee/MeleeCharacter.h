@@ -2,9 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "CombatInterface.h"
+#include "Interface/CombatInterface.h"
+#include "Interface/TargetingInterface.h"
 #include "Engine/DataTable.h"
-#include "Types.h"
+#include "Type/Types.h"
 #include "MeleeCharacter.generated.h"
 
 
@@ -19,6 +20,8 @@ class USoundCue;
 class UParticleSystem;
 class UStatsComponent;
 class ABaseEquippable;
+class UTargetingComponent;
+class UWidgetComponent;
 
 USTRUCT(BlueprintType)
 struct FCommonTable : public FTableRowBase
@@ -95,7 +98,7 @@ struct FDualSwordTable : public FTableRowBase
 }; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
 
 UCLASS(config=Game)
-class AMeleeCharacter : public ACharacter, public ICombatInterface
+class AMeleeCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
 {
 	GENERATED_BODY()
 
@@ -116,6 +119,8 @@ public:
 	virtual FRotator GetDesiredRotation() override;
 	virtual void ResetCombat() override;
 	virtual bool CanRecieveDamage() override;
+	virtual bool CanBeTargeted() override; //타겟이 될 수 있는지
+	virtual void OnTargeted(bool IsTargeted) override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -141,8 +146,10 @@ protected:
 	
 private:
 	void InitDataTable(FString Path, EDataTableType TableType);
+	void TurnRight(float Rate);
+	void LookUp(float Rate);
 	void Test(); //테스트할 함수
-	
+	float MouseSensitivity;
 	UFUNCTION()
 	void ReceiveDamage(
 		AActor* DamagedActor, 
@@ -249,6 +256,12 @@ private:
 	bool bSprintKeyPressed;
 
 	float AttackActionCorrectionValue; //공격 액션마다의 보정치. 1타, 2타, 3타있으면 3타가 가장 세게 적용.
+	void ToggleLockOn();
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UTargetingComponent* TargetingComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* LockOnWidget;
+	
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

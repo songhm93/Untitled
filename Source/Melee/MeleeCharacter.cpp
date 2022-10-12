@@ -9,15 +9,17 @@
 #include "BaseWeapon.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Interactable.h"
+#include "Interface/Interactable.h"
 #include "MeleeAnimInstance.h"
-#include "CombatComponent.h"
-#include "Types.h"
+#include "Component/CombatComponent.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
-#include "StateManagerComponent.h"
-#include "StatsComponent.h"
-#include "Stats.h"
+#include "Component/StateManagerComponent.h"
+#include "Component/StatsComponent.h"
+#include "Type/Stats.h"
+#include "Type/Types.h"
+#include "Component/TargetingComponent.h"
+#include "Components/WidgetComponent.h"
 
 AMeleeCharacter::AMeleeCharacter()
 {
@@ -54,7 +56,9 @@ AMeleeCharacter::AMeleeCharacter()
 	if(StateManagerComp)
 		StateManagerComp->SetCurrentState(ECharacterState::NOTHING);
 
-	
+	TargetingComp = CreateDefaultSubobject<UTargetingComponent>(TEXT("TargetingComp"));
+	LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
+	LockOnWidget->SetupAttachment(RootComponent);
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
@@ -67,6 +71,7 @@ AMeleeCharacter::AMeleeCharacter()
 	SprintStaminaCost = 0.2f;
 	bSprintKeyPressed = false;
 	AttackActionCorrectionValue = 1.f;
+	MouseSensitivity = 25.f;
 
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/CommonTable"));
 	InitDataTable(Path, EDataTableType::COMMON_TABLE);
@@ -104,6 +109,13 @@ void AMeleeCharacter::BeginPlay()
 		StatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f); //위젯 띄우는거, 스탯 초기화, 테이블 초기화 순서때문에 게임 시작시 스탯 비어보임을 가리는 꼼수
 		StatComp->PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);
 	}
+
+	if(LockOnWidget)
+	{
+		LockOnWidget->SetVisibility(false);
+		LockOnWidget->SetWidgetSpace(EWidgetSpace::Screen);
+		LockOnWidget->SetDrawSize(FVector2D(14.f, 14.f));
+	}
 	
 }
 
@@ -119,6 +131,8 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ThisClass::SprintButtonPressed);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::SprintButtonReleased);
 	PlayerInputComponent->BindAction("HeavyAttack", IE_Released, this, &ThisClass::HeavyAttack);
+	PlayerInputComponent->BindAction("ToggleLockOn", IE_Released, this, &ThisClass::ToggleLockOn);
+	
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 	
@@ -126,13 +140,25 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AMeleeCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &AMeleeCharacter::MoveRight);
 
-	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &AMeleeCharacter::TurnRight);
 	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AMeleeCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &AMeleeCharacter::LookUp);
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AMeleeCharacter::LookUpAtRate);
 
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AMeleeCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AMeleeCharacter::TouchStopped);
+}
+
+void AMeleeCharacter::TurnRight(float Rate)
+{
+	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
+	AddControllerYawInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
+}
+
+void AMeleeCharacter::LookUp(float Rate)
+{
+	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
+	AddControllerPitchInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
 void AMeleeCharacter::Jump()
@@ -159,11 +185,13 @@ void AMeleeCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locati
 
 void AMeleeCharacter::TurnAtRate(float Rate)
 {
+	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
 
 void AMeleeCharacter::LookUpAtRate(float Rate)
 {
+	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
 
@@ -298,6 +326,7 @@ void AMeleeCharacter::ToggleCombat()
 			{
 				Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(true);
 			}
+			if(TargetingComp) TargetingComp->UpdateRotationMode();
 		}
 		else
 		{
@@ -308,6 +337,11 @@ void AMeleeCharacter::ToggleCombat()
 			if(GetMesh() && GetMesh()->GetAnimInstance())
 			{
 				Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetCombatState(false);
+			}
+			if(TargetingComp)
+			{
+				TargetingComp->DisableLockOn();
+				TargetingComp->UpdateRotationMode();
 			}
 		}
 	}
@@ -331,7 +365,7 @@ void AMeleeCharacter::InteractButtonPressed()
 		ObjectTypesArray, 
 		false, 
 		IgnoredActors, 
-		EDrawDebugTrace::ForDuration, 
+		EDrawDebugTrace::None, 
 		OutHit, 
 		true,
 		FLinearColor::Red,
@@ -649,9 +683,9 @@ void AMeleeCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 �
 	//대미지 계산
 	if(StatComp)
 	{
-		float Def = StatComp->GetCurrentStatValue(EStats::DEF);
-		float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
-		StatComp->PlusCurrentStatValue(EStats::HP, -Result); //HP 적용
+		const float Def = StatComp->GetCurrentStatValue(EStats::DEF);
+		const float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		StatComp->PlusCurrentStatValue(EStats::HP, Result * -1); //HP 적용
 		if(StatComp->GetCurrentStatValue(EStats::HP) <= 0)
 		{
 			if(StateManagerComp)
@@ -687,7 +721,7 @@ void AMeleeCharacter::EnableRagdoll()
 
 void AMeleeCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 {
-	FVector NewVel = GetActorForwardVector() * (InitSpeed * -1.f);
+	const FVector NewVel = GetActorForwardVector() * (InitSpeed * -1.f);
 	
 	GetMesh()->SetPhysicsLinearVelocity(NewVel, false, PelvisBoneName);
 }
@@ -847,6 +881,7 @@ void AMeleeCharacter::ToggleWalk()
 		SetMovementType(EMovementType::WALKING);
 	else
 		SetMovementType(EMovementType::JOGGING);
+	
 }
 
 void AMeleeCharacter::SprintButtonPressed()
@@ -867,6 +902,8 @@ void AMeleeCharacter::SetMovementType(EMovementType Type)
 	if(CurrentMovementType != Type)
 		CurrentMovementType = Type;
 	
+	if(TargetingComp)
+		TargetingComp->UpdateRotationMode();
 	if(GetCharacterMovement())
 	{
 		switch(CurrentMovementType)
@@ -889,5 +926,30 @@ void AMeleeCharacter::Equip(ABaseEquippable* Equipment)
 	if(CombatComp && Equipment)
 	{
 		CombatComp->OnEquipped(Equipment);
+	}
+}
+
+void AMeleeCharacter::ToggleLockOn()
+{
+	if(CombatComp && !CombatComp->GetCombatState()) return;
+	if(TargetingComp) TargetingComp->ToggleLockOn();
+}
+
+bool AMeleeCharacter::CanBeTargeted()
+{
+	if(StateManagerComp)
+	{
+		TArray<ECharacterState> State;
+		State.Add(ECharacterState::DEAD);
+		return !StateManagerComp->IsCurrentStateEqualToThis(State);
+	}
+	return false;
+}
+
+void AMeleeCharacter::OnTargeted(bool IsTargeted)
+{
+	if(LockOnWidget)
+	{
+		LockOnWidget->SetVisibility(IsTargeted);
 	}
 }

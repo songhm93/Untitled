@@ -1,9 +1,9 @@
 #include "CombatComponent.h"
-#include "MeleeCharacter.h"
-#include "MeleeAnimInstance.h"
-#include "BaseWeapon.h"
-#include "DualWeapon.h"
-#include "BaseArmor.h"
+#include "../MeleeCharacter.h"
+#include "../MeleeAnimInstance.h"
+#include "../BaseWeapon.h"
+#include "../DualWeapon.h"
+#include "../BaseArmor.h"
 #include "CollisionComponent.h"
 #include "StatsComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -12,14 +12,7 @@ UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	EquippedWeapon = nullptr;
-	EquippedHelmet = nullptr;
-	EquippedGauntlet = nullptr;
-	EquippedChest = nullptr;
-	EquippedBoot = nullptr;
 	AttackCount = 0;
-	PlayerATK = 0.f;
-	CalcATK = 0.f;
 	
 	HitFromDirection = FVector::ZeroVector;
 }
@@ -190,8 +183,8 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon
 
 			if(Cast<AMeleeCharacter>(HitResult.GetActor())->CanRecieveDamage())
 			{
-				PlayerATK = Character->GetStatComp()->GetCurrentStatValue(EStats::ATK);
-				CalcATK = Cast<AMeleeCharacter>(GetOwner())->GetAttackActionCorrectionValue() * PlayerATK;
+				const float PlayerATK = Character->GetStatComp()->GetCurrentStatValue(EStats::ATK);
+				const float CalcATK = Cast<AMeleeCharacter>(GetOwner())->GetAttackActionCorrectionValue() * PlayerATK;
 				UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, Weapon, UDamageType::StaticClass());
 				//일단 무기의 기본 공격력과 보정치로 계산.
 			}

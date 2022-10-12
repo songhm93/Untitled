@@ -1,10 +1,10 @@
 #include "BaseWeapon.h"
 #include "MeleeCharacter.h"
 #include "MeleeAnimInstance.h"
-#include "Types.h"
-#include "CombatComponent.h"
-#include "StateManagerComponent.h"
-#include "CollisionComponent.h"
+#include "Type/Types.h"
+#include "Component/CombatComponent.h"
+#include "Component/StateManagerComponent.h"
+#include "Component/CollisionComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ABaseWeapon::ABaseWeapon()
