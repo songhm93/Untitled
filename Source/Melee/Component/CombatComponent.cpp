@@ -7,6 +7,7 @@
 #include "CollisionComponent.h"
 #include "StatsComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "../AttackDamageType.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -185,7 +186,7 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon
 			{
 				const float PlayerATK = Character->GetStatComp()->GetCurrentStatValue(EStats::ATK);
 				const float CalcATK = Cast<AMeleeCharacter>(GetOwner())->GetAttackActionCorrectionValue() * PlayerATK;
-				UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, Weapon, UDamageType::StaticClass());
+				UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, Weapon, AttackDamageType->StaticClass());
 				//일단 무기의 기본 공격력과 보정치로 계산.
 			}
 		}

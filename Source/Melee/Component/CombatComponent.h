@@ -9,6 +9,7 @@ class ABaseWeapon;
 class ABaseEquippable;
 class ABaseArmor;
 class AMeleeCharacter;
+class UAttackDamageType;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UCombatComponent : public UActorComponent
@@ -43,7 +44,8 @@ private:
 	FVector HitFromDirection;
 	UPROPERTY()
 	AMeleeCharacter* Character;
-	
+	UPROPERTY()
+	UAttackDamageType* AttackDamageType;
 	
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }

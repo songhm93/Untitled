@@ -6,6 +6,7 @@
 #include "Interface/TargetingInterface.h"
 #include "Engine/DataTable.h"
 #include "Type/Types.h"
+#include "Type/DamageTypes.h"
 #include "MeleeCharacter.generated.h"
 
 
@@ -29,7 +30,13 @@ struct FCommonTable : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactFrontMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* HitReactBackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* KnockdownFrontMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* KnockdownBackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* DodgeMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -169,7 +176,13 @@ private:
 
 	// Common
 	UPROPERTY()
-	UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactFrontMontage;
+	UPROPERTY()
+	UAnimMontage* HitReactBackMontage;
+	UPROPERTY()
+	UAnimMontage* KnockdownFrontMontage;
+	UPROPERTY()
+	UAnimMontage* KnockdownBackMontage;
 	UPROPERTY()
 	UAnimMontage* DodgeMontage; 
 	UPROPERTY()
@@ -261,7 +274,11 @@ private:
 	UTargetingComponent* TargetingComp;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* LockOnWidget;
-	
+	void ApplyHitReaction(EDamageType DamageType);
+	void PerformHitReact();
+	void PerformKnockdown();
+	bool bHitFront; //맞았을 때 때린 캐릭터가 내 앞에서 때렸는지?
+	void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation);
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

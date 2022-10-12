@@ -20,6 +20,7 @@
 #include "Type/Types.h"
 #include "Component/TargetingComponent.h"
 #include "Components/WidgetComponent.h"
+#include "AttackDamageType.h"
 
 AMeleeCharacter::AMeleeCharacter()
 {
@@ -30,7 +31,7 @@ AMeleeCharacter::AMeleeCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-
+	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 
@@ -72,6 +73,7 @@ AMeleeCharacter::AMeleeCharacter()
 	bSprintKeyPressed = false;
 	AttackActionCorrectionValue = 1.f;
 	MouseSensitivity = 25.f;
+	bHitFront = false;
 
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/CommonTable"));
 	InitDataTable(Path, EDataTableType::COMMON_TABLE);
@@ -234,7 +236,10 @@ void AMeleeCharacter::InitDataTable(FString Path, EDataTableType TableType)
 			if(CommonRow)
 			{
 				DodgeMontage = CommonRow->DodgeMontage;
-				HitReactMontage = CommonRow->HitReactMontage;
+				HitReactFrontMontage = CommonRow->HitReactFrontMontage;
+				HitReactBackMontage = CommonRow->HitReactBackMontage;
+				KnockdownFrontMontage = CommonRow->KnockdownFrontMontage;
+				KnockdownBackMontage = CommonRow->KnockdownBackMontage;
 				ImpactSound = CommonRow->ImpactSound;
 				ImpactParticle = CommonRow->ImpactParticle;
 			}
@@ -662,14 +667,17 @@ void AMeleeCharacter::ReceiveDamage(
 	const UDamageType* DamageType, 
 	AActor* DamageCauser)
 {
-	if(ImpactSound)
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation);
+	if(InstigatedBy)
+	{
+		float DotProductResult = GetDotProductTo(InstigatedBy->GetPawn()); //맞은 캐릭터와 때린 캐릭터간의 내적
+		bHitFront = FMath::IsWithin(DotProductResult, -0.1f, 1.f);
+	}
 
-	if(ImpactParticle)
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
-
-	if(HitReactMontage)
-		PlayAnimMontage(HitReactMontage);
+	if(DamageType)
+	{
+		ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
+		ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType(), HitLocation);
+	}
 		
 
 	if(StateManagerComp)
@@ -953,3 +961,64 @@ void AMeleeCharacter::OnTargeted(bool IsTargeted)
 		LockOnWidget->SetVisibility(IsTargeted);
 	}
 }
+
+void AMeleeCharacter::ApplyHitReaction(EDamageType DamageType)
+{
+	switch (DamageType)
+	{
+	case EDamageType::MELEE_DAMAGE:
+		PerformHitReact();
+		break;
+	case EDamageType::KNOCKDOWN_DAMAGE:
+		PerformKnockdown();
+		break;
+	}
+}
+
+void AMeleeCharacter::ApplyImpactEffect(EDamageType DamageType, FVector HitLocation)
+{
+	if(ImpactSound && ImpactParticle)
+	{
+		switch (DamageType)
+		{
+		case EDamageType::MELEE_DAMAGE:
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation); 
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
+			break;
+		case EDamageType::KNOCKDOWN_DAMAGE:
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation); //나중에 다른걸로 추가
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
+			break;
+		}
+	}	
+}
+
+void AMeleeCharacter::PerformHitReact()
+{
+	if(bHitFront)
+	{
+		if(HitReactFrontMontage)
+			PlayAnimMontage(HitReactFrontMontage);
+	}
+	else
+	{
+		if(HitReactBackMontage)
+			PlayAnimMontage(HitReactBackMontage);
+	}
+	
+}
+
+void AMeleeCharacter::PerformKnockdown()
+{
+	if(bHitFront)
+	{
+		if(KnockdownFrontMontage)
+			PlayAnimMontage(KnockdownFrontMontage);
+	}
+	else
+	{
+		if(KnockdownBackMontage)
+			PlayAnimMontage(KnockdownBackMontage);
+	}
+}
+
