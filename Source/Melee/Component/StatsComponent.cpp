@@ -1,5 +1,5 @@
 #include "StatsComponent.h"
-#include "Stats.h"
+#include "../Type/Stats.h"
 
 
 

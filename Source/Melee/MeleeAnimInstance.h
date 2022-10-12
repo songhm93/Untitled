@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "Types.h"
+#include "Type/Types.h"
 #include "MeleeAnimInstance.generated.h"
 
 class AMeleeCharacter;
@@ -32,6 +32,8 @@ private:
 	void AnimNotify_ContinueAttack();
 	UFUNCTION()
 	void AnimNotify_ResetCombat();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	float Direction;
 public:
 	FORCEINLINE void SetWeaponType(EWeaponType Type) { WeaponType = Type; }
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }

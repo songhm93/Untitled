@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseWeapon.h"
-#include "CollisionPart.h"
+#include "Type/CollisionPart.h"
 #include "DualWeapon.generated.h"
 
 UCLASS()
