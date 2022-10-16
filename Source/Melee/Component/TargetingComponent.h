@@ -8,6 +8,8 @@
 class ACharacter;
 class AController;
 class UCameraComponent;
+class UCombatComponent;
+class UStateManagerComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UTargetingComponent : public UActorComponent
@@ -44,7 +46,10 @@ private:
 
 	bool CanKeepDist(AActor* Target); //타겟팅을 한 상태에서 타겟팅 거리가 유지될 거리인지.
 	void SetIsTargeting(bool Boolean);
-	
+	UPROPERTY()
+	UCombatComponent* CombatComp;
+	UPROPERTY()
+	UStateManagerComponent* StateManagerComp;
 public: //get
 	FORCEINLINE bool GetIsTargeting() const { return bIsTargeting; }
 	FORCEINLINE AActor* GetTargetActor() const { return TargetActor; }

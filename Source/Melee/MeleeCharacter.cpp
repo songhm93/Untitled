@@ -73,7 +73,6 @@ AMeleeCharacter::AMeleeCharacter()
 	DodgeStaminaCost = 10.f;
 	SprintStaminaCost = 0.2f;
 	bSprintKeyPressed = false;
-	AttackActionCorrectionValue = 1.f;
 	MouseSensitivity = 25.f;
 	bHitFront = false;
 
@@ -399,27 +398,32 @@ void AMeleeCharacter::PerformLightAttack(int32 AttackCount)
 
 FName AMeleeCharacter::GetLightAttackSectionName(int32 AttackCount)
 {
-	if(AttackCount == 0) 
+	if (CombatComp)
 	{
-		AttackActionCorrectionValue = 1.f;
-		return TEXT("First");
+		if (AttackCount == 0)
+		{
+			CombatComp->SetAttackActionCorrectionValue(1.f);
+			return TEXT("First");
+		}
+		else if (AttackCount == 1)
+		{
+			CombatComp->SetAttackActionCorrectionValue(2.f);
+			return TEXT("Second");
+		}
+		else if (AttackCount == 2)
+		{
+			CombatComp->SetAttackActionCorrectionValue(3.f);
+			return TEXT("Third");
+		}
+		else
+		{
+			CombatComp->ResetAttackCount();
+			CombatComp->SetAttackActionCorrectionValue(1.f);
+			return TEXT("First");
+		}
 	}
-	else if(AttackCount == 1) 
-	{
-		AttackActionCorrectionValue = 2.f;
-		return TEXT("Second");
-	}
-	else if(AttackCount == 2) 
-	{
-		AttackActionCorrectionValue = 3.f;
-		return TEXT("Third");
-	}
-	else
-	{
-		CombatComp->ResetAttackCount();
-		AttackActionCorrectionValue = 1.f;
-		return TEXT("First");
-	}
+	return NAME_None;
+	
 }
 
 void AMeleeCharacter::PerformAttack(ECharacterAction Action)
@@ -434,11 +438,11 @@ void AMeleeCharacter::PerformAttack(ECharacterAction Action)
 			{
 				case ECharacterAction::HEAVY_ATTACK:
 					TempMontage = LSHeavyAttackMontage;
-					AttackActionCorrectionValue = 3.f;
+					CombatComp->SetAttackActionCorrectionValue(3.f);
 				break;
 				case ECharacterAction::CHARGED_ATTACK:
 					TempMontage = LSChargedAttackMontage;
-					AttackActionCorrectionValue = 4.f;
+					CombatComp->SetAttackActionCorrectionValue(4.f);
 				break;
 			}
 		}
@@ -458,11 +462,11 @@ void AMeleeCharacter::PerformAttack(ECharacterAction Action)
 			{
 				case ECharacterAction::HEAVY_ATTACK:
 					TempMontage = DSHeavyAttackMontage;
-					AttackActionCorrectionValue = 3.f;
+					CombatComp->SetAttackActionCorrectionValue(3.f);
 				break;
 				case ECharacterAction::CHARGED_ATTACK:
 					TempMontage = DSChargedAttackMontage;
-					AttackActionCorrectionValue = 4.f;
+					CombatComp->SetAttackActionCorrectionValue(4.f);
 				break;
 			}
 		}
@@ -833,26 +837,26 @@ void AMeleeCharacter::SetMovementType(EMovementType Type)
 	if(CurrentMovementType != Type)
 		CurrentMovementType = Type;
 	
-	if(TargetingComp)
-		TargetingComp->UpdateRotationMode();
-	if(GetCharacterMovement())
+	
+
+	if(GetCharacterMovement() && StateManagerComp)
 	{
+		StateManagerComp->SetMovementType(Type);
 		switch(CurrentMovementType)
 		{
 			case EMovementType::WALKING:
-				OnSprintState.Execute(true);
 				GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 				break;
 			case EMovementType::JOGGING:
-				OnSprintState.Execute(true);
 				GetCharacterMovement()->MaxWalkSpeed = JogSpeed;
 				break;
 			case EMovementType::SPRINTING:
-				OnSprintState.Execute(false);
 				GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 				break;
 		}
 	}
+	if (TargetingComp)
+		TargetingComp->UpdateRotationMode();
 }
 
 void AMeleeCharacter::Equip(ABaseEquippable* Equipment)

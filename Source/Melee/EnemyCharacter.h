@@ -148,7 +148,8 @@ private:
 	void ReadyToAttack();
 	bool bCanAttack;
 	UEnemyAnimInstance* EnemyAnimInst;
-	void DamageThePlayer();
+	void DamageThePlayer(); 
+	float CloseAttackCorrectionValue;
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
 

@@ -56,3 +56,17 @@ bool UStateManagerComponent::IsCurrentActionEqualToThis(TArray<ECharacterAction>
 {
 	return StatesToCheck.Contains(CurrentAction);
 }
+
+void UStateManagerComponent::SetMovementType(EMovementType Type)
+{
+	MovementType = Type;
+	if (MovementType == EMovementType::SPRINTING)
+	{
+		OnSprint.ExecuteIfBound(false);
+	}
+	else
+	{
+		OnSprint.ExecuteIfBound(true);
+	}
+	
+}
