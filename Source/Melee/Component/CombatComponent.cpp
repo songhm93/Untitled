@@ -1,14 +1,16 @@
 #include "CombatComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "../MeleeCharacter.h"
 #include "../MeleeAnimInstance.h"
 #include "../BaseWeapon.h"
 #include "../DualWeapon.h"
 #include "../BaseArmor.h"
-#include "CollisionComponent.h"
-#include "StatsComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "../AttackDamageType.h"
 #include "../Interface/CombatInterface.h"
+#include "CollisionComponent.h"
+#include "StatsComponent.h"
+
 
 UCombatComponent::UCombatComponent()
 {
@@ -54,6 +56,7 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 
 			if(EquippedWeapon)
 			{
+				EquippedWeapon->OnHitResult.BindUObject(this, &ThisClass::HitCauseDamage);
 				AttachWeapon();
 				WeaponBaseSetting();
 			}

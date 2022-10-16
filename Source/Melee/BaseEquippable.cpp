@@ -1,5 +1,7 @@
 #include "BaseEquippable.h"
+
 #include "GameFramework/Character.h"
+
 #include "Interface/Interactable.h"
 
 ABaseEquippable::ABaseEquippable()

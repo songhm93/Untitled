@@ -1,11 +1,11 @@
 #include "BaseWeapon.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "MeleeCharacter.h"
-#include "MeleeAnimInstance.h"
 #include "Type/Types.h"
 #include "Component/CombatComponent.h"
-#include "Component/StateManagerComponent.h"
 #include "Component/CollisionComponent.h"
-#include "Kismet/GameplayStatics.h"
+
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -20,7 +20,8 @@ void ABaseWeapon::OnHit(FHitResult& HitResult)
    
     if(GetOwner() && Cast<AMeleeCharacter>(GetOwner())->GetCombatComp())
     {
-        Cast<AMeleeCharacter>(GetOwner())->GetCombatComp()->HitCauseDamage(HitResult);
+        //Cast<AMeleeCharacter>(GetOwner())->GetCombatComp()->HitCauseDamage(HitResult);
+        OnHitResult.ExecuteIfBound(HitResult);
     }
 }
 

@@ -1,4 +1,5 @@
 #include "GreatSword.h"
+
 #include "Type/Types.h"
 
 AGreatSword::AGreatSword()

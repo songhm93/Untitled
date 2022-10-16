@@ -1,4 +1,5 @@
 #include "AttackDamageType.h"
+
 #include "Type/DamageTypes.h"
 
 UAttackDamageType::UAttackDamageType()

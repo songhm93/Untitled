@@ -1,4 +1,5 @@
 #include "StateManagerComponent.h"
+
 #include "../Type/Types.h"
 
 UStateManagerComponent::UStateManagerComponent()

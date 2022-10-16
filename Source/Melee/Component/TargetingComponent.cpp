@@ -4,8 +4,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Controller.h"
-#include "../Type/RotationMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
+
+#include "../Type/RotationMode.h"
 #include "../MeleeCharacter.h"
 #include "../Interface/TargetingInterface.h"
 #include "CombatComponent.h"
