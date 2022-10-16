@@ -1,27 +1,25 @@
 #include "EnemyCharacter.h"
-#include "Component/CombatComponent.h"
-#include "Component/StateManagerComponent.h"
-#include "Component/StatsComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Widget/EnemyHPBarWidget.h"
 #include "Blueprint/UserWidget.h"
-#include "AttackDamageType.h"
-#include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
-#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Components/SphereComponent.h"
 #include "Interface/TargetingInterface.h"
-#include "EnemyAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
+#include "EnemyAnimInstance.h"
+#include "EnemyAIController.h"
+#include "AttackDamageType.h"
+#include "Component/StateManagerComponent.h"
+#include "Component/StatsComponent.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
-	
-	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
     AttackActionCorrectionValue = 1.f;
     StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerrComp"));
     LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
@@ -45,7 +43,6 @@ AEnemyCharacter::AEnemyCharacter()
 	bTargetingState = false;
 	ReadyToAttackTime = 3.f;
 	bCanAttack = true;
-	
 }
 
 void AEnemyCharacter::Tick(float DeltaTime)
@@ -56,6 +53,7 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	{
 		LookAtPlayer(Target, DeltaTime);
 	}
+	
 
 }
 
@@ -68,7 +66,6 @@ void AEnemyCharacter::BeginPlay()
 		StateManagerComp->OnStateBegin.AddDynamic(this, &ThisClass::CharacterStateBegin);
 	}
 
-
     if(LockOnWidget)
 	{
 		LockOnWidget->SetVisibility(false);
@@ -77,8 +74,13 @@ void AEnemyCharacter::BeginPlay()
 	}
 
 	OnTakePointDamage.AddDynamic(this, &ThisClass::ReceiveDamage);
-	AgroRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::AgroSphereBeginOverlap);
-	AgroRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::AgroSphereEndOverlap);
+
+	if(AgroRangeSphere)
+	{
+		AgroRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::AgroSphereBeginOverlap);
+		AgroRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::AgroSphereEndOverlap);
+	}
+	
 	if(StatComp)
 	{
 		StatComp->InitStats();
@@ -94,6 +96,11 @@ void AEnemyCharacter::BeginPlay()
 			HPBarWidget->SetVisibility(false);
 			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->Init(StatComp);
 		}
+	}
+
+	if(Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance())->OnApplyDamage.BindUObject(this, &ThisClass::DamageThePlayer);
 	}
 }
 
@@ -195,20 +202,17 @@ void AEnemyCharacter::ReceiveDamage(
 	{
 		float DotProductResult = GetDotProductTo(InstigatedBy->GetPawn()); //맞은 캐릭터와 때린 캐릭터간의 내적
 		bHitFront = FMath::IsWithin(DotProductResult, -0.1f, 1.f);
-	
 
 		if(DamageType)
 		{
 			ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
 			ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType(), HitLocation);
 		}
-			
 
 		if(StateManagerComp)
 			StateManagerComp->SetCurrentState(ECharacterState::DISABLED);
 		
 		CalcReceiveDamage(EnemyATK);
-
 	}
 }
 
@@ -316,10 +320,6 @@ void AEnemyCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 
 void AEnemyCharacter::DestroyDead()
 {
-	// if(CombatComp && CombatComp->GetEquippedWeapon())
-	// {
-	// 	CombatComp->GetEquippedWeapon()->Destroy();
-	// }
 	Destroy();
 }
 
@@ -337,7 +337,6 @@ void AEnemyCharacter::AgroSphereBeginOverlap(
 	{
 		if(AIController)
 		{
-			//AIController->SetFocus(OtherActor, EAIFocusPriority::Default);
 			AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), OtherActor);
 			bTargetingState = true;
 			Target = OtherActor;
@@ -372,7 +371,6 @@ void AEnemyCharacter::AgroCancel()
 	
 	if(AIController)
 	{
-		//AIController->ClearFocus(EAIFocusPriority::Default);
 		AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), nullptr);
 		bTargetingState = false;
 		Target = nullptr;
@@ -391,7 +389,7 @@ void AEnemyCharacter::PerformLightAttack(int32 AttackCount)
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	FName SectionName = GetLightAttackSectionName(AttackCount);
 
-	if(StateManagerComp && CombatComp && AnimInst)
+	if(StateManagerComp && AnimInst)
 	{
 		if(CloseRangeAttackMontage)
 		{
@@ -402,7 +400,6 @@ void AEnemyCharacter::PerformLightAttack(int32 AttackCount)
 		StateManagerComp->SetCurrentState(ECharacterState::ATTACKING);
 		StateManagerComp->SetCurrentAction(ECharacterAction::LIGHT_ATTACK);
 
-		 //타이머 주고 BB 키에 밸류값줘서 공격 딜레이
 		bCanAttack = false;
 		AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 		if(AIController && AIController->GetBBComp())
@@ -443,8 +440,6 @@ void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 		FRotator ResultRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 3.f);
 		SetActorRotation(ResultRotation);
 	}
-	
-
 }
 
 void AEnemyCharacter::ReadyToAttack()
@@ -454,4 +449,10 @@ void AEnemyCharacter::ReadyToAttack()
 	{
 		AIController->GetBBComp()->SetValueAsBool("CanAttack" , true);
 	}
+}
+
+void AEnemyCharacter::DamageThePlayer()
+{
+	//여기서 라인트레이스로 앞을 긁어서 충돌한 플레이어 모두 대미지를 줄지, 그냥 타겟으로 지정한 애만 대미지를 줄지.
+	
 }

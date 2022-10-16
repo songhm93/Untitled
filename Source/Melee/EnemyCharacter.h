@@ -21,7 +21,6 @@ enum class EEnemyActionType : uint8
 };
 
 class UParticleSystem;
-class UCombatComponent;
 class UAnimMontage;
 class USoundCue;
 class UBehaviorTree;
@@ -31,6 +30,7 @@ class UStatsComponent;
 class ATargetPoint;
 class USphereComponent;
 class AEnemyAIController;
+class UEnemyAnimInstance;
 
 
 UCLASS()
@@ -59,8 +59,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle;
 
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* CombatComp;
+	
 	UPROPERTY(EditAnywhere, Category= "AttackMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* CloseRangeAttackMontage;
 	UPROPERTY(EditAnywhere, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
@@ -148,6 +147,8 @@ private:
 	float ReadyToAttackTime;
 	void ReadyToAttack();
 	bool bCanAttack;
+	UEnemyAnimInstance* EnemyAnimInst;
+	void DamageThePlayer();
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
 

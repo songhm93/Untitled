@@ -1,12 +1,14 @@
 #include "PickupActor.h"
+#include "Components/SphereComponent.h"
+
 #include "ToughSword.h"
 #include "BaseWeapon.h"
 #include "MeleeCharacter.h"
-#include "Components/SphereComponent.h"
+
 
 APickupActor::APickupActor()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));

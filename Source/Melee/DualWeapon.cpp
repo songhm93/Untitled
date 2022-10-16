@@ -1,7 +1,9 @@
 #include "DualWeapon.h"
+
 #include "Type/CollisionPart.h"
-#include "Component/CollisionComponent.h"
 #include "Type/Types.h"
+#include "Component/CollisionComponent.h"
+
 
 ADualWeapon::ADualWeapon()
 {

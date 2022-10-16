@@ -7,6 +7,8 @@
 
 class UCollisionComponent;
 
+DECLARE_DELEGATE_OneParam(FOnHit, FHitResult&);
+
 UCLASS()
 class MELEE_API ABaseWeapon : public ABaseEquippable
 {
@@ -14,6 +16,7 @@ class MELEE_API ABaseWeapon : public ABaseEquippable
 	
 public:
 	ABaseWeapon();
+	FOnHit OnHitResult;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))

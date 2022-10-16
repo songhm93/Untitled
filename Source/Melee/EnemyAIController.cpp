@@ -1,8 +1,10 @@
 #include "EnemyAIController.h"
-#include "EnemyCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+
+#include "EnemyCharacter.h"
+
 
 AEnemyAIController::AEnemyAIController()
 {
