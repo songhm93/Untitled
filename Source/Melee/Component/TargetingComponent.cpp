@@ -51,14 +51,12 @@ void UTargetingComponent::EnableLockOn()
 	{
 		TargetActor = HitResult.GetActor();
 		SetIsTargeting(true);
-		//SetRotationMode(ERotationMode::ORIENT_TO_CAMERA);
 		UpdateRotationMode();
 	}
 	else
 	{
 		SetIsTargeting(false);
 		TargetActor = nullptr;
-		//SetRotationMode(ERotationMode::ORIENT_TO_MOVEMENT);
 		UpdateRotationMode();
 	}
 }
@@ -121,7 +119,7 @@ void UTargetingComponent::UpdateTargetingControlRotation(float DeltaTime)
 {
 	if(OwnerController && TargetActor && GetOwner())
 	{
-		if(!Cast<AMeleeCharacter>(TargetActor)->CanBeTargeted() || !CanKeepDist(TargetActor))
+		if(!Cast<ITargetingInterface>(TargetActor)->CanBeTargeted() || !CanKeepDist(TargetActor))
 		{
 			DisableLockOn();
 			return;
@@ -137,7 +135,7 @@ void UTargetingComponent::UpdateTargetingControlRotation(float DeltaTime)
 
 		const FRotator ResultRotator = FMath::RInterpTo(PlayerControlRotator, LookAtRotator, DeltaTime, TargetRotationInterpSpeed);
 		
-		OwnerController->SetControlRotation(FRotator(ResultRotator.Pitch, ResultRotator.Yaw, PlayerControlRotator.Roll));
+		//OwnerController->SetControlRotation(FRotator(ResultRotator.Pitch, ResultRotator.Yaw, PlayerControlRotator.Roll));
 	}
 }
 
@@ -178,7 +176,7 @@ void UTargetingComponent::SetIsTargeting(bool IsTargeting)
 	bIsTargeting = IsTargeting;
 	if(TargetActor)
 	{
-		Cast<AMeleeCharacter>(TargetActor)->OnTargeted(bIsTargeting);
+		Cast<ITargetingInterface>(TargetActor)->OnTargeted(bIsTargeting);
 	}
 }
 

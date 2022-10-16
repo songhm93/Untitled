@@ -5,22 +5,22 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "BaseWeapon.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Interface/Interactable.h"
 #include "MeleeAnimInstance.h"
-#include "Component/CombatComponent.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
+#include "Component/CombatComponent.h"
 #include "Component/StateManagerComponent.h"
 #include "Component/StatsComponent.h"
-#include "Type/Stats.h"
-#include "Type/Types.h"
 #include "Component/TargetingComponent.h"
 #include "Components/WidgetComponent.h"
 #include "AttackDamageType.h"
+#include "Type/Stats.h"
+#include "Type/Types.h"
 
 AMeleeCharacter::AMeleeCharacter()
 {
@@ -49,6 +49,7 @@ AMeleeCharacter::AMeleeCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false; 
+	
 
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 	StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerComp"));
@@ -59,7 +60,7 @@ AMeleeCharacter::AMeleeCharacter()
 
 	TargetingComp = CreateDefaultSubobject<UTargetingComponent>(TEXT("TargetingComp"));
 	LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
-	LockOnWidget->SetupAttachment(RootComponent);
+	LockOnWidget->SetupAttachment(GetMesh());
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
@@ -75,21 +76,8 @@ AMeleeCharacter::AMeleeCharacter()
 	MouseSensitivity = 25.f;
 	bHitFront = false;
 
-	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/CommonTable"));
-	InitDataTable(Path, EDataTableType::COMMON_TABLE);
-
-	Path = FString(TEXT("/Game/CombatSystem/DataTable/LightSwordTable"));
-	InitDataTable(Path, EDataTableType::LIGHT_SWORD_TABLE);
-
-	Path = FString(TEXT("/Game/CombatSystem/DataTable/GreatSwordTable"));
-	InitDataTable(Path, EDataTableType::GREAT_SWORD_TABLE);
-
-	Path = FString(TEXT("/Game/CombatSystem/DataTable/DualSwordTable"));
-	InitDataTable(Path, EDataTableType::DUAL_SWORD_TABLE);
-	
 
     ResetCombat();
-
 }
 
 void AMeleeCharacter::BeginPlay()
@@ -134,10 +122,8 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::SprintButtonReleased);
 	PlayerInputComponent->BindAction("HeavyAttack", IE_Released, this, &ThisClass::HeavyAttack);
 	PlayerInputComponent->BindAction("ToggleLockOn", IE_Released, this, &ThisClass::ToggleLockOn);
-	
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
-	
 
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AMeleeCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &AMeleeCharacter::MoveRight);
@@ -153,13 +139,13 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 
 void AMeleeCharacter::TurnRight(float Rate)
 {
-	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
+	//if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerYawInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
 void AMeleeCharacter::LookUp(float Rate)
 {
-	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
+	//if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerPitchInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
@@ -221,76 +207,6 @@ void AMeleeCharacter::MoveRight(float Value)
 	
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
-	}
-}
-
-void AMeleeCharacter::InitDataTable(FString Path, EDataTableType TableType)
-{
-	
-	UDataTable* TableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *Path));
-	if(TableObject)
-	{
-		if(TableType == EDataTableType::COMMON_TABLE)
-		{
-			FCommonTable* CommonRow = TableObject->FindRow<FCommonTable>(FName("Common"), TEXT(""));
-			if(CommonRow)
-			{
-				DodgeMontage = CommonRow->DodgeMontage;
-				HitReactFrontMontage = CommonRow->HitReactFrontMontage;
-				HitReactBackMontage = CommonRow->HitReactBackMontage;
-				KnockdownFrontMontage = CommonRow->KnockdownFrontMontage;
-				KnockdownBackMontage = CommonRow->KnockdownBackMontage;
-				ImpactSound = CommonRow->ImpactSound;
-				ImpactParticle = CommonRow->ImpactParticle;
-			}
-		}
-		else if(TableType == EDataTableType::LIGHT_SWORD_TABLE)
-		{
-			FLightSwordTable* LightSwordRow = TableObject->FindRow<FLightSwordTable>(FName("LightSword"), TEXT(""));
-			if(LightSwordRow)
-			{
-				for(auto Montage : LightSwordRow->LightAttackMontage)
-				{
-					LSLightAttackMontages.Add(Montage);
-				}
-				LSChargedAttackMontage = LightSwordRow->ChargedAttackMontage;
-				LSHeavyAttackMontage = LightSwordRow->HeavyAttackMontage;
-				LSEnterCombatMontage = LightSwordRow->EnterCombatMontage;
-				LSExitCombatMontage = LightSwordRow->ExitCombatMontage;
-				LSSprintAttackMontage = LightSwordRow->SprintAttackMontage;
-			}
-		}
-		else if(TableType == EDataTableType::GREAT_SWORD_TABLE)
-		{
-			FGreatSwordTable* GreatSwordRow = TableObject->FindRow<FGreatSwordTable>(FName("GreatSword"), TEXT(""));
-			if(GreatSwordRow)
-			{
-				for(auto Montage : GreatSwordRow->LightAttackMontage)
-				{
-					GSLightAttackMontages.Add(Montage);
-				}
-				GSChargedAttackMontage = GreatSwordRow->ChargedAttackMontage;
-				GSHeavyAttackMontage = GreatSwordRow->HeavyAttackMontage;
-				GSEnterCombatMontage = GreatSwordRow->EnterCombatMontage;
-				GSExitCombatMontage = GreatSwordRow->ExitCombatMontage;
-			}
-		}
-		else if(TableType == EDataTableType::DUAL_SWORD_TABLE)
-		{
-			FDualSwordTable* DualSwordRow = TableObject->FindRow<FDualSwordTable>(FName("DualSword"), TEXT(""));
-			if(DualSwordRow)
-			{
-				for(auto Montage : DualSwordRow->LightAttackMontage)
-				{
-					DSLightAttackMontages.Add(Montage);
-				}
-				DSChargedAttackMontage = DualSwordRow->ChargedAttackMontage;
-				DSHeavyAttackMontage = DualSwordRow->HeavyAttackMontage;
-				DSSprintAttackMontage= DualSwordRow->SprintAttackMontage;
-				DSEnterCombatMontage = DualSwordRow->EnterCombatMontage;
-				DSExitCombatMontage = DualSwordRow->ExitCombatMontage;	
-			}
-		}
 	}
 }
 
@@ -399,7 +315,7 @@ void AMeleeCharacter::LightAttack()
 		}
 		else
 		{
-			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::LIGHT_ATTACK);
+			PerformLightAttack(CombatComp->GetAttackCount());
 		}
 	}
 }
@@ -416,7 +332,7 @@ void AMeleeCharacter::HeavyAttack()
 		}
 		else
 		{
-			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::HEAVY_ATTACK);
+			PerformAttack(ECharacterAction::HEAVY_ATTACK);
 		}
 	}
 }
@@ -433,120 +349,127 @@ void AMeleeCharacter::ChargedAttack()
 		}
 		else
 		{
-			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::CHARGED_ATTACK);
+			PerformAttack(ECharacterAction::CHARGED_ATTACK);
 		}
 	}
 }
 
-void AMeleeCharacter::PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacterAction Action)
+void AMeleeCharacter::PerformLightAttack(int32 AttackCount)
 {
-	if(!CanAttack()) return;
-	int32 Idx = AttackIdx;
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	UAnimMontage* TempLightAttackMontage = nullptr;
+	UAnimMontage* TempSprintAttackMontage = nullptr;
+	FName SectionName = TEXT("");
+
+	if(StateManagerComp && CombatComp && AnimInst && CombatComp->GetEquippedWeapon())
+	{
+		SectionName = GetLightAttackSectionName(AttackCount);
+
+		if(CombatComp->GetEquippedWeapon()->GetWeaponType() == EWeaponType::LIGHT_SWORD)
+		{
+			TempLightAttackMontage = LSLightAttackMontage;
+			TempSprintAttackMontage = LSSprintAttackMontage;
+		}
+		else if(CombatComp->GetEquippedWeapon()->GetWeaponType() == EWeaponType::DUAL_SWORD)
+		{
+			TempLightAttackMontage = DSLightAttackMontage;
+			TempSprintAttackMontage = DSSprintAttackMontage;
+		}
+		else if(CombatComp->GetEquippedWeapon()->GetWeaponType() == EWeaponType::GREAT_SWORD)
+		{
+			TempLightAttackMontage = GSLightAttackMontage;
+		}
+	
+		if(TempLightAttackMontage && CurrentMovementType != EMovementType::SPRINTING)
+		{
+			AnimInst->Montage_Play(TempLightAttackMontage);
+			AnimInst->Montage_JumpToSection(SectionName, TempLightAttackMontage);
+			CombatComp->IncrementAttackCount();
+		}
+		else if(TempSprintAttackMontage && CurrentMovementType == EMovementType::SPRINTING)
+		{
+			AnimInst->Montage_Play(TempSprintAttackMontage);
+		}
+
+		StateManagerComp->SetCurrentState(ECharacterState::ATTACKING);
+		StateManagerComp->SetCurrentAction(ECharacterAction::LIGHT_ATTACK);
+	}
+}
+
+FName AMeleeCharacter::GetLightAttackSectionName(int32 AttackCount)
+{
+	if(AttackCount == 0) 
+	{
+		AttackActionCorrectionValue = 1.f;
+		return TEXT("First");
+	}
+	else if(AttackCount == 1) 
+	{
+		AttackActionCorrectionValue = 2.f;
+		return TEXT("Second");
+	}
+	else if(AttackCount == 2) 
+	{
+		AttackActionCorrectionValue = 3.f;
+		return TEXT("Third");
+	}
+	else
+	{
+		CombatComp->ResetAttackCount();
+		AttackActionCorrectionValue = 1.f;
+		return TEXT("First");
+	}
+}
+
+void AMeleeCharacter::PerformAttack(ECharacterAction Action)
+{
+	UAnimMontage* TempMontage = nullptr;
 	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp && StatComp)
 	{
-		TArray<UAnimMontage*> TempArray;
 		EWeaponType WeaponType = CombatComp->GetEquippedWeapon()->GetWeaponType();
 		if(WeaponType == EWeaponType::LIGHT_SWORD)
 		{
 			switch(Action)
 			{
-				case ECharacterAction::LIGHT_ATTACK:
-					TempArray = LSLightAttackMontages;
-					if(Idx == 0)
-						AttackActionCorrectionValue = 1.f;
-					else if(Idx == 1)
-						AttackActionCorrectionValue = 2.f;
-					else 
-						AttackActionCorrectionValue = 3.f;
-				break;
 				case ECharacterAction::HEAVY_ATTACK:
-					TempArray.Add(LSHeavyAttackMontage);
-					Idx = 0;
+					TempMontage = LSHeavyAttackMontage;
 					AttackActionCorrectionValue = 3.f;
 				break;
 				case ECharacterAction::CHARGED_ATTACK:
-					TempArray.Add(LSChargedAttackMontage);
-					Idx = 0;
+					TempMontage = LSChargedAttackMontage;
 					AttackActionCorrectionValue = 4.f;
 				break;
-			}
-			if(CurrentMovementType == EMovementType::SPRINTING)
-			{
-				TempArray.Empty();
-				TempArray.Add(LSSprintAttackMontage);
-				AttackActionCorrectionValue = 3.f;
-				Idx = 0;
 			}
 		}
 		else if(WeaponType == EWeaponType::GREAT_SWORD)
 		{
 			switch(Action)
 			{
-				case ECharacterAction::LIGHT_ATTACK:
-					TempArray = GSLightAttackMontages;
-				break;
 				case ECharacterAction::HEAVY_ATTACK:
-					TempArray.Add(GSHeavyAttackMontage);
-					Idx = 0;
+					TempMontage = GSHeavyAttackMontage;
 				case ECharacterAction::CHARGED_ATTACK:
-					TempArray.Add(GSChargedAttackMontage);
-					Idx = 0;
+					TempMontage = GSChargedAttackMontage;
 				break;
 			}
 		}else if(WeaponType == EWeaponType::DUAL_SWORD)
 		{
 			switch(Action)
 			{
-				case ECharacterAction::LIGHT_ATTACK:
-					TempArray = DSLightAttackMontages;
-					if(Idx == 0)
-						AttackActionCorrectionValue = 1.f;
-					else if(Idx == 1)
-						AttackActionCorrectionValue = 2.f;
-					else 
-						AttackActionCorrectionValue = 3.f;
-				break;
 				case ECharacterAction::HEAVY_ATTACK:
-					TempArray.Add(DSHeavyAttackMontage);
-					Idx = 0;
+					TempMontage = DSHeavyAttackMontage;
 					AttackActionCorrectionValue = 3.f;
 				break;
 				case ECharacterAction::CHARGED_ATTACK:
-					TempArray.Add(DSChargedAttackMontage);
-					Idx = 0;
+					TempMontage = DSChargedAttackMontage;
 					AttackActionCorrectionValue = 4.f;
 				break;
 			}
-			if(CurrentMovementType == EMovementType::SPRINTING)
-			{
-				TempArray.Empty();
-				TempArray.Add(DSSprintAttackMontage);
-				AttackActionCorrectionValue = 3.f;
-				Idx = 0;
-			}
 		}
-		if(TempArray.IsEmpty()) return;
 		StateManagerComp->SetCurrentState(ECharacterState::ATTACKING);
 		StateManagerComp->SetCurrentAction(Action);
-		// if(bRandomIdx)
-		// {
-		// 	int32 ArrayCount = TempArray.Num();
-		// 	if(ArrayCount == 0)
-		// 		Idx = 0;
-		// 	else
-		// 		Idx = FMath::RandRange(0, ArrayCount - 1);
-		// }
-		if(TempArray.Num() > Idx)
-		{
-			PlayAnimMontage(TempArray[Idx]);
-		}
-		else
-		{
-			CombatComp->ResetAttackCount();
-			PlayAnimMontage(TempArray[CombatComp->GetAttackCount()]);
-		}
-		CombatComp->IncrementAttackCount();
 		
+		
+		PlayAnimMontage(TempMontage);
 	}
 }
 
@@ -558,7 +481,7 @@ void AMeleeCharacter::ContinueAttack() //애님 노티파이로 호출될 함수
 		if(CombatComp->GetIsAttackSaved())
 		{
 			CombatComp->SetIsAttackSaved(false);
-			PerformAttack(CombatComp->GetAttackCount(), false, ECharacterAction::LIGHT_ATTACK);
+			PerformAttack(ECharacterAction::LIGHT_ATTACK);
 		}
 	}
 }
@@ -742,8 +665,7 @@ void AMeleeCharacter::Test()
 	{
 		StatComp->PlusCurrentStatValue(EStats::HP, -50);
 	
-	}		
-
+	}	
 }
 
 bool AMeleeCharacter::CanRecieveDamage()
@@ -917,12 +839,15 @@ void AMeleeCharacter::SetMovementType(EMovementType Type)
 		switch(CurrentMovementType)
 		{
 			case EMovementType::WALKING:
+				OnSprintState.Execute(true);
 				GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 				break;
 			case EMovementType::JOGGING:
+				OnSprintState.Execute(true);
 				GetCharacterMovement()->MaxWalkSpeed = JogSpeed;
 				break;
 			case EMovementType::SPRINTING:
+				OnSprintState.Execute(false);
 				GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 				break;
 		}
@@ -1021,4 +946,10 @@ void AMeleeCharacter::PerformKnockdown()
 			PlayAnimMontage(KnockdownBackMontage);
 	}
 }
+
+float AMeleeCharacter::PerformCombatAction(ECharacterAction Action, ECharacterState State)
+{
+	return 0.f;
+}
+
 
