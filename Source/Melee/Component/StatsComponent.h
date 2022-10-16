@@ -67,6 +67,11 @@ private:
 	float StaminaRegenRate;
 	float HPRegenRate;
 
+	UFUNCTION()
+	void ShouldRegen(bool ShouldRegen);
+
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess ="true"))
+	bool bShouldRegen;
 public: //get	
 	FORCEINLINE TMap<EStats, FBaseStat> GetBaseStats() const { return BaseStats; }
 	

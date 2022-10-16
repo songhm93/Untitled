@@ -17,9 +17,10 @@ ABaseWeapon::ABaseWeapon()
 
 void ABaseWeapon::OnHit(FHitResult& HitResult)
 {
+   
     if(GetOwner() && Cast<AMeleeCharacter>(GetOwner())->GetCombatComp())
     {
-        Cast<AMeleeCharacter>(GetOwner())->GetCombatComp()->HitCauseDamage(HitResult, this);
+        Cast<AMeleeCharacter>(GetOwner())->GetCombatComp()->HitCauseDamage(HitResult);
     }
 }
 
