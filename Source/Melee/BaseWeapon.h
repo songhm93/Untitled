@@ -31,8 +31,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCollisionComponent* CollisionComponent;
 
-	
-
 public: //get
 	FORCEINLINE FName GetHandSocketName() const { return HandSocketName; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }

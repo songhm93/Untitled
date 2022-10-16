@@ -11,6 +11,8 @@ void UMeleeAnimInstance::NativeInitializeAnimation()
 {
     Character = Cast<AMeleeCharacter>(TryGetPawnOwner());
     Direction = 0.f;
+    if (Character && Character->GetCombatComp())
+        Character->GetCombatComp()->OnUpdateWeaponType.BindUObject(this, &ThisClass::SetWeaponType);
 }
 
 void UMeleeAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -55,4 +57,9 @@ void UMeleeAnimInstance::AnimNotify_ResetCombat()
         if(Character->GetStateManagerComp()->GetCurrentState() != ECharacterState::DEAD)
             Character->ResetCombat();
     }
+}
+
+void UMeleeAnimInstance::SetWeaponType(EWeaponType Type)
+{
+    WeaponType = Type;
 }

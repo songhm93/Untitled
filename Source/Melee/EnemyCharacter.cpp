@@ -20,7 +20,7 @@
 
 AEnemyCharacter::AEnemyCharacter()
 {
-    AttackActionCorrectionValue = 1.f;
+	CloseAttackCorrectionValue = 1.f;
     StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerrComp"));
     LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
 	LockOnWidget->SetupAttachment(GetMesh());
@@ -35,7 +35,6 @@ AEnemyCharacter::AEnemyCharacter()
 	AgroRangeSphere->SetSphereRadius(AgroRange);
 	AgroCancelTime = 3.5f;
 	AgroRangeSphere->SetupAttachment(RootComponent);
-	AttackActionCorrectionValue = 1.f;
 	AttackMontageSectionNum = 3;
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	AIController = Cast<AEnemyAIController>(GetController());
@@ -110,17 +109,17 @@ FName AEnemyCharacter::GetAttackSectionName()
     FName ReturnValue = TEXT("");
     if(RandomValue == 0) 
 	{
-		AttackActionCorrectionValue = 1.f;
+		CloseAttackCorrectionValue = 1.f;
 		ReturnValue = TEXT("First");
 	}
 	else if(RandomValue == 1) 
 	{
-		AttackActionCorrectionValue = 2.f;
+		CloseAttackCorrectionValue = 2.f;
 		ReturnValue = TEXT("Second");
 	}
 	else if(RandomValue == 2) 
 	{
-		AttackActionCorrectionValue = 3.f;
+		CloseAttackCorrectionValue = 3.f;
 		ReturnValue = TEXT("Third");
 	}
     return ReturnValue;
@@ -414,17 +413,17 @@ FName AEnemyCharacter::GetLightAttackSectionName(int32 AttackCount)
 {
 	if(AttackCount == 1) 
 	{
-		AttackActionCorrectionValue = 1.f;
+		CloseAttackCorrectionValue = 1.f;
 		return TEXT("First");
 	}
 	else if(AttackCount == 2) 
 	{
-		AttackActionCorrectionValue = 2.f;
+		CloseAttackCorrectionValue = 2.f;
 		return TEXT("Second");
 	}
 	else if(AttackCount == 3) 
 	{
-		AttackActionCorrectionValue = 3.f;
+		CloseAttackCorrectionValue = 3.f;
 		return TEXT("Third");
 	}
 	return NAME_None;
@@ -454,5 +453,6 @@ void AEnemyCharacter::ReadyToAttack()
 void AEnemyCharacter::DamageThePlayer()
 {
 	//여기서 라인트레이스로 앞을 긁어서 충돌한 플레이어 모두 대미지를 줄지, 그냥 타겟으로 지정한 애만 대미지를 줄지.
+
 	
 }

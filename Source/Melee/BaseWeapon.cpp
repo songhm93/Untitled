@@ -1,9 +1,7 @@
 #include "BaseWeapon.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "MeleeCharacter.h"
 #include "Type/Types.h"
-#include "Component/CombatComponent.h"
 #include "Component/CollisionComponent.h"
 
 
@@ -17,12 +15,9 @@ ABaseWeapon::ABaseWeapon()
 
 void ABaseWeapon::OnHit(FHitResult& HitResult)
 {
-   
-    if(GetOwner() && Cast<AMeleeCharacter>(GetOwner())->GetCombatComp())
-    {
-        //Cast<AMeleeCharacter>(GetOwner())->GetCombatComp()->HitCauseDamage(HitResult);
+    if(GetOwner())
         OnHitResult.ExecuteIfBound(HitResult);
-    }
+    
 }
 
 void ABaseWeapon::SimulateWeaponPhysics()

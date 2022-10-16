@@ -1,7 +1,8 @@
 #include "StatsComponent.h"
 
 #include "../Type/Stats.h"
-#include "../MeleeCharacter.h"
+#include "StateManagerComponent.h"
+#include "CombatComponent.h"
 
 
 
@@ -22,9 +23,19 @@ void UStatsComponent::BeginPlay()
 
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/BaseStatsTable"));
 	InitDataTable(Path);
-	
-	if(Cast<AMeleeCharacter>(GetOwner()))
-		Cast<AMeleeCharacter>(GetOwner())->OnSprintState.BindUObject(this, &ThisClass::ShouldRegen);
+	if (GetOwner())
+	{
+		UStateManagerComponent* StateManagerComp = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
+		if(StateManagerComp)
+			StateManagerComp->OnSprint.BindUObject(this, &ThisClass::ShouldRegen);
+		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
+		if (CombatComp)
+		{
+			CombatComp->OnUpdateCurrentStatValue.BindUObject(this, &ThisClass::PlusCurrentStatValue);
+			CombatComp->GetCurrentStatValue.BindUObject(this, &ThisClass::GetCurrentStatValue);
+		}
+			
+	}
 }
 
 void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -37,7 +48,7 @@ void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 		RegenTime = 0.f;
 }
 
-//체력 update, 스태미너 update. 자동 리젠. 나중에 힐밴같은게 추가되면 변수추가 해야함
+
 void UStatsComponent::TrackingRegen(float DeltaTime)
 {
 	if(RegenTime > 0.5f)
@@ -70,11 +81,6 @@ void UStatsComponent::SetCurrentStatValue(EStats Stat, float Value)
 	CurrentStats.Add(Stat, Value);
 }
 
-void UStatsComponent::SetBaseStatValue(EStats Stat, float Value) //이건 뭐
-{
-	BaseStats.Add(Stat, FBaseStat(Value, BaseStats[Stat].MaxValue));
-}
-
 float UStatsComponent::GetCurrentStatValue(EStats Stat)
 {
 	return CurrentStats.FindRef(Stat);
@@ -85,7 +91,6 @@ void UStatsComponent::InitStats()
 	for(auto Stat : BaseStats)
 	{
 		SetCurrentStatValue(Stat.Key, Stat.Value.BaseValue);
-		//SetCurrentStatValue(Stat.Key, 0); //증가 디버깅용
 	}
 }
 
@@ -132,5 +137,5 @@ float UStatsComponent::GetMaxValue(EStats Stat)
 
 void UStatsComponent::ShouldRegen(bool ShouldRegen)
 {
-	bShouldRegen = ShouldRegen;
+	bShouldRegen = ShouldRegen;	
 }
