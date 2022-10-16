@@ -17,12 +17,11 @@ class MELEE_API ICombatInterface
 	GENERATED_BODY()
 
 public:
-	virtual void ContinueAttack() = 0;
-	virtual void ResetAttack() = 0;
-	virtual FRotator GetDesiredRotation() = 0;
-	virtual void ResetCombat() = 0;
+	virtual void ContinueAttack() = 0;//이거 Enemy는 필요없음
+	virtual void ResetAttack() = 0; //이거 Enemy는 필요없음
+	virtual FRotator GetDesiredRotation() = 0; //이거 Enemy는 필요없음
+	virtual void ResetCombat() = 0; 
 	virtual bool CanRecieveDamage() = 0;
-	virtual float PerformCombatAction(ECharacterAction Action, ECharacterState State) = 0;
+	virtual float PerformCombatAction(ECharacterAction Action, ECharacterState State) = 0; 
 	virtual void PerformLightAttack(int32 AttackCount) = 0;
-	float AttackActionCorrectionValue;
 };

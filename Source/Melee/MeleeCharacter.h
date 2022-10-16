@@ -4,12 +4,13 @@
 #include "GameFramework/Character.h"
 #include "Interface/CombatInterface.h"
 #include "Interface/TargetingInterface.h"
+#include "Interface/EquipmentInterface.h"
 //#include "Engine/DataTable.h"
 #include "Type/Types.h"
 #include "Type/DamageTypes.h"
 #include "MeleeCharacter.generated.h"
 
-DECLARE_DELEGATE_OneParam( FOnSprintState, bool );
+//DECLARE_DELEGATE_OneParam( FOnSprintState, bool );
 
 class UCombatComponent;
 class UStateManagerComponent;
@@ -48,7 +49,7 @@ class ABaseEquippable;
 
 
 UCLASS(config=Game)
-class AMeleeCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
+class AMeleeCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IEquipmentInterface
 {
 	GENERATED_BODY()
 
@@ -75,7 +76,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void PerformLightAttack(int32 AttackCount) override;
 
-	FOnSprintState OnSprintState;
+	virtual void Equip(ABaseEquippable* Weapon) override;
+
+	//FOnSprintState OnSprintState;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -239,13 +242,11 @@ public: //get
 	FORCEINLINE EMovementType GetMovementType() const { return CurrentMovementType; }
 	FORCEINLINE float GetSprintStaminaCost() const { return SprintStaminaCost; }
 	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp;}
-	FORCEINLINE float GetAttackActionCorrectionValue() const { return AttackActionCorrectionValue; }
 public: //set
 	void SetMovementType(EMovementType Type);
 public:
 	void LightAttack();
 	void ChargedAttack();
-	void Equip(ABaseEquippable* Weapon);
 	
 	
 };

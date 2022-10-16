@@ -7,9 +7,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "../Type/RotationMode.h"
-#include "../MeleeCharacter.h"
 #include "../Interface/TargetingInterface.h"
 #include "CombatComponent.h"
+#include "StateManagerComponent.h"
 
 UTargetingComponent::UTargetingComponent()
 {
@@ -34,6 +34,9 @@ void UTargetingComponent::BeginPlay()
 			FollowCamera = Cast<UCameraComponent>(OwnerCharacter->GetComponentByClass(UCameraComponent::StaticClass()));
 		}
 	}
+
+	CombatComp = Cast<UCombatComponent>(OwnerCharacter->GetComponentByClass(UCombatComponent::StaticClass()));
+	StateManagerComp = Cast<UStateManagerComponent>(OwnerCharacter->GetComponentByClass(UStateManagerComponent::StaticClass()));
 }
 
 void UTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -183,16 +186,15 @@ void UTargetingComponent::SetIsTargeting(bool IsTargeting)
 
 void UTargetingComponent::UpdateRotationMode()
 {
-	if(OwnerCharacter)
+	if(OwnerCharacter && CombatComp && StateManagerComp)
 	{
-		AMeleeCharacter* OwnerChar = Cast<AMeleeCharacter>(OwnerCharacter);
-		if(OwnerChar && OwnerChar->GetCombatComp())
+		if (CombatComp->GetCombatState() && StateManagerComp->GetMovementType() != EMovementType::SPRINTING && bIsTargeting)
 		{
-			if(OwnerChar->GetCombatComp()->GetCombatState() && OwnerChar->GetMovementType() != EMovementType::SPRINTING && bIsTargeting)
-				SetRotationMode(ERotationMode::ORIENT_TO_CAMERA);
-			else
-				SetRotationMode(ERotationMode::ORIENT_TO_MOVEMENT);
+			SetRotationMode(ERotationMode::ORIENT_TO_CAMERA);
+		}
+		else
+		{
+			SetRotationMode(ERotationMode::ORIENT_TO_MOVEMENT);
 		}
 	}
-	
 }

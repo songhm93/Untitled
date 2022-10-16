@@ -3,12 +3,16 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "../Type/Types.h"
+#include "../Type/Stats.h"
 #include "CombatComponent.generated.h"
+
+DECLARE_DELEGATE_TwoParams(FOnUpdateCurrentStatValue, EStats, float);
+DECLARE_DELEGATE_RetVal_OneParam(float, FGetCurrentStatValue, EStats);
+DECLARE_DELEGATE_OneParam(FOnUpdateWeaponType, EWeaponType);
 
 class ABaseWeapon;
 class ABaseEquippable;
 class ABaseArmor;
-class AMeleeCharacter;
 class UAttackDamageType;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -19,6 +23,9 @@ class MELEE_API UCombatComponent : public UActorComponent
 public:	
 	UCombatComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	FOnUpdateCurrentStatValue OnUpdateCurrentStatValue;
+	FGetCurrentStatValue GetCurrentStatValue;
+	FOnUpdateWeaponType OnUpdateWeaponType;
 protected:
 	virtual void BeginPlay() override;
 private:	
@@ -42,14 +49,13 @@ private:
 	UPROPERTY()
 	AController* Controller;
 	FVector HitFromDirection;
-	UPROPERTY()
-	AMeleeCharacter* Character;
+
 	UPROPERTY()
 	UAttackDamageType* AttackDamageType;
 
 	void WeaponBaseSetting();
 	void ArmorBaseSetting(ABaseArmor* Armor);
-	
+	float AttackActionCorrectionValue;
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 	FORCEINLINE bool GetCombatState() const { return bCombatState; }
@@ -59,6 +65,7 @@ public: //set
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }
 	FORCEINLINE void SetIsAttackSaved(bool Boolean) { bIsAttackSaved = Boolean; }
 	FORCEINLINE void SetAttackCount(int32 Count) { AttackCount = Count; }
+	FORCEINLINE void SetAttackActionCorrectionValue(float Value) { AttackActionCorrectionValue = Value; }
 public:
 	FORCEINLINE void IncrementAttackCount() { ++AttackCount; }
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }
@@ -68,7 +75,6 @@ public:
 	void AttachWeapon();
 	void AttachSecondWeapon(FName SocketName);
 
-	void OnUnequipped();
 	void HitCauseDamage(FHitResult& HitResult);
 
 };
