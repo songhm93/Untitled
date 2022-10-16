@@ -1,9 +1,8 @@
 #include "PickupActor.h"
 #include "Components/SphereComponent.h"
 
-#include "ToughSword.h"
-#include "BaseWeapon.h"
-#include "MeleeCharacter.h"
+#include "BaseEquippable.h"
+#include "Interface/EquipmentInterface.h"
 
 
 APickupActor::APickupActor()
@@ -39,17 +38,16 @@ void APickupActor::Tick(float DeltaTime)
 void APickupActor::Interact(AActor* Caller)
 {
 	UWorld* World = GetWorld();
-	AMeleeCharacter* Character = Cast<AMeleeCharacter>(Caller);
-	if(World && SpawnActor)
+	if(World && SpawnActor && Caller)
 	{
 		FActorSpawnParameters Params; 
 		Params.Owner = Caller;
 		Params.Instigator = Cast<APawn>(Caller);
 
 		ABaseEquippable* Equipment = World->SpawnActor<ABaseEquippable>(SpawnActor, GetActorTransform(), Params);
-		if(Equipment && Character)
+		if(Equipment && Caller->Implements<UEquipmentInterface>())
 		{
-			Character->Equip(Equipment);
+			Cast<IEquipmentInterface>(Caller)->Equip(Equipment);
 		}
 	}
 }

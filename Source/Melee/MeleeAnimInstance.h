@@ -35,6 +35,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Direction;
 public:
-	FORCEINLINE void SetWeaponType(EWeaponType Type) { WeaponType = Type; }
+	UFUNCTION()
+	void SetWeaponType(EWeaponType Type);
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }
 };

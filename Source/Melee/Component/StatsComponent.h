@@ -80,11 +80,11 @@ public: //set
 public:
 	void InitStats();
 	void SetCurrentStatValue(EStats Stat, float Value);
-	void SetBaseStatValue(EStats Stat, float Value);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetCurrentStatValue(EStats Stat);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetMaxValue(EStats Stat);
+	UFUNCTION()
 	void PlusCurrentStatValue(EStats Stat, float Value);
 	bool CurrentCompareMax(EStats Stat); //current 값과 max값을 비교해서 current가 max면 채울 필요없게. 아예 트래킹 차단.
 		
