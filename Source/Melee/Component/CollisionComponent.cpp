@@ -29,7 +29,6 @@ void UCollisionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	{
 		CollisionTrace();
 	}
-
 }
 
 void UCollisionComponent::EnableCollision()
@@ -45,7 +44,6 @@ void UCollisionComponent::DisableCollision()
 
 void UCollisionComponent::CollisionTrace()
 {	
-	
 	const FVector Start = CollisionMeshComponent->GetSocketLocation(StartSocketName);
 	const FVector End = CollisionMeshComponent->GetSocketLocation(EndSocketName);
 	float TraceRadius = 20.f;
@@ -77,16 +75,18 @@ void UCollisionComponent::CollisionTrace()
 
 	if(Weapon)
 	{
-		for(auto LastHit : OutHitResult)
+		if(!OutHitResult.IsEmpty())
 		{
-			if(!AlreadyHitActors.Contains(LastHit.GetActor()))
+			for(auto LastHit : OutHitResult)
 			{
-				AlreadyHitActors.Add(LastHit.GetActor());
-				Weapon->OnHit(LastHit);
+				if(!AlreadyHitActors.Contains(LastHit.GetActor()))
+				{
+					AlreadyHitActors.Add(LastHit.GetActor());
+					Weapon->OnHit(LastHit);
+				}
 			}
 		}
 	}
-	
 }
 
 void UCollisionComponent::ClearHitActors()

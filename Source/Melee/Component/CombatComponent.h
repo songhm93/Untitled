@@ -46,6 +46,9 @@ private:
 	AMeleeCharacter* Character;
 	UPROPERTY()
 	UAttackDamageType* AttackDamageType;
+
+	void WeaponBaseSetting();
+	void ArmorBaseSetting(ABaseArmor* Armor);
 	
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
@@ -66,6 +69,6 @@ public:
 	void AttachSecondWeapon(FName SocketName);
 
 	void OnUnequipped();
-	void HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon);
+	void HitCauseDamage(FHitResult& HitResult);
 
 };

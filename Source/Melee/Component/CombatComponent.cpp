@@ -8,6 +8,7 @@
 #include "StatsComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "../AttackDamageType.h"
+#include "../Interface/CombatInterface.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -54,22 +55,7 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 			if(EquippedWeapon)
 			{
 				AttachWeapon();
-				
-				if(Character->GetMesh() &&  Character->GetMesh()->GetAnimInstance())
-				{
-					Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetWeaponType(EquippedWeapon->GetWeaponType());
-				}
-				EquippedWeapon->GetCollisionComp()->SetCollisionMeshComponent(EquippedWeapon->GetItemMeshComp());
-				if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
-				{
-					ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
-					if(DualWeapon)
-					{
-						DualWeapon->GetSecondWeaponCollisionComp()->SetCollisionMeshComponent(DualWeapon->GetDualSwordStaticMeshComp());
-						DualWeapon->GetRightFootCollisionComp()->SetCollisionMeshComponent(Character->GetMesh());
-					}
-				}
-				Character->GetStatComp()->PlusCurrentStatValue(EStats::ATK, EquippedWeapon->GetWeaponATK());
+				WeaponBaseSetting();
 			}
 		}
 		else if(Equipment->GetEquipmentType() == EEquipmentType::ARMOR)
@@ -77,26 +63,7 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 			ABaseArmor* Armor = Cast<ABaseArmor>(Equipment); 
 			if(Armor)
 			{
-				if(Armor->GetArmorType() == EArmorType::HELMET)
-				{
-					EquippedHelmet = Armor;
-					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedHelmet->GetArmorDEF());
-				}	
-				else if(Armor->GetArmorType() == EArmorType::GAUNTLET)
-				{
-					EquippedGauntlet = Armor;	
-					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedGauntlet->GetArmorDEF());
-				}
-				else if(Armor->GetArmorType() == EArmorType::CHEST)
-				{
-					EquippedChest = Armor;
-					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedChest->GetArmorDEF());
-				}
-				else if(Armor->GetArmorType() == EArmorType::BOOT)
-				{
-					EquippedBoot = Armor;
-					Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedBoot->GetArmorDEF());
-				}
+				ArmorBaseSetting(Armor);
 			}
 			AttachActor(EEquipmentType::ARMOR, TEXT(""));
 		}
@@ -171,9 +138,9 @@ void UCombatComponent::AttachSecondWeapon(FName SocketName)
 	Cast<ADualWeapon>(EquippedWeapon)->GetDualSwordStaticMeshComp()->AttachToComponent(Cast<AMeleeCharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 }
 
-void UCombatComponent::HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon) //내 총 공격력을 계산해서 적용. 대미지 받는 쪽에서 추가 계산
+void UCombatComponent::HitCauseDamage(FHitResult& HitResult) //내 총 공격력을 계산해서 적용. 대미지 받는 쪽에서 추가 계산
 {
-	if(HitResult.GetActor() && GetOwner() && Weapon)
+	if(HitResult.GetActor() && GetOwner() && EquippedWeapon)
     {
         Controller = Controller == nullptr ? Cast<APawn>(GetOwner())->GetController() : Controller;
 		Character = Character == nullptr ? Cast<AMeleeCharacter>(GetOwner()) : Character;
@@ -181,14 +148,80 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult, ABaseWeapon* Weapon
 		if(Controller && Character && Character->GetStatComp())
 		{
 			HitFromDirection = GetOwner()->GetActorForwardVector();
-
-			if(Cast<AMeleeCharacter>(HitResult.GetActor())->CanRecieveDamage())
+			
+			if(Cast<ICombatInterface>(HitResult.GetActor())->CanRecieveDamage())
 			{
 				const float PlayerATK = Character->GetStatComp()->GetCurrentStatValue(EStats::ATK);
 				const float CalcATK = Cast<AMeleeCharacter>(GetOwner())->GetAttackActionCorrectionValue() * PlayerATK;
-				UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, Weapon, AttackDamageType->StaticClass());
+				UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, EquippedWeapon, AttackDamageType->StaticClass());
 				//일단 무기의 기본 공격력과 보정치로 계산.
 			}
 		}
     }
+}
+
+void UCombatComponent::WeaponBaseSetting()
+{
+	if(Character->GetMesh() &&  Character->GetMesh()->GetAnimInstance())
+	{
+		Cast<UMeleeAnimInstance>(Character->GetMesh()->GetAnimInstance())->SetWeaponType(EquippedWeapon->GetWeaponType());
+	}
+	EquippedWeapon->GetCollisionComp()->SetCollisionMeshComponent(EquippedWeapon->GetItemMeshComp());
+	if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
+	{
+		ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
+		if(DualWeapon)
+		{
+			DualWeapon->GetSecondWeaponCollisionComp()->SetCollisionMeshComponent(DualWeapon->GetDualSwordStaticMeshComp());
+			DualWeapon->GetRightFootCollisionComp()->SetCollisionMeshComponent(Character->GetMesh());
+		}
+	}
+	Character->GetStatComp()->PlusCurrentStatValue(EStats::ATK, EquippedWeapon->GetWeaponATK());
+}
+
+void UCombatComponent::ArmorBaseSetting(ABaseArmor* Armor)
+{
+	if(Armor)
+	{
+		if(Armor->GetArmorType() == EArmorType::HELMET)
+		{
+			if(EquippedHelmet)
+			{
+				Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, -EquippedHelmet->GetArmorDEF());
+				EquippedHelmet->Destroy();
+			}
+			EquippedHelmet = Armor;
+			Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedHelmet->GetArmorDEF());
+		}	
+		else if(Armor->GetArmorType() == EArmorType::GAUNTLET)
+		{
+			if(EquippedGauntlet)
+			{
+				Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, -EquippedGauntlet->GetArmorDEF());
+				EquippedGauntlet->Destroy();
+			}
+			EquippedGauntlet = Armor;	
+			Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedGauntlet->GetArmorDEF());
+		}
+		else if(Armor->GetArmorType() == EArmorType::CHEST)
+		{
+			if(EquippedChest)
+			{
+				Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, -EquippedChest->GetArmorDEF());
+				EquippedChest->Destroy();
+			}
+			EquippedChest = Armor;
+			Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedChest->GetArmorDEF());
+		}
+		else if(Armor->GetArmorType() == EArmorType::BOOT)
+		{
+			if(EquippedBoot)
+			{
+				Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, -EquippedBoot->GetArmorDEF());
+				EquippedBoot->Destroy();
+			}
+			EquippedBoot = Armor;
+			Character->GetStatComp()->PlusCurrentStatValue(EStats::DEF, EquippedBoot->GetArmorDEF());
+		}
+	}
 }
