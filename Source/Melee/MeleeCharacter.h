@@ -4,105 +4,48 @@
 #include "GameFramework/Character.h"
 #include "Interface/CombatInterface.h"
 #include "Interface/TargetingInterface.h"
-#include "Engine/DataTable.h"
+//#include "Engine/DataTable.h"
 #include "Type/Types.h"
 #include "Type/DamageTypes.h"
 #include "MeleeCharacter.generated.h"
 
+DECLARE_DELEGATE_OneParam( FOnSprintState, bool );
 
-class AToughSword;
-class ABaseWeapon;
 class UCombatComponent;
 class UStateManagerComponent;
+class UTargetingComponent;
+class UStatsComponent;
+class UPrimitiveComponent;
+class UWidgetComponent;
 class UDamageType;
 class AController;
-class UPrimitiveComponent;
 class USoundCue;
 class UParticleSystem;
-class UStatsComponent;
 class ABaseEquippable;
-class UTargetingComponent;
-class UWidgetComponent;
 
-USTRUCT(BlueprintType)
-struct FCommonTable : public FTableRowBase
-{
-	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HitReactFrontMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HitReactBackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* KnockdownFrontMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* KnockdownBackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* DodgeMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundCue* ImpactSound;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UParticleSystem* ImpactParticle;
+// USTRUCT(BlueprintType)
+// struct FCommonTable : public FTableRowBase
+// {
+// 	GENERATED_BODY()
+
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	UAnimMontage* HitReactFrontMontage;
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	UAnimMontage* HitReactBackMontage;
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	UAnimMontage* KnockdownFrontMontage;
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	UAnimMontage* KnockdownBackMontage;
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	UAnimMontage* DodgeMontage;
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	USoundCue* ImpactSound;
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	UParticleSystem* ImpactParticle;
 	
-}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
+// }; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
 
-USTRUCT(BlueprintType)
-struct FLightSwordTable : public FTableRowBase
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UAnimMontage*> LightAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* ChargedAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HeavyAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* SprintAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* EnterCombatMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* ExitCombatMontage;
-	
-}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
-
-USTRUCT(BlueprintType)
-struct FGreatSwordTable : public FTableRowBase
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UAnimMontage*> LightAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* ChargedAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HeavyAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* EnterCombatMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* ExitCombatMontage;
-	
-}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
-
-USTRUCT(BlueprintType)
-struct FDualSwordTable : public FTableRowBase
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UAnimMontage*> LightAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* ChargedAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HeavyAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* SprintAttackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* EnterCombatMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* ExitCombatMontage;
-	
-}; /** 데이터 테이블 추가시 에디터 끄고 컴파일 할 것 */
 
 UCLASS(config=Game)
 class AMeleeCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
@@ -128,6 +71,11 @@ public:
 	virtual bool CanRecieveDamage() override;
 	virtual bool CanBeTargeted() override; //타겟이 될 수 있는지
 	virtual void OnTargeted(bool IsTargeted) override;
+	virtual float PerformCombatAction(ECharacterAction Action, ECharacterState State) override;
+	UFUNCTION(BlueprintCallable)
+	virtual void PerformLightAttack(int32 AttackCount) override;
+
+	FOnSprintState OnSprintState;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -139,7 +87,8 @@ protected:
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 	void ToggleCombat();
 	void InteractButtonPressed();
-	void PerformAttack(int32 AttackIdx, bool bRandomIdx, ECharacterAction Action);
+	void PerformAttack(ECharacterAction Action);
+	
 	bool CanAttack();
 	bool CanToggleCombat();
 	void Dodge();
@@ -152,10 +101,11 @@ protected:
 	void HeavyAttack();
 	
 private:
-	void InitDataTable(FString Path, EDataTableType TableType);
+	//void InitDataTable(FString Path, EDataTableType TableType);
 	void TurnRight(float Rate);
 	void LookUp(float Rate);
 	void Test(); //테스트할 함수
+	UPROPERTY(EditAnywhere, Category = "MouseSensitivity", Meta = (AllowPrivateAccess = "true"))
 	float MouseSensitivity;
 	UFUNCTION()
 	void ReceiveDamage(
@@ -175,64 +125,64 @@ private:
 	/**************   데이터 테이블 변수들 */
 
 	// Common
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HitReactFrontMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HitReactBackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* KnockdownFrontMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* KnockdownBackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DodgeMontage; 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle;
 
 	//Light Sword
-	UPROPERTY()
-	TArray<UAnimMontage*> LSLightAttackMontages;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* LSLightAttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LSChargedAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LSHeavyAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LSSprintAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LSEnterCombatMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LSExitCombatMontage;
 
 	//Great Sword
-	UPROPERTY()
-	TArray<UAnimMontage*> GSLightAttackMontages; 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "GSMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* GSLightAttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "GSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* GSChargedAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "GSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* GSHeavyAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "GSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* GSEnterCombatMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "GSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* GSExitCombatMontage;
 
 	//Dual Sword
-	UPROPERTY()
-	TArray<UAnimMontage*> DSLightAttackMontages;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DSLightAttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DSChargedAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DSHeavyAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DSSprintAttackMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DSEnterCombatMontage;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DSExitCombatMontage;
 	
 
 	/*****************************************************/
-;
+
 	void Dead();
 	void CalcReceiveDamage(float Damage);
 	void EnableRagdoll();
@@ -268,7 +218,7 @@ private:
 	float SprintStaminaCost;
 	bool bSprintKeyPressed;
 
-	float AttackActionCorrectionValue; //공격 액션마다의 보정치. 1타, 2타, 3타있으면 3타가 가장 세게 적용.
+	//float AttackActionCorrectionValue; //공격 액션마다의 보정치. 1타, 2타, 3타있으면 3타가 가장 세게 적용.
 	void ToggleLockOn();
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UTargetingComponent* TargetingComp;
@@ -279,6 +229,7 @@ private:
 	void PerformKnockdown();
 	bool bHitFront; //맞았을 때 때린 캐릭터가 내 앞에서 때렸는지?
 	void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation);
+	FName GetLightAttackSectionName(int32 AttackCount);
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

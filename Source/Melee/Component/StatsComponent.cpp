@@ -1,5 +1,6 @@
 #include "StatsComponent.h"
 #include "../Type/Stats.h"
+#include "../MeleeCharacter.h"
 
 
 
@@ -10,6 +11,7 @@ UStatsComponent::UStatsComponent()
 	
 	HPRegenRate = 0.0f;
 	StaminaRegenRate = 1.0f;
+	bShouldRegen = true;
 }
 
 
@@ -20,13 +22,15 @@ void UStatsComponent::BeginPlay()
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/BaseStatsTable"));
 	InitDataTable(Path);
 	
+	if(Cast<AMeleeCharacter>(GetOwner()))
+		Cast<AMeleeCharacter>(GetOwner())->OnSprintState.BindUObject(this, &ThisClass::ShouldRegen);
 }
 
 void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(!CurrentCompareMax(EStats::HP) || !CurrentCompareMax(EStats::STAMINA))
+	if(!CurrentCompareMax(EStats::HP) || !CurrentCompareMax(EStats::STAMINA) && bShouldRegen)
 		TrackingRegen(DeltaTime);
 	else
 		RegenTime = 0.f;
@@ -89,7 +93,7 @@ void UStatsComponent::PlusCurrentStatValue(EStats Stat, float Value)
 	if(Value != 0.f)
 	{
 		SetCurrentStatValue(Stat, FMath::Clamp(CurrentStats[Stat] + Value, 0.f, BaseStats[Stat].MaxValue));
-		OnPlusCurrentStatValue.Broadcast(Stat, CurrentStats[Stat]); //블루프린트 위젯으로 broadcast
+		OnPlusCurrentStatValue.Broadcast(Stat, CurrentStats[Stat]); // 위젯으로 Broadcast
 	}
 }
 
@@ -125,3 +129,7 @@ float UStatsComponent::GetMaxValue(EStats Stat)
 		return 0.f;
 }
 
+void UStatsComponent::ShouldRegen(bool ShouldRegen)
+{
+	bShouldRegen = ShouldRegen;
+}
