@@ -13,6 +13,7 @@ class AMeleeGameMode : public AGameModeBase
 
 public:
 	AMeleeGameMode();
+	
 };
 
 

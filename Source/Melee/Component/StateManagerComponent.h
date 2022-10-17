@@ -26,8 +26,10 @@ public:
 	FOnActionEnd OnActionEnd;
 	FOnSprint OnSprint;
 	FOnCombatState OnCombatState;
+
 protected:
 	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	ECurrentState CurrentState;
@@ -36,17 +38,16 @@ private:
 	ECurrentAction CurrentAction;
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	EMovementType MovementType;
+	EMovementType CurrentMovementType;
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	ECurrentCombatState CurrentCombatState;
+	
 public:	//get
 	FORCEINLINE ECurrentState GetCurrentState() const { return CurrentState; }
 	FORCEINLINE ECurrentAction GetCurrentAction() const { return CurrentAction; }
-	FORCEINLINE EMovementType GetMovementType() const { return MovementType; }
-	
-public: //set
-	
+	FORCEINLINE EMovementType GetMovementType() const { return CurrentMovementType; }
+
 public:
 	void SetCurrentState(ECurrentState State);
 	void SetCurrentAction(ECurrentAction Action);

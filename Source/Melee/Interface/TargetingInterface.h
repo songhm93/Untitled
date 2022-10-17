@@ -10,7 +10,6 @@ class UTargetingInterface : public UInterface
 	GENERATED_BODY()
 };
 
-
 class MELEE_API ITargetingInterface
 {
 	GENERATED_BODY()
@@ -18,4 +17,5 @@ class MELEE_API ITargetingInterface
 public:
 	virtual bool CanBeTargeted() = 0;
 	virtual void OnTargeted(bool IsTargeted) = 0;
+
 };

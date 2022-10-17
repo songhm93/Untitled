@@ -6,7 +6,7 @@
 UStateManagerComponent::UStateManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	MovementType = EMovementType::JOGGING;
+	CurrentMovementType = EMovementType::JOGGING;
 	CurrentState = ECurrentState::NOTHING;
 	CurrentAction = ECurrentAction::NOTHING;
 	CurrentCombatState = ECurrentCombatState::NONE_COMBAT_STATE;
@@ -21,7 +21,15 @@ void UStateManagerComponent::BeginPlay()
 	{
 		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));	
 		if(CombatComp)
+		{
 			CombatComp->GetCurrentCombatState.BindUObject(this, &ThisClass::GetCurrentCombatState);
+			CombatComp->GetCurrentState.BindUObject(this, &ThisClass::GetCurrentState);
+			CombatComp->IsCurrentStateEqualToThis.BindUObject(this, &ThisClass::IsCurrentStateEqualToThis);
+			CombatComp->OnUpdateCurrentState.BindUObject(this, &ThisClass::SetCurrentState);
+			CombatComp->OnUpdateCurrentAction.BindUObject(this, &ThisClass::SetCurrentAction);
+			CombatComp->GetCurrentMovementType.BindUObject(this, &ThisClass::GetMovementType);
+		}
+			
 	}
 }
 
@@ -72,8 +80,8 @@ bool UStateManagerComponent::IsCurrentActionEqualToThis(TArray<ECurrentAction> S
 
 void UStateManagerComponent::SetMovementType(EMovementType Type)
 {
-	MovementType = Type;
-	if (MovementType == EMovementType::SPRINTING)
+	CurrentMovementType = Type;
+	if (CurrentMovementType == EMovementType::SPRINTING)
 	{
 		OnSprint.ExecuteIfBound(false);
 	}

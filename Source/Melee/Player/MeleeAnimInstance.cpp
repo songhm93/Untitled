@@ -1,6 +1,6 @@
 #include "MeleeAnimInstance.h"
 
-#include "MeleeCharacter.h"
+#include "BaseCharacter.h"
 #include "../Equipment/ToughSword.h"
 #include "../Equipment/GreatSword.h"
 #include "../Component/CombatComponent.h"
@@ -9,7 +9,7 @@
 
 void UMeleeAnimInstance::NativeInitializeAnimation()
 {
-    Character = Cast<AMeleeCharacter>(TryGetPawnOwner());
+    Character = Cast<ABaseCharacter>(TryGetPawnOwner());
     Direction = 0.f;
     if (Character && Character->GetCombatComp())
         Character->GetCombatComp()->OnUpdateWeaponType.BindUObject(this, &ThisClass::SetWeaponType);
@@ -44,9 +44,9 @@ void UMeleeAnimInstance::AnimNotify_UnEquip()
 
 void UMeleeAnimInstance::AnimNotify_ContinueAttack()
 {
-    if(Character)
+    if(Character && Character->GetCombatComp())
     {
-        Character->ContinueAttack();
+        Character->GetCombatComp()->ContinueAttack();
     }
 }
 

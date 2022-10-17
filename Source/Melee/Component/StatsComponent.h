@@ -49,34 +49,39 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UPROPERTY(BlueprintAssignable, Category = "Delegate")
 	FOnPlusCurrentStatValue OnPlusCurrentStatValue;
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	void InitDataTable(FString Path);
+
+	void TrackingRegen(float DeltaTime);
+
+	void Regen();
+
+	UFUNCTION()
+	void ShouldRegen(bool ShouldRegen);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TMap<EStats, float> CurrentStats;
 
 	UPROPERTY(VisibleAnywhere)
 	TMap<EStats, FBaseStat> BaseStats; //데이터 테이블로부터 받음
 
-	void InitDataTable(FString Path);
-	void TrackingRegen(float DeltaTime);
-	
-	void Regen();
-	float RegenTime;
-	float StaminaRegenRate;
-	float HPRegenRate;
-
-	UFUNCTION()
-	void ShouldRegen(bool ShouldRegen);
-
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess ="true"))
 	bool bShouldRegen;
+	
+	float RegenTime;
+
+	float StaminaRegenRate;
+
+	float HPRegenRate;
+
 public: //get	
 	FORCEINLINE TMap<EStats, FBaseStat> GetBaseStats() const { return BaseStats; }
 	
-public: //set
-
 public:
 	void InitStats();
 	void SetCurrentStatValue(EStats Stat, float Value);

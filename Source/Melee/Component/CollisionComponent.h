@@ -14,33 +14,42 @@ class MELEE_API UCollisionComponent : public UActorComponent
 public:	
 	UCollisionComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	bool bIsCollisionEnabled;
-	UPROPERTY()
-	TArray<AActor*> AlreadyHitActors;
-	UPROPERTY()
-	UPrimitiveComponent* CollisionMeshComponent;
-	
-	
 	void CollisionTrace();
+
 	void ClearHitActors();
 
 	UPROPERTY()
+	TArray<AActor*> AlreadyHitActors;
+
+	UPROPERTY()
+	UPrimitiveComponent* CollisionMeshComponent;
+
+	UPROPERTY()
 	ABaseWeapon* Weapon;
+
+	bool bIsCollisionEnabled;
+
 	FName StartSocketName;
+
 	FName EndSocketName;
+
 public:	//get
 	FORCEINLINE	TArray<AActor*> GetAlreayHitActors() const { return AlreadyHitActors; }
 	FORCEINLINE	bool GetIsCollisionEnabled() const { return bIsCollisionEnabled; }
 	FORCEINLINE	UPrimitiveComponent* GetCollisionMeshComponent() const { return CollisionMeshComponent; }
-public:
+
+public: //set
 	FORCEINLINE void SetCollisionMeshComponent(UPrimitiveComponent* Comp) { CollisionMeshComponent = Comp; }
 	FORCEINLINE void SetStartSocketName(FName SocketName) { StartSocketName = SocketName; }	
 	FORCEINLINE void SetEndSocketName(FName SocketName) { EndSocketName = SocketName; }	
+
 public:
+
 	UFUNCTION(BlueprintCallable)
 	void EnableCollision();
 	UFUNCTION(BlueprintCallable)

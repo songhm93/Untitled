@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,38 +15,52 @@ class MELEE_API UMonsterCombatComponent : public UActorComponent
 public:	
 	UMonsterCombatComponent();
 	FGetCurrentStatValue GetCurrentStatValue;
+
 protected:
 	virtual void BeginPlay() override;
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 private:
-	bool bEnemyWeaponCollisionEnabled;
+	void CollisionTrace();
+
+	void ClearHitActors();
+
 	UPROPERTY()
 	TArray<AActor*> AlreadyHitActors;
+
 	UPROPERTY()
 	UPrimitiveComponent* CollisionMeshComponent;
 
-	void CollisionTrace();
-	void ClearHitActors();
+
+	bool bEnemyWeaponCollisionEnabled;
 
 	FName RightWeaponStartSocketName;
+
 	FName RightWeaponEndSocketName;
+
 	FName LeftWeaponStartSocketName;
+
 	FName LeftWeaponEndSocketName;
+
 	FName WeaponStartSocketName;
+
 	FName WeaponEndSocketName;
+
 	float CloseAttackCorrectionValue;
 	
 public:	//get
 	FORCEINLINE	TArray<AActor*> GetAlreayHitActors() const { return AlreadyHitActors; }
 	FORCEINLINE	bool GetIsCollisionEnabled() const { return bEnemyWeaponCollisionEnabled; }
 	FORCEINLINE	UPrimitiveComponent* GetCollisionMeshComponent() const { return CollisionMeshComponent; }
-public:
+
+public: //set
 	FORCEINLINE void SetCollisionMeshComponent(UPrimitiveComponent* Comp) { CollisionMeshComponent = Comp; }
 	FORCEINLINE void SetStartSocketName(FName SocketName) { RightWeaponStartSocketName = SocketName; }
 	FORCEINLINE void SetEndSocketName(FName SocketName) { RightWeaponEndSocketName = SocketName; }
 	FORCEINLINE void SetCloseAttackCorrectionValue(float Value) { CloseAttackCorrectionValue = Value; }
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void EnableCollision(bool bLeftWeapon);

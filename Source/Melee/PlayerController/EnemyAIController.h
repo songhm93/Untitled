@@ -18,12 +18,16 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 
 private:
+	UPROPERTY()
 	AEnemyCharacter* EnemyCharacter;
+
 	UPROPERTY(EditAnywhere, Category = "AI Behavior", Meta = (AllowPrivateAccess = "true"))
 	UBlackboardComponent* BBComp;
+
 	UPROPERTY(EditAnywhere, Category = "AI Behavior", Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTreeComponent* BTComp;
 
 public://get
 	FORCEINLINE	UBlackboardComponent* GetBBComp() const { return BBComp; }
+	
 };

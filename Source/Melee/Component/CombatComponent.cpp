@@ -1,11 +1,13 @@
 #include "CombatComponent.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
+
 #include "../Equipment/DualWeapon.h"
 #include "../Equipment/BaseArmor.h"
 #include "../AttackDamageType.h"
 #include "../Interface/CombatInterface.h"
+#include "../PlayerController/MeleePlayerController.h"
 #include "CollisionComponent.h"
 #include "StateManagerComponent.h"
 
@@ -17,6 +19,7 @@ UCombatComponent::UCombatComponent()
 	AttackCount = 0;
 	HitFromDirection = FVector::ZeroVector;
 	AttackActionCorrectionValue = 1.f;
+	DodgeStaminaCost = 10.f;
 }
 
 void UCombatComponent::BeginPlay()
@@ -26,7 +29,18 @@ void UCombatComponent::BeginPlay()
 	if(GetOwner())
 	{
 		Controller = Cast<APawn>(GetOwner())->GetController();
+		if(Cast<AMeleePlayerController>(Controller))
+		{
+			Cast<AMeleePlayerController>(Controller)->OnLightAttack.BindUObject(this, &ThisClass::LightAttack);
+			Cast<AMeleePlayerController>(Controller)->OnChargedAttack.BindUObject(this, &ThisClass::ChargedAttack); //Attack함수를 어떻게 나눌까
+		}
+		if(Cast<ACharacter>(GetOwner())->GetMesh())
+		{
+			AnimInst = Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance();
+		}	
+		
 	}
+	
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -224,5 +238,211 @@ void UCombatComponent::ArmorBaseSetting(ABaseArmor* Armor)
 			EquippedBoot = Armor;
 			OnUpdateCurrentStatValue.ExecuteIfBound(EStats::DEF, EquippedBoot->GetArmorDEF());
 		}
+	}
+}
+
+void UCombatComponent::LightAttack()
+{
+	if(!CanAttack()) return;
+	const ECurrentState CurrentState = GetCurrentState.Execute();
+	if(CurrentState == ECurrentState::NOTHING)
+	{
+		if(CurrentState == ECurrentState::ATTACKING)
+		{
+			SetIsAttackSaved(true);
+		}
+		else
+		{
+			Attack(AttackCount);
+		}
+	}
+}
+
+void UCombatComponent::HeavyAttack()
+{
+	if(!CanAttack()) return;
+	const ECurrentState CurrentState = GetCurrentState.Execute();
+	if(CurrentState == ECurrentState::NOTHING)
+	{
+		if(CurrentState == ECurrentState::ATTACKING)
+		{
+			SetIsAttackSaved(true);
+		}
+		else
+		{
+			SubAttack(ECurrentAction::HEAVY_ATTACK);
+		}
+	}
+}
+
+void UCombatComponent::ChargedAttack()
+{
+	if(!CanAttack()) return;
+	const ECurrentState CurrentState = GetCurrentState.Execute();
+	if(CurrentState == ECurrentState::NOTHING)
+	{
+		if(CurrentState == ECurrentState::ATTACKING)
+		{
+			SetIsAttackSaved(true);
+		}
+		else
+		{
+			SubAttack(ECurrentAction::CHARGED_ATTACK);
+		}
+	}
+}
+
+void UCombatComponent::Attack(int32 Count)
+{
+	EMovementType MovementType = GetCurrentMovementType.Execute();
+	UAnimMontage* TempLightAttackMontage = nullptr;
+	UAnimMontage* TempSprintAttackMontage = nullptr;
+	FName SectionName = TEXT("");
+
+	if(AnimInst && EquippedWeapon)
+	{
+		SectionName = GetLightAttackSectionName(Count);
+
+		if(EquippedWeapon->GetWeaponType() == EWeaponType::LIGHT_SWORD)
+		{
+			TempLightAttackMontage = LSLightAttackMontage;
+			TempSprintAttackMontage = LSSprintAttackMontage;
+		}
+		else if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
+		{
+			TempLightAttackMontage = DSLightAttackMontage;
+			TempSprintAttackMontage = DSSprintAttackMontage;
+		}
+		
+		if(TempLightAttackMontage && MovementType != EMovementType::SPRINTING)
+		{
+			AnimInst->Montage_Play(TempLightAttackMontage);
+			AnimInst->Montage_JumpToSection(SectionName, TempLightAttackMontage);
+			IncrementAttackCount();
+		}
+		else if(TempSprintAttackMontage && MovementType == EMovementType::SPRINTING)
+		{
+			AnimInst->Montage_Play(TempSprintAttackMontage);
+		}
+		OnUpdateCurrentState.ExecuteIfBound(ECurrentState::ATTACKING);
+		OnUpdateCurrentAction.ExecuteIfBound(ECurrentAction::LIGHT_ATTACK);
+	}
+}
+
+void UCombatComponent::SubAttack(ECurrentAction Action)
+{
+	UAnimMontage* TempMontage = nullptr;
+	if(EquippedWeapon)
+	{
+		EWeaponType WeaponType = EquippedWeapon->GetWeaponType();
+		if(WeaponType == EWeaponType::LIGHT_SWORD)
+		{
+			switch(Action)
+			{
+				case ECurrentAction::HEAVY_ATTACK:
+					TempMontage = LSHeavyAttackMontage;
+					AttackActionCorrectionValue = 3.f;
+				break;
+				case ECurrentAction::CHARGED_ATTACK:
+					TempMontage = LSChargedAttackMontage;
+					AttackActionCorrectionValue = 4.f;
+				break;
+			}
+		}
+		else if(WeaponType == EWeaponType::DUAL_SWORD)
+		{
+			switch(Action)
+			{
+				case ECurrentAction::HEAVY_ATTACK:
+					TempMontage = DSHeavyAttackMontage;
+					AttackActionCorrectionValue = 3.f;
+				break;
+				case ECurrentAction::CHARGED_ATTACK:
+					TempMontage = DSChargedAttackMontage;
+					AttackActionCorrectionValue = 4.f;
+				break;
+			}
+		}
+		OnUpdateCurrentState.ExecuteIfBound(ECurrentState::ATTACKING);
+		OnUpdateCurrentAction.ExecuteIfBound(Action);
+		
+		Cast<ACharacter>(GetOwner())->PlayAnimMontage(TempMontage);
+	}
+}
+
+
+void UCombatComponent::ContinueAttack()
+{
+	OnUpdateCurrentState.ExecuteIfBound(ECurrentState::NOTHING);
+
+	if(GetIsAttackSaved())
+	{
+		SetIsAttackSaved(false);
+		Attack(AttackCount);
+	}
+	
+}
+
+bool UCombatComponent::CanAttack()
+{
+	
+	const ECurrentCombatState CurrentCombatState = GetCurrentCombatState.Execute();
+	bool Condition =  
+		(!EquippedWeapon || CurrentCombatState == ECurrentCombatState::NONE_COMBAT_STATE);
+	if(Condition) return false;
+	
+	TArray<ECurrentState> CharacterStates;
+	CharacterStates.Add(ECurrentState::ATTACKING);
+	CharacterStates.Add(ECurrentState::DODGING);
+	CharacterStates.Add(ECurrentState::DEAD);
+	CharacterStates.Add(ECurrentState::DISABLED);
+	CharacterStates.Add(ECurrentState::GENERAL_STATE);
+	bool ReturnValue = false;
+
+	const bool EqualTo = IsCurrentStateEqualToThis.Execute(CharacterStates);
+	if(Cast<ACharacter>(GetOwner())->GetCharacterMovement())
+		ReturnValue = (!EqualTo) && (!Cast<ACharacter>(GetOwner())->GetCharacterMovement()->IsFalling());
+	return ReturnValue;
+}
+
+FName UCombatComponent::GetLightAttackSectionName(int32 Count)
+{
+	
+	if (Count == 0)
+	{
+		AttackActionCorrectionValue = 1.f;
+		return TEXT("First");
+	}
+	else if (Count == 1)
+	{
+		AttackActionCorrectionValue = 2.f;
+		return TEXT("Second");
+	}
+	else if (Count == 2)
+	{
+		AttackActionCorrectionValue = 3.f;
+		return TEXT("Third");
+	}
+	else
+	{
+		ResetAttackCount();
+		AttackActionCorrectionValue = 1.f;
+		return TEXT("First");
+	}
+	
+	return NAME_None;
+	
+}
+
+void UCombatComponent::PerformDodge()
+{
+	if(DodgeMontage && GetOwner())
+	{
+		OnUpdateCurrentState.ExecuteIfBound(ECurrentState::DODGING);
+		OnUpdateCurrentAction.ExecuteIfBound(ECurrentAction::DODGE);
+	
+		Cast<ACharacter>(GetOwner())->PlayAnimMontage(DodgeMontage);
+		OnUpdateCurrentStatValue.ExecuteIfBound(EStats::STAMINA, -(DodgeStaminaCost));
+		
 	}
 }
