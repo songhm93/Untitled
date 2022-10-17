@@ -9,6 +9,7 @@
 DECLARE_DELEGATE_TwoParams(FOnUpdateCurrentStatValue, EStats, float);
 DECLARE_DELEGATE_RetVal_OneParam(float, FGetCurrentStatValue, EStats);
 DECLARE_DELEGATE_OneParam(FOnUpdateWeaponType, EWeaponType);
+DECLARE_DELEGATE_RetVal(ECurrentCombatState, FGetCurrentCombatState);
 
 class ABaseWeapon;
 class ABaseEquippable;
@@ -26,6 +27,7 @@ public:
 	FOnUpdateCurrentStatValue OnUpdateCurrentStatValue;
 	FGetCurrentStatValue GetCurrentStatValue;
 	FOnUpdateWeaponType OnUpdateWeaponType;
+	FGetCurrentCombatState GetCurrentCombatState;
 protected:
 	virtual void BeginPlay() override;
 private:	
@@ -40,8 +42,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta=(AllowPrivateAccess = "true"))
 	ABaseArmor* EquippedBoot;
 
-	UPROPERTY(VisibleAnywhere, Meta=(AllowPrivateAccess = "true"))
-	bool bCombatState;
 	UPROPERTY(VisibleAnywhere, Meta=(AllowPrivateAccess = "true"))
 	int32 AttackCount;
 	UPROPERTY(VisibleAnywhere, Meta=(AllowPrivateAccess = "true"))
@@ -58,11 +58,9 @@ private:
 	float AttackActionCorrectionValue;
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
-	FORCEINLINE bool GetCombatState() const { return bCombatState; }
 	FORCEINLINE bool GetIsAttackSaved() const { return bIsAttackSaved; }
 	FORCEINLINE int32 GetAttackCount() const { return AttackCount; }
 public: //set
-	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }
 	FORCEINLINE void SetIsAttackSaved(bool Boolean) { bIsAttackSaved = Boolean; }
 	FORCEINLINE void SetAttackCount(int32 Count) { AttackCount = Count; }
 	FORCEINLINE void SetAttackActionCorrectionValue(float Value) { AttackActionCorrectionValue = Value; }

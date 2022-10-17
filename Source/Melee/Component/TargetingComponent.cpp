@@ -188,7 +188,8 @@ void UTargetingComponent::UpdateRotationMode()
 {
 	if(OwnerCharacter && CombatComp && StateManagerComp)
 	{
-		if (CombatComp->GetCombatState() && StateManagerComp->GetMovementType() != EMovementType::SPRINTING && bIsTargeting)
+		
+		if (StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::COMBAT_STATE && StateManagerComp->GetMovementType() != EMovementType::SPRINTING && bIsTargeting)
 		{
 			SetRotationMode(ERotationMode::ORIENT_TO_CAMERA);
 		}

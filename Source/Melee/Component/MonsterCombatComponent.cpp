@@ -1,6 +1,7 @@
 #include "MonsterCombatComponent.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 UMonsterCombatComponent::UMonsterCombatComponent()
 {
@@ -13,6 +14,7 @@ UMonsterCombatComponent::UMonsterCombatComponent()
 	RightWeaponEndSocketName = TEXT("RightWeaponEnd");
 	LeftWeaponStartSocketName = TEXT("LeftWeaponStart");
 	LeftWeaponEndSocketName = TEXT("LeftWeaponEnd");
+	CloseAttackCorrectionValue = 1.f;
 }
 
 
@@ -32,11 +34,9 @@ void UMonsterCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 void UMonsterCombatComponent::EnableCollision(bool bLeftWeapon) //true면 왼쪽무기.
 {
-
 	ClearHitActors();
 
 	bEnemyWeaponCollisionEnabled = true;
-
 
 	if (bLeftWeapon)
 	{
@@ -61,7 +61,7 @@ void UMonsterCombatComponent::CollisionTrace()
 	if (nullptr == CollisionMeshComponent) return;
 	const FVector Start = CollisionMeshComponent->GetSocketLocation(WeaponStartSocketName);
 	const FVector End = CollisionMeshComponent->GetSocketLocation(WeaponEndSocketName);
-	float TraceRadius = 20.f;
+	float TraceRadius = 30.f;
 
 	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
 	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
@@ -70,7 +70,7 @@ void UMonsterCombatComponent::CollisionTrace()
 	TArray<AActor*> ActorsToIgnore;
 
 	ActorsToIgnore.Add(GetOwner());
-	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::None;
+	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
 	TArray<FHitResult> OutHitResult;
 
 	UKismetSystemLibrary::SphereTraceMultiForObjects(
@@ -88,8 +88,22 @@ void UMonsterCombatComponent::CollisionTrace()
 		FLinearColor::Blue,
 		5.f);
 
-	//여기에서 충돌한 애들 대미지 주는거, 델리게이트로 주는게 나을지도?
-	
+	if (!OutHitResult.IsEmpty())
+	{
+		for (auto LastHit : OutHitResult)
+		{
+			if (!AlreadyHitActors.Contains(LastHit.GetActor())) //중복이 아니면
+			{
+				const FVector HitFromDirection = GetOwner()->GetActorForwardVector();
+				AlreadyHitActors.Add(LastHit.GetActor());
+
+				const float MonsterATK = GetCurrentStatValue.Execute(EStats::ATK);
+				const float CalcATK = CloseAttackCorrectionValue * MonsterATK;
+
+				UGameplayStatics::ApplyPointDamage(LastHit.GetActor(), CalcATK, HitFromDirection, LastHit, GetOwner()->GetInstigatorController(), GetOwner(), UDamageType::StaticClass());
+			}
+		}
+	}
 }
 
 void UMonsterCombatComponent::ClearHitActors()

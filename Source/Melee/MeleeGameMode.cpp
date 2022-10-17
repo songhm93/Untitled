@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MeleeGameMode.h"
-#include "MeleeCharacter.h"
-#include "MeleePlayerController.h"
+#include "Player/MeleeCharacter.h"
+#include "PlayerController/MeleePlayerController.h"
 
 AMeleeGameMode::AMeleeGameMode()
 {

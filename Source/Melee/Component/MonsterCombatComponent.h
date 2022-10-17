@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../Type/Stats.h"
 #include "MonsterCombatComponent.generated.h"
 
+DECLARE_DELEGATE_RetVal_OneParam(float, FGetCurrentStatValue, EStats);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UMonsterCombatComponent : public UActorComponent
@@ -14,7 +16,7 @@ class MELEE_API UMonsterCombatComponent : public UActorComponent
 
 public:	
 	UMonsterCombatComponent();
-
+	FGetCurrentStatValue GetCurrentStatValue;
 protected:
 	virtual void BeginPlay() override;
 
@@ -36,7 +38,8 @@ private:
 	FName LeftWeaponEndSocketName;
 	FName WeaponStartSocketName;
 	FName WeaponEndSocketName;
-
+	float CloseAttackCorrectionValue;
+	
 public:	//get
 	FORCEINLINE	TArray<AActor*> GetAlreayHitActors() const { return AlreadyHitActors; }
 	FORCEINLINE	bool GetIsCollisionEnabled() const { return bEnemyWeaponCollisionEnabled; }
@@ -45,6 +48,7 @@ public:
 	FORCEINLINE void SetCollisionMeshComponent(UPrimitiveComponent* Comp) { CollisionMeshComponent = Comp; }
 	FORCEINLINE void SetStartSocketName(FName SocketName) { RightWeaponStartSocketName = SocketName; }
 	FORCEINLINE void SetEndSocketName(FName SocketName) { RightWeaponEndSocketName = SocketName; }
+	FORCEINLINE void SetCloseAttackCorrectionValue(float Value) { CloseAttackCorrectionValue = Value; }
 public:
 	UFUNCTION(BlueprintCallable)
 	void EnableCollision(bool bLeftWeapon);

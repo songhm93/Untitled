@@ -5,11 +5,12 @@
 #include "../Type/Types.h"
 #include "StateManagerComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateBegin, ECharacterState, CharacterState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEnd, ECharacterState, CharacterState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionBegin, ECharacterAction, CharacterAction);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEnd, ECharacterAction, CharacterAction); //여기도 나중에 정리. 굳이 다이나믹, 멀티캐스트를 쓸 필요가 없을듯
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateBegin, ECurrentState, CharacterState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateEnd, ECurrentState, CharacterState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionBegin, ECurrentAction, CharacterAction);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEnd, ECurrentAction, CharacterAction); //여기도 나중에 정리. 굳이 다이나믹, 멀티캐스트를 쓸 필요가 없을듯
 DECLARE_DELEGATE_OneParam(FOnSprint, bool);
+DECLARE_DELEGATE_OneParam(FOnCombatState, bool);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UStateManagerComponent : public UActorComponent
@@ -24,31 +25,37 @@ public:
 	FOnActionBegin OnActionBegin;
 	FOnActionEnd OnActionEnd;
 	FOnSprint OnSprint;
-
+	FOnCombatState OnCombatState;
 protected:
 	virtual void BeginPlay() override;
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	ECharacterState CurrentState;
+	ECurrentState CurrentState;
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	ECharacterAction CurrentAction;
+	ECurrentAction CurrentAction;
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	EMovementType MovementType;
-public:	//get
-	FORCEINLINE ECharacterState GetCurrentState() const { return CurrentState; }
-	FORCEINLINE ECharacterAction GetCurrentAction() const { return CurrentAction; }
-	FORCEINLINE EMovementType GetMovementType() const { return MovementType; }
-public: //set
 
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	ECurrentCombatState CurrentCombatState;
+public:	//get
+	FORCEINLINE ECurrentState GetCurrentState() const { return CurrentState; }
+	FORCEINLINE ECurrentAction GetCurrentAction() const { return CurrentAction; }
+	FORCEINLINE EMovementType GetMovementType() const { return MovementType; }
+	
+public: //set
+	
 public:
-	void SetCurrentState(ECharacterState State);
-	void SetCurrentAction(ECharacterAction Action);
-	bool IsCurrentStateEqualToThis(TArray<ECharacterState> StatesToCheck);
-	bool IsCurrentActionEqualToThis(TArray<ECharacterAction> StatesToCheck);
+	void SetCurrentState(ECurrentState State);
+	void SetCurrentAction(ECurrentAction Action);
+	bool IsCurrentStateEqualToThis(TArray<ECurrentState> StatesToCheck);
+	bool IsCurrentActionEqualToThis(TArray<ECurrentAction> StatesToCheck);
 	void ResetState();
 	void ResetAction();
 	void SetMovementType(EMovementType Type);
+	void SetCurrentCombatState(ECurrentCombatState CombatState);
+	ECurrentCombatState GetCurrentCombatState();
 		
 };

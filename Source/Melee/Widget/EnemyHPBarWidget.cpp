@@ -1,7 +1,7 @@
 #include "EnemyHPBarWidget.h"
 #include "Components/ProgressBar.h"
 #include "../Component/StatsComponent.h"
-#include "../EnemyCharacter.h"
+#include "../Monster/EnemyCharacter.h"
 
 
 void UEnemyHPBarWidget::NativePreConstruct()

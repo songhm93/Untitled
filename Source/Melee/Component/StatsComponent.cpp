@@ -3,6 +3,7 @@
 #include "../Type/Stats.h"
 #include "StateManagerComponent.h"
 #include "CombatComponent.h"
+#include "MonsterCombatComponent.h"
 
 
 
@@ -11,7 +12,7 @@ UStatsComponent::UStatsComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	
 	
-	HPRegenRate = 0.0f;
+	HPRegenRate = 0.3f;
 	StaminaRegenRate = 1.0f;
 	bShouldRegen = true;
 }
@@ -29,12 +30,14 @@ void UStatsComponent::BeginPlay()
 		if(StateManagerComp)
 			StateManagerComp->OnSprint.BindUObject(this, &ThisClass::ShouldRegen);
 		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
+		UMonsterCombatComponent* MonsterCombatComp = Cast<UMonsterCombatComponent>(GetOwner()->GetComponentByClass(UMonsterCombatComponent::StaticClass()));
 		if (CombatComp)
 		{
 			CombatComp->OnUpdateCurrentStatValue.BindUObject(this, &ThisClass::PlusCurrentStatValue);
 			CombatComp->GetCurrentStatValue.BindUObject(this, &ThisClass::GetCurrentStatValue);
 		}
-			
+		if(MonsterCombatComp)
+			MonsterCombatComp->GetCurrentStatValue.BindUObject(this, &ThisClass::GetCurrentStatValue);
 	}
 }
 

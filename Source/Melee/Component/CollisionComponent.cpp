@@ -1,7 +1,7 @@
 #include "CollisionComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-#include "../BaseWeapon.h"
+#include "../Equipment/BaseWeapon.h"
 
 UCollisionComponent::UCollisionComponent()
 {
