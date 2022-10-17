@@ -17,6 +17,7 @@
 #include "AttackDamageType.h"
 #include "Component/StateManagerComponent.h"
 #include "Component/StatsComponent.h"
+#include "Component/MonsterCombatComponent.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -38,6 +39,7 @@ AEnemyCharacter::AEnemyCharacter()
 	AttackMontageSectionNum = 3;
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	AIController = Cast<AEnemyAIController>(GetController());
+	MonsterCombatComp = CreateDefaultSubobject<UMonsterCombatComponent>(TEXT("MonsterCombatComp"));
 	
 	bTargetingState = false;
 	ReadyToAttackTime = 3.f;
@@ -99,7 +101,11 @@ void AEnemyCharacter::BeginPlay()
 
 	if(Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance()))
 	{
-		Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance())->OnApplyDamage.BindUObject(this, &ThisClass::DamageThePlayer);
+		//Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance())->OnApplyDamage.BindUObject(this, &ThisClass::DamageThePlayer);
+	}
+	if (MonsterCombatComp)
+	{
+		MonsterCombatComp->SetCollisionMeshComponent(GetMesh());
 	}
 }
 

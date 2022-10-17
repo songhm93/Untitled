@@ -5,7 +5,7 @@
 #include "EnemyAnimInstance.generated.h"
 
 
-DECLARE_DELEGATE(FOnApplyDamage);
+//DECLARE_DELEGATE(FOnApplyDamage);
 
 UCLASS()
 class MELEE_API UEnemyAnimInstance : public UAnimInstance
@@ -15,11 +15,11 @@ class MELEE_API UEnemyAnimInstance : public UAnimInstance
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
-	FOnApplyDamage OnApplyDamage;
+	//FOnApplyDamage OnApplyDamage;
 	
 
 private:
 
-	UFUNCTION()
-	void AnimNotify_ApplyDamage();
+	/*UFUNCTION()
+	void AnimNotify_ApplyDamage();*/
 };

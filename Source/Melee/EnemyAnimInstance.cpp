@@ -11,7 +11,7 @@ void UEnemyAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 }
 
-void UEnemyAnimInstance::AnimNotify_ApplyDamage()
-{
-    OnApplyDamage.ExecuteIfBound();
-}
+//void UEnemyAnimInstance::AnimNotify_ApplyDamage()
+//{
+//    OnApplyDamage.ExecuteIfBound();
+//}
