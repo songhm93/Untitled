@@ -31,6 +31,7 @@ class ATargetPoint;
 class USphereComponent;
 class AEnemyAIController;
 class UEnemyAnimInstance;
+class UMonsterCombatComponent;
 
 
 UCLASS()
@@ -150,6 +151,10 @@ private:
 	UEnemyAnimInstance* EnemyAnimInst;
 	void DamageThePlayer(); 
 	float CloseAttackCorrectionValue;
+	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UMonsterCombatComponent* MonsterCombatComp;
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
 

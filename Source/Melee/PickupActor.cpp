@@ -12,8 +12,8 @@ APickupActor::APickupActor()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	RootComponent = Mesh;
-	Mesh->SetupAttachment(RootComponent);
-	Sphere->SetupAttachment(RootComponent);
+	//Mesh->SetupAttachment(RootComponent);
+	//Sphere->SetupAttachment(RootComponent);
 
 	Sphere->SetSphereRadius(128.f);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> Cube(TEXT("/Engine/BasicShapes/Cube"));
