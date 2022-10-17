@@ -22,6 +22,6 @@ public:
 	virtual FRotator GetDesiredRotation() = 0; //이거 Enemy는 필요없음
 	virtual void ResetCombat() = 0; 
 	virtual bool CanRecieveDamage() = 0;
-	virtual float PerformCombatAction(ECharacterAction Action, ECharacterState State) = 0; 
+	virtual float PerformCombatAction(ECurrentAction Action, ECurrentState State) = 0; 
 	virtual void PerformLightAttack(int32 AttackCount) = 0;
 };

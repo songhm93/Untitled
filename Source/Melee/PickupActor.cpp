@@ -1,7 +1,7 @@
 #include "PickupActor.h"
 #include "Components/SphereComponent.h"
 
-#include "BaseEquippable.h"
+#include "Equipment/BaseEquippable.h"
 #include "Interface/EquipmentInterface.h"
 
 

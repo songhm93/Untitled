@@ -35,7 +35,7 @@ enum class EArmorType : uint8
 };
 
 UENUM(BlueprintType)
-enum class ECharacterState : uint8 //캐릭터의 상태
+enum class ECurrentState : uint8 //현재 상태
 {
     NOTHING UMETA(DisplayName = "NOTHING"),
     ATTACKING UMETA(DisplayName = "ATTACKING"),
@@ -48,7 +48,7 @@ enum class ECharacterState : uint8 //캐릭터의 상태
 };
 
 UENUM(BlueprintType)
-enum class ECharacterAction : uint8 //애니메이션 상태
+enum class ECurrentAction : uint8 //애니메이션 상태
 {
     NOTHING UMETA(DisplayName = "NOTHING"),
     GENERAL_ACTION UMETA(DisplayName = "GENERAL_ACTION"),
@@ -59,6 +59,16 @@ enum class ECharacterAction : uint8 //애니메이션 상태
     DODGE UMETA(DisplayName = "DODGE"),
     ENTER_COMBAT UMETA(DisplayName = "ENTER_COMBAT"),
     EXIT_COMBAT UMETA(DisplayName = "EXIT_COMBAT"),
+
+    MAX UMETA(DisplayName = "MAX")
+};
+
+UENUM(BlueprintType)
+enum class ECurrentCombatState : uint8 //전투 상태
+{
+    NOTHING UMETA(DisplayName = "NOTHING"),
+    COMBAT_STATE UMETA(DisplayName = "COMBAT_STATE"),
+    NONE_COMBAT_STATE UMETA(DisplayName = "NONE_COMBAT_STATE"),
 
     MAX UMETA(DisplayName = "MAX")
 };

@@ -1,15 +1,28 @@
 #include "StateManagerComponent.h"
 
 #include "../Type/Types.h"
+#include "CombatComponent.h"
 
 UStateManagerComponent::UStateManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	MovementType = EMovementType::JOGGING;
+	CurrentState = ECurrentState::NOTHING;
+	CurrentAction = ECurrentAction::NOTHING;
+	CurrentCombatState = ECurrentCombatState::NONE_COMBAT_STATE;
+
 }
 
 void UStateManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (GetOwner())
+	{
+		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));	
+		if(CombatComp)
+			CombatComp->GetCurrentCombatState.BindUObject(this, &ThisClass::GetCurrentCombatState);
+	}
 }
 
 void UStateManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -17,7 +30,7 @@ void UStateManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UStateManagerComponent::SetCurrentState(ECharacterState State)
+void UStateManagerComponent::SetCurrentState(ECurrentState State)
 {
 	if(CurrentState != State)
 	{
@@ -29,20 +42,20 @@ void UStateManagerComponent::SetCurrentState(ECharacterState State)
 
 void UStateManagerComponent::ResetState()
 {
-	SetCurrentState(ECharacterState::NOTHING);
+	SetCurrentState(ECurrentState::NOTHING);
 }
 
 void UStateManagerComponent::ResetAction()
 {
-	SetCurrentAction(ECharacterAction::NOTHING);
+	SetCurrentAction(ECurrentAction::NOTHING);
 }
 
-bool UStateManagerComponent::IsCurrentStateEqualToThis(TArray<ECharacterState> StatesToCheck)
+bool UStateManagerComponent::IsCurrentStateEqualToThis(TArray<ECurrentState> StatesToCheck)
 {
 	return StatesToCheck.Contains(CurrentState);
 }
 
-void UStateManagerComponent::SetCurrentAction(ECharacterAction Action)
+void UStateManagerComponent::SetCurrentAction(ECurrentAction Action)
 {
 	if(CurrentAction != Action)
 	{
@@ -52,7 +65,7 @@ void UStateManagerComponent::SetCurrentAction(ECharacterAction Action)
 	}
 }
 
-bool UStateManagerComponent::IsCurrentActionEqualToThis(TArray<ECharacterAction> StatesToCheck)
+bool UStateManagerComponent::IsCurrentActionEqualToThis(TArray<ECurrentAction> StatesToCheck)
 {
 	return StatesToCheck.Contains(CurrentAction);
 }
@@ -69,4 +82,23 @@ void UStateManagerComponent::SetMovementType(EMovementType Type)
 		OnSprint.ExecuteIfBound(true);
 	}
 	
+}
+
+void UStateManagerComponent::SetCurrentCombatState(ECurrentCombatState CombatState)
+{
+	CurrentCombatState = CombatState;
+	if (CurrentCombatState == ECurrentCombatState::COMBAT_STATE)
+	{
+		OnCombatState.ExecuteIfBound(true);
+	}
+	else
+	{
+		OnCombatState.ExecuteIfBound(false);
+	}
+	
+}
+
+ECurrentCombatState UStateManagerComponent::GetCurrentCombatState()
+{
+	return CurrentCombatState;
 }

@@ -2,11 +2,12 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "GameFramework/Character.h"
-#include "../DualWeapon.h"
-#include "../BaseArmor.h"
+#include "../Equipment/DualWeapon.h"
+#include "../Equipment/BaseArmor.h"
 #include "../AttackDamageType.h"
 #include "../Interface/CombatInterface.h"
 #include "CollisionComponent.h"
+#include "StateManagerComponent.h"
 
 
 UCombatComponent::UCombatComponent()
@@ -18,7 +19,6 @@ UCombatComponent::UCombatComponent()
 	AttackActionCorrectionValue = 1.f;
 }
 
-
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -27,7 +27,6 @@ void UCombatComponent::BeginPlay()
 	{
 		Controller = Cast<APawn>(GetOwner())->GetController();
 	}
-		
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -38,7 +37,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 {
-
 	if(Equipment)
 	{
 		if(Equipment->GetEquipmentType() == EEquipmentType::WEAPON)
@@ -105,7 +103,8 @@ void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 
 void UCombatComponent::AttachWeapon()
 {
-	if(GetCombatState() && EquippedWeapon)
+	const ECurrentCombatState CurrentCombatState = GetCurrentCombatState.Execute();
+	if(CurrentCombatState == ECurrentCombatState::COMBAT_STATE && EquippedWeapon)
 	{
 		if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
 		{
@@ -117,7 +116,7 @@ void UCombatComponent::AttachWeapon()
 			AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetHandSocketName());
 		}
 	}
-    else
+    else if(CurrentCombatState == ECurrentCombatState::NONE_COMBAT_STATE && EquippedWeapon)
 	{
 		if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
 		{
