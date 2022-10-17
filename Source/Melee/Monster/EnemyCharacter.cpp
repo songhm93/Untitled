@@ -67,6 +67,7 @@ void AEnemyCharacter::BeginPlay()
 	if(StateManagerComp)
 	{
 		StateManagerComp->OnStateBegin.AddDynamic(this, &ThisClass::CharacterStateBegin);
+		StateManagerComp->SetCurrentState(ECurrentState::GENERAL_STATE);
 	}
 
     if(LockOnWidget)
@@ -101,10 +102,6 @@ void AEnemyCharacter::BeginPlay()
 		}
 	}
 
-	if(Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance()))
-	{
-		//Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance())->OnApplyDamage.BindUObject(this, &ThisClass::DamageThePlayer);
-	}
 	if (MonsterCombatComp)
 	{
 		MonsterCombatComp->SetCollisionMeshComponent(GetMesh());
@@ -144,24 +141,13 @@ bool AEnemyCharacter::CanRecieveDamage()
 		return false;
 }
 
-void AEnemyCharacter::ContinueAttack()
-{
-
-}
-
-void AEnemyCharacter::ResetAttack()
-{
-
-}
-
-FRotator AEnemyCharacter::GetDesiredRotation()
-{
-    return FRotator::ZeroRotator;
-}
-
 void AEnemyCharacter::ResetCombat() 
 {
-
+	if(StateManagerComp)
+	{
+		StateManagerComp->ResetState();
+		StateManagerComp->ResetAction();
+	}
 }
 
 bool AEnemyCharacter::CanBeTargeted()
@@ -345,11 +331,12 @@ void AEnemyCharacter::AgroSphereBeginOverlap(
 
 	if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)) && AIController)
 	{
-		if(AIController)
+		if(AIController && StateManagerComp)
 		{
 			AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), OtherActor);
 			bTargetingState = true;
 			Target = OtherActor;
+			StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
 		}
 		if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
 		{
@@ -379,11 +366,12 @@ void AEnemyCharacter::AgroCancel()
 {
 	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 	
-	if(AIController)
+	if(AIController && StateManagerComp)
 	{
 		AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), nullptr);
 		bTargetingState = false;
 		Target = nullptr;
+		StateManagerComp->SetCurrentCombatState(ECurrentCombatState::NONE_COMBAT_STATE);
 	} 
 }
 
@@ -460,11 +448,4 @@ void AEnemyCharacter::ReadyToAttack()
 	{
 		AIController->GetBBComp()->SetValueAsBool("CanAttack" , true);
 	}
-}
-
-void AEnemyCharacter::DamageThePlayer()
-{
-	//여기서 라인트레이스로 앞을 긁어서 충돌한 플레이어 모두 대미지를 줄지, 그냥 타겟으로 지정한 애만 대미지를 줄지.
-
-	
 }

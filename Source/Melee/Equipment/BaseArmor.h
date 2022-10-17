@@ -12,12 +12,15 @@ class MELEE_API ABaseArmor : public ABaseEquippable
 
 public:
 	ABaseArmor();
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Stat")
 	float ArmorDEF;
+
 	UPROPERTY(EditAnywhere, Category = "Type")
 	EArmorType ArmorType;
+
 public:
-	EArmorType GetArmorType() const { return ArmorType; }
-	float GetArmorDEF() const { return ArmorDEF; }
+	FORCEINLINE EArmorType GetArmorType() const { return ArmorType; }
+	FORCEINLINE float GetArmorDEF() const { return ArmorDEF; }
 };

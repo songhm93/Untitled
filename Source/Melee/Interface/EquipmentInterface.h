@@ -19,4 +19,5 @@ class MELEE_API IEquipmentInterface
 
 public:
 	virtual void Equip(ABaseEquippable* Weapon) = 0;
+	
 };

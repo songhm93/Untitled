@@ -10,12 +10,11 @@ class UInteractable : public UInterface
 	GENERATED_BODY()
 };
 
-
-
 class MELEE_API IInteractable
 {
 	GENERATED_BODY()
 
 public:
 	virtual void Interact(AActor* Caller) = 0;
+
 };

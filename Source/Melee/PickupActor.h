@@ -16,16 +16,21 @@ class MELEE_API APickupActor : public AActor, public IInteractable
 	
 public:	
 	APickupActor();
+
 protected:
 	virtual void BeginPlay() override;
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 	virtual void Interact(AActor* Caller) override;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	TSubclassOf<ABaseEquippable> SpawnActor;
+
 	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Mesh;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta=(AllowPrivateAccess = "true"))
 	USphereComponent* Sphere;
 

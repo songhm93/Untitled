@@ -1,9 +1,11 @@
 #include "MeleePlayerController.h"
 
-#include "../Player/MeleeCharacter.h"
+#include "../Player/BaseCharacter.h"
 #include "../Type/Types.h."
 #include "../Type/Stats.h"
 #include "../Component/StatsComponent.h"
+#include "../Component/CombatComponent.h"
+#include "../Component/StateManagerComponent.h"
 
 AMeleePlayerController::AMeleePlayerController()
 {
@@ -18,7 +20,7 @@ AMeleePlayerController::AMeleePlayerController()
 void AMeleePlayerController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
-    MeleeCharacter = Cast<AMeleeCharacter>(InPawn);
+    BaseCharacter = Cast<ABaseCharacter>(InPawn);
 
 }
 
@@ -32,27 +34,29 @@ void AMeleePlayerController::BeginPlay()
 {
     Super::BeginPlay();
     
+
 }
 
 void AMeleePlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
     if(nullptr == InputComponent) return; 
-    InputComponent->BindAction("LightAttack", IE_Pressed, this, &ThisClass::LightAttackPressed);
-    InputComponent->BindAction("LightAttack", IE_Released, this, &ThisClass::LightAttackReleased);
+    InputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::AttackButtonPressed);
+    InputComponent->BindAction("Attack", IE_Released, this, &ThisClass::AttackButtonReleased);
 }
  
-void AMeleePlayerController::LightAttackPressed() 
+void AMeleePlayerController::AttackButtonPressed() 
 {
     bLeftClickIsPressed = true;
 }
 
-void AMeleePlayerController::LightAttackReleased() 
+void AMeleePlayerController::AttackButtonReleased() 
 {
     bLeftClickIsPressed = false; 
-    MeleeCharacter = MeleeCharacter == nullptr ? Cast<AMeleeCharacter>(GetPawn()) : MeleeCharacter;
-    if(MeleeCharacter && !bCharged)
-        MeleeCharacter->LightAttack();
+    //if(BaseCharacter && !bCharged)
+        //BaseCharacter->LightAttack();
+    if(!bCharged)
+        OnLightAttack.ExecuteIfBound();
     bCharged = false;
 }
 
@@ -63,8 +67,7 @@ void AMeleePlayerController::TrackingChargedAttack(float DeltaTime)
         LeftClickTime += DeltaTime;
         if(LeftClickTime >= ChargedTime)
         {
-            if(MeleeCharacter)
-                MeleeCharacter->ChargedAttack();
+            OnChargedAttack.ExecuteIfBound();
             bCharged = true;
             bLeftClickIsPressed = false;
         }
@@ -77,12 +80,17 @@ void AMeleePlayerController::TrackingChargedAttack(float DeltaTime)
 
 void AMeleePlayerController::TrackingSprint()
 {
-    if(MeleeCharacter && MeleeCharacter->GetStatComp() && MeleeCharacter->GetMovementType() == EMovementType::SPRINTING)
+    bool Condition = 
+        BaseCharacter && 
+        BaseCharacter->GetStatComp() && 
+        BaseCharacter->GetStateManagerComp() && 
+        BaseCharacter->GetStateManagerComp()->GetMovementType() == EMovementType::SPRINTING;
+    if(Condition)
     {   //현재 스태미너가 소모량보다 적은 경우, 달리지 않는데 쉬프트가 눌려 있는 경우
-        if((MeleeCharacter->GetStatComp()->GetCurrentStatValue(EStats::STAMINA) < MeleeCharacter->GetSprintStaminaCost()) || MeleeCharacter->GetVelocity().Size() <= 0.f)
+        if((BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::STAMINA) < BaseCharacter->GetSprintStaminaCost()) || BaseCharacter->GetVelocity().Size() <= 0.f)
         {
-            MeleeCharacter->SetMovementType(EMovementType::JOGGING);
+            BaseCharacter->SetMovementType(EMovementType::JOGGING);
         }
-        MeleeCharacter->GetStatComp()->PlusCurrentStatValue(EStats::STAMINA, -(MeleeCharacter->GetSprintStaminaCost()));
+        BaseCharacter->GetStatComp()->PlusCurrentStatValue(EStats::STAMINA, -(BaseCharacter->GetSprintStaminaCost()));
     }
 }

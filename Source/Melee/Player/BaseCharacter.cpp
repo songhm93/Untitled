@@ -1,4 +1,4 @@
-#include "MeleeCharacter.h"
+#include "BaseCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -23,11 +23,9 @@
 #include "../Component/StatsComponent.h"
 #include "../Component/TargetingComponent.h"
 
-AMeleeCharacter::AMeleeCharacter()
+ABaseCharacter::ABaseCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	TurnRateGamepad = 50.f;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -65,12 +63,9 @@ AMeleeCharacter::AMeleeCharacter()
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
-	CurrentMovementType = EMovementType::JOGGING;
 	WalkSpeed = 300.f;
 	JogSpeed = 500.f;
 	SprintSpeed = 700;
-	bHeavyAttack = false;
-	DodgeStaminaCost = 10.f;
 	SprintStaminaCost = 0.2f;
 	bSprintKeyPressed = false;
 	MouseSensitivity = 25.f;
@@ -80,11 +75,11 @@ AMeleeCharacter::AMeleeCharacter()
     ResetCombat();
 }
 
-void AMeleeCharacter::BeginPlay()
+void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	ResetCombat();
-	OnTakePointDamage.AddDynamic(this, &AMeleeCharacter::ReceiveDamage);
+	OnTakePointDamage.AddDynamic(this, &ABaseCharacter::ReceiveDamage);
 	if(StateManagerComp)
 	{
 		StateManagerComp->OnStateBegin.AddDynamic(this, &ThisClass::CharacterStateBegin);
@@ -109,7 +104,7 @@ void AMeleeCharacter::BeginPlay()
 	
 }
 
-void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::Jump);
@@ -125,31 +120,26 @@ void AMeleeCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 
-	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AMeleeCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("Move Right / Left", this, &AMeleeCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ABaseCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("Move Right / Left", this, &ABaseCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &ABaseCharacter::LookUp);
+	
 
-	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &AMeleeCharacter::TurnRight);
-	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AMeleeCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &AMeleeCharacter::LookUp);
-	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AMeleeCharacter::LookUpAtRate);
-
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AMeleeCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AMeleeCharacter::TouchStopped);
 }
 
-void AMeleeCharacter::TurnRight(float Rate)
+void ABaseCharacter::TurnRight(float Rate)
 {
 	//if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerYawInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
-void AMeleeCharacter::LookUp(float Rate)
+void ABaseCharacter::LookUp(float Rate)
 {
 	//if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerPitchInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
-void AMeleeCharacter::Jump()
+void ABaseCharacter::Jump()
 {
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::DODGING);
@@ -161,29 +151,7 @@ void AMeleeCharacter::Jump()
 	ResetCombat();
 }
 
-void AMeleeCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	Jump();
-}
-
-void AMeleeCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	StopJumping();
-}
-
-void AMeleeCharacter::TurnAtRate(float Rate)
-{
-	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
-	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
-}
-
-void AMeleeCharacter::LookUpAtRate(float Rate)
-{
-	if(TargetingComp && TargetingComp->GetIsTargeting()) return;
-	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
-}
-
-void AMeleeCharacter::MoveForward(float Value)
+void ABaseCharacter::MoveForward(float Value)
 {
 	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING) return;
 	if ((Controller != nullptr) && (Value != 0.0f))
@@ -197,7 +165,7 @@ void AMeleeCharacter::MoveForward(float Value)
 	}
 }
 
-void AMeleeCharacter::MoveRight(float Value)
+void ABaseCharacter::MoveRight(float Value)
 {
 	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING) return;
 	if ( (Controller != nullptr) && (Value != 0.0f) )
@@ -210,7 +178,7 @@ void AMeleeCharacter::MoveRight(float Value)
 	}
 }
 
-void AMeleeCharacter::ToggleCombat()
+void ABaseCharacter::ToggleCombat()
 {
 	if(!CanToggleCombat() || (CombatComp && !CombatComp->GetEquippedWeapon())) return;
 
@@ -222,28 +190,22 @@ void AMeleeCharacter::ToggleCombat()
 		
 		UAnimMontage* EnterCombatMontage = nullptr;
 		UAnimMontage* ExitCombatMontage = nullptr;
-		TArray<UAnimMontage*> TempArray;
 		switch (WeaponType)
 		{
 		case EWeaponType::LIGHT_SWORD:
-			EnterCombatMontage = LSEnterCombatMontage;
-			ExitCombatMontage = LSExitCombatMontage;
-			break;
-		case EWeaponType::GREAT_SWORD:
-			EnterCombatMontage = GSEnterCombatMontage;
-			ExitCombatMontage = GSExitCombatMontage;
+			EnterCombatMontage = CombatComp->GetLSEnterCombatMontage();
+			ExitCombatMontage = CombatComp->GetLSExitCombatMontage();
 			break;
 		case EWeaponType::DUAL_SWORD:
-			EnterCombatMontage = DSEnterCombatMontage;
-			ExitCombatMontage = DSExitCombatMontage;
+			EnterCombatMontage = CombatComp->GetDSEnterCombatMontage();
+			ExitCombatMontage = CombatComp->GetDSEnterCombatMontage();
 			break;
 		}
 
-		
 		if (StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE)
 		{
-			TempArray.Add(EnterCombatMontage);
-			PerformAction(0, TempArray, ECurrentState::GENERAL_STATE, ECurrentAction::ENTER_COMBAT);
+			
+			PerformAction(EnterCombatMontage, ECurrentState::GENERAL_STATE, ECurrentAction::ENTER_COMBAT);
 			StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
 			if(GetMesh() && GetMesh()->GetAnimInstance())
 			{
@@ -253,8 +215,7 @@ void AMeleeCharacter::ToggleCombat()
 		}
 		else if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::COMBAT_STATE)
 		{
-			TempArray.Add(ExitCombatMontage);
-			PerformAction(0, TempArray, ECurrentState::GENERAL_STATE, ECurrentAction::EXIT_COMBAT);
+			PerformAction(ExitCombatMontage, ECurrentState::GENERAL_STATE, ECurrentAction::EXIT_COMBAT);
 			CombatComp->ResetAttackCount();
 			StateManagerComp->SetCurrentCombatState(ECurrentCombatState::NONE_COMBAT_STATE);
 			if(GetMesh() && GetMesh()->GetAnimInstance())
@@ -270,7 +231,7 @@ void AMeleeCharacter::ToggleCombat()
 	}
 }
 
-void AMeleeCharacter::InteractButtonPressed()
+void ABaseCharacter::InteractButtonPressed()
 {
 	FVector Start = GetActorLocation();
 	FVector End = Start + GetActorForwardVector() * 100.f;
@@ -305,240 +266,21 @@ void AMeleeCharacter::InteractButtonPressed()
 	}
 }
 
-void AMeleeCharacter::LightAttack()
-{
-	bHeavyAttack = false;
-	if(!CanAttack()) return;
-	if(CombatComp && StateManagerComp && (StateManagerComp->GetCurrentState() == ECurrentState::NOTHING))
-	{
-		if(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING)
-		{
-			CombatComp->SetIsAttackSaved(true);
-		}
-		else
-		{
-			PerformLightAttack(CombatComp->GetAttackCount());
-		}
-	}
-}
-
-void AMeleeCharacter::HeavyAttack()
-{
-	bHeavyAttack = true;
-	if(!CanAttack()) return;
-	if(CombatComp && StateManagerComp && (StateManagerComp->GetCurrentState() == ECurrentState::NOTHING))
-	{
-		if(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING)
-		{
-			CombatComp->SetIsAttackSaved(true);
-		}
-		else
-		{
-			PerformAttack(ECurrentAction::HEAVY_ATTACK);
-		}
-	}
-}
-
-void AMeleeCharacter::ChargedAttack()
-{
-	bHeavyAttack = false;
-	if(!CanAttack()) return;
-	if(CombatComp && StateManagerComp && (StateManagerComp->GetCurrentState() == ECurrentState::NOTHING))
-	{
-		if(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING)
-		{
-			CombatComp->SetIsAttackSaved(true);
-		}
-		else
-		{
-			PerformAttack(ECurrentAction::CHARGED_ATTACK);
-		}
-	}
-}
-
-void AMeleeCharacter::PerformLightAttack(int32 AttackCount)
-{
-	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-	UAnimMontage* TempLightAttackMontage = nullptr;
-	UAnimMontage* TempSprintAttackMontage = nullptr;
-	FName SectionName = TEXT("");
-
-	if(StateManagerComp && CombatComp && AnimInst && CombatComp->GetEquippedWeapon())
-	{
-		SectionName = GetLightAttackSectionName(AttackCount);
-
-		if(CombatComp->GetEquippedWeapon()->GetWeaponType() == EWeaponType::LIGHT_SWORD)
-		{
-			TempLightAttackMontage = LSLightAttackMontage;
-			TempSprintAttackMontage = LSSprintAttackMontage;
-		}
-		else if(CombatComp->GetEquippedWeapon()->GetWeaponType() == EWeaponType::DUAL_SWORD)
-		{
-			TempLightAttackMontage = DSLightAttackMontage;
-			TempSprintAttackMontage = DSSprintAttackMontage;
-		}
-		else if(CombatComp->GetEquippedWeapon()->GetWeaponType() == EWeaponType::GREAT_SWORD)
-		{
-			TempLightAttackMontage = GSLightAttackMontage;
-		}
-	
-		if(TempLightAttackMontage && CurrentMovementType != EMovementType::SPRINTING)
-		{
-			AnimInst->Montage_Play(TempLightAttackMontage);
-			AnimInst->Montage_JumpToSection(SectionName, TempLightAttackMontage);
-			CombatComp->IncrementAttackCount();
-		}
-		else if(TempSprintAttackMontage && CurrentMovementType == EMovementType::SPRINTING)
-		{
-			AnimInst->Montage_Play(TempSprintAttackMontage);
-		}
-
-		StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
-		StateManagerComp->SetCurrentAction(ECurrentAction::LIGHT_ATTACK);
-	}
-}
-
-FName AMeleeCharacter::GetLightAttackSectionName(int32 AttackCount)
-{
-	if (CombatComp)
-	{
-		if (AttackCount == 0)
-		{
-			CombatComp->SetAttackActionCorrectionValue(1.f);
-			return TEXT("First");
-		}
-		else if (AttackCount == 1)
-		{
-			CombatComp->SetAttackActionCorrectionValue(2.f);
-			return TEXT("Second");
-		}
-		else if (AttackCount == 2)
-		{
-			CombatComp->SetAttackActionCorrectionValue(3.f);
-			return TEXT("Third");
-		}
-		else
-		{
-			CombatComp->ResetAttackCount();
-			CombatComp->SetAttackActionCorrectionValue(1.f);
-			return TEXT("First");
-		}
-	}
-	return NAME_None;
-	
-}
-
-void AMeleeCharacter::PerformAttack(ECurrentAction Action)
-{
-	UAnimMontage* TempMontage = nullptr;
-	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp && StatComp)
-	{
-		EWeaponType WeaponType = CombatComp->GetEquippedWeapon()->GetWeaponType();
-		if(WeaponType == EWeaponType::LIGHT_SWORD)
-		{
-			switch(Action)
-			{
-				case ECurrentAction::HEAVY_ATTACK:
-					TempMontage = LSHeavyAttackMontage;
-					CombatComp->SetAttackActionCorrectionValue(3.f);
-				break;
-				case ECurrentAction::CHARGED_ATTACK:
-					TempMontage = LSChargedAttackMontage;
-					CombatComp->SetAttackActionCorrectionValue(4.f);
-				break;
-			}
-		}
-		else if(WeaponType == EWeaponType::GREAT_SWORD)
-		{
-			switch(Action)
-			{
-				case ECurrentAction::HEAVY_ATTACK:
-					TempMontage = GSHeavyAttackMontage;
-				case ECurrentAction::CHARGED_ATTACK:
-					TempMontage = GSChargedAttackMontage;
-				break;
-			}
-		}else if(WeaponType == EWeaponType::DUAL_SWORD)
-		{
-			switch(Action)
-			{
-				case ECurrentAction::HEAVY_ATTACK:
-					TempMontage = DSHeavyAttackMontage;
-					CombatComp->SetAttackActionCorrectionValue(3.f);
-				break;
-				case ECurrentAction::CHARGED_ATTACK:
-					TempMontage = DSChargedAttackMontage;
-					CombatComp->SetAttackActionCorrectionValue(4.f);
-				break;
-			}
-		}
-		StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
-		StateManagerComp->SetCurrentAction(Action);
-		
-		
-		PlayAnimMontage(TempMontage);
-	}
-}
-
-void AMeleeCharacter::ContinueAttack() //애님 노티파이로 호출될 함수. 공격중에 또 공격 버튼을 눌렀을 때 바로 다음 공격이 발생하는 것을 막기 위함.
-{
-	if(CombatComp && StateManagerComp)
-	{
-		StateManagerComp->SetCurrentState(ECurrentState::NOTHING);
-		if(CombatComp->GetIsAttackSaved())
-		{
-			CombatComp->SetIsAttackSaved(false);
-			PerformAttack(ECurrentAction::LIGHT_ATTACK);
-		}
-	}
-}
-
-void AMeleeCharacter::ResetAttack() //애님 노티파이로 호출될 함수.
+void ABaseCharacter::HeavyAttack()
 {
 	if(CombatComp)
-	{
-		CombatComp->ResetAttackCount();
-	}
+		CombatComp->HeavyAttack();
 }
-void AMeleeCharacter::Dodge()
+
+void ABaseCharacter::Dodge()
 {
 	if(!CanDodge() || (CombatComp && !CombatComp->GetEquippedWeapon())) return;
 	
-	PerformDodge();
+	CombatComp->PerformDodge();
 }
 
-void AMeleeCharacter::PerformDodge()
-{
-	if(StateManagerComp && DodgeMontage && StatComp)
-	{
-		StateManagerComp->SetCurrentState(ECurrentState::DODGING);
-		StateManagerComp->SetCurrentAction(ECurrentAction::DODGE);
-		PlayAnimMontage(DodgeMontage);
-		StatComp->PlusCurrentStatValue(EStats::STAMINA, -(DodgeStaminaCost));
-	}
-}
 
-bool AMeleeCharacter::CanAttack()
-{
-	bool Condition = 
-		CombatComp && 
-		StateManagerComp && 
-		(!CombatComp->GetEquippedWeapon() || StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE);
-	if(Condition) return false;
-	
-	TArray<ECurrentState> CharacterStates;
-	CharacterStates.Add(ECurrentState::ATTACKING);
-	CharacterStates.Add(ECurrentState::DODGING);
-	CharacterStates.Add(ECurrentState::DEAD);
-	CharacterStates.Add(ECurrentState::DISABLED);
-	CharacterStates.Add(ECurrentState::GENERAL_STATE);
-	bool ReturnValue = false;
-	if(StateManagerComp && GetCharacterMovement())
-		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates)) && (!GetCharacterMovement()->IsFalling());
-	return ReturnValue;
-}
-
-bool AMeleeCharacter::CanToggleCombat()
+bool ABaseCharacter::CanToggleCombat()
 {
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::ATTACKING);
@@ -551,9 +293,9 @@ bool AMeleeCharacter::CanToggleCombat()
 	return ReturnValue;
 }
 
-bool AMeleeCharacter::CanDodge()
+bool ABaseCharacter::CanDodge()
 {
-	if(StatComp && (StatComp->GetCurrentStatValue(EStats::STAMINA) < DodgeStaminaCost)) return false;
+	if(StatComp && CombatComp && (StatComp->GetCurrentStatValue(EStats::STAMINA) < CombatComp->GetDodgeStaminaCost())) return false;
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::DODGING);
 	CharacterStates.Add(ECurrentState::DEAD);
@@ -565,7 +307,7 @@ bool AMeleeCharacter::CanDodge()
 	return ReturnValue;
 }
 
-FRotator AMeleeCharacter::GetDesiredRotation() //구르기시 캐릭터가 움직이고 있는 방향의 회전값을 반환
+FRotator ABaseCharacter::GetDesiredRotation() //구르기시 캐릭터가 움직이고 있는 방향의 회전값을 반환
 {
 	if(GetCharacterMovement())
 	{
@@ -579,9 +321,9 @@ FRotator AMeleeCharacter::GetDesiredRotation() //구르기시 캐릭터가 움�
 	return GetActorRotation();
 }
 
-void AMeleeCharacter::ResetCombat()
+void ABaseCharacter::ResetCombat()
 {
-	ResetAttack();
+	if(CombatComp) CombatComp->ResetAttackCount();
 	if(StateManagerComp)
 	{
 		StateManagerComp->ResetState();
@@ -589,7 +331,7 @@ void AMeleeCharacter::ResetCombat()
 	}
 }
 
-void AMeleeCharacter::ReceiveDamage(
+void ABaseCharacter::ReceiveDamage(
 	AActor* DamagedActor, 
 	float EnemyATK,
 	AController* InstigatedBy, 
@@ -624,7 +366,7 @@ void AMeleeCharacter::ReceiveDamage(
 	CalcReceiveDamage(EnemyATK);
 }
 
-void AMeleeCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
+void ABaseCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
 {
 	//대미지 계산
 	if(StatComp)
@@ -640,7 +382,7 @@ void AMeleeCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 �
 	}
 }
 
-void AMeleeCharacter::Dead()
+void ABaseCharacter::Dead()
 {
 	EnableRagdoll();
 	ApplyHitReactionPhysicsVelocity(2000.f);
@@ -651,7 +393,7 @@ void AMeleeCharacter::Dead()
 	GetWorldTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
 }
 
-void AMeleeCharacter::EnableRagdoll()
+void ABaseCharacter::EnableRagdoll()
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	FAttachmentTransformRules Rules = FAttachmentTransformRules::KeepWorldTransform;
@@ -665,14 +407,14 @@ void AMeleeCharacter::EnableRagdoll()
 	
 }
 
-void AMeleeCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
+void ABaseCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 {
 	const FVector NewVel = GetActorForwardVector() * (InitSpeed * -1.f);
 	
 	GetMesh()->SetPhysicsLinearVelocity(NewVel, false, PelvisBoneName);
 }
 
-void AMeleeCharacter::Test()
+void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
 	
@@ -683,7 +425,7 @@ void AMeleeCharacter::Test()
 	}	
 }
 
-bool AMeleeCharacter::CanRecieveDamage()
+bool ABaseCharacter::CanRecieveDamage()
 {
 	if(StateManagerComp && StateManagerComp->GetCurrentState() != ECurrentState::DEAD)
 		return true;
@@ -691,7 +433,7 @@ bool AMeleeCharacter::CanRecieveDamage()
 		return false;
 }
 
-void AMeleeCharacter::DestroyDead()
+void ABaseCharacter::DestroyDead()
 {
 	if(CombatComp && CombatComp->GetEquippedWeapon())
 	{
@@ -700,7 +442,7 @@ void AMeleeCharacter::DestroyDead()
 	Destroy();
 }
 
-void AMeleeCharacter::CharacterStateBegin(ECurrentState State)
+void ABaseCharacter::CharacterStateBegin(ECurrentState State)
 {
 	switch (State)
 	{
@@ -725,7 +467,7 @@ void AMeleeCharacter::CharacterStateBegin(ECurrentState State)
 	}
 }
 
-void AMeleeCharacter::CharacterStateEnd(ECurrentState State)
+void ABaseCharacter::CharacterStateEnd(ECurrentState State)
 {
 	switch (State)
 	{
@@ -750,7 +492,7 @@ void AMeleeCharacter::CharacterStateEnd(ECurrentState State)
 	}
 }
 
-void AMeleeCharacter::CharacterActionBegin(ECurrentAction Action)
+void ABaseCharacter::CharacterActionBegin(ECurrentAction Action)
 {
 	switch(Action)
 	{
@@ -778,7 +520,7 @@ void AMeleeCharacter::CharacterActionBegin(ECurrentAction Action)
 	}
 }
 
-void AMeleeCharacter::CharacterActionEnd(ECurrentAction Action)
+void ABaseCharacter::CharacterActionEnd(ECurrentAction Action)
 {
 	switch(Action)
 	{
@@ -806,51 +548,45 @@ void AMeleeCharacter::CharacterActionEnd(ECurrentAction Action)
 	}
 }
 
-void AMeleeCharacter::PerformAction(int32 MontageIdx, TArray<UAnimMontage*> Montage, ECurrentState State, ECurrentAction Action)
+void ABaseCharacter::PerformAction(UAnimMontage* Montage, ECurrentState State, ECurrentAction Action)
 {
-	int32 Idx = MontageIdx;
 	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp)
 	{
 		StateManagerComp->SetCurrentState(State);
 		StateManagerComp->SetCurrentAction(Action);
 
-		if(!Montage.IsEmpty())	PlayAnimMontage(Montage[0]);
-		
-		//배열로 사용할만큼인지
+		if(Montage)	PlayAnimMontage(Montage);
 	}
 }
 
-void AMeleeCharacter::ToggleWalk()
+void ABaseCharacter::ToggleWalk()
 {
-	if(CurrentMovementType != EMovementType::WALKING)
+	if(StateManagerComp && StateManagerComp->GetMovementType() != EMovementType::WALKING)
 		SetMovementType(EMovementType::WALKING);
 	else
 		SetMovementType(EMovementType::JOGGING);
 	
 }
 
-void AMeleeCharacter::SprintButtonPressed()
+void ABaseCharacter::SprintButtonPressed()
 {
 	bSprintKeyPressed = true;
 	if(GetVelocity().Size() <= 0.f) return;
 	SetMovementType(EMovementType::SPRINTING);
 }
 
-void AMeleeCharacter::SprintButtonReleased()
+void ABaseCharacter::SprintButtonReleased()
 {
 	bSprintKeyPressed = false;
 	SetMovementType(EMovementType::JOGGING);
 }
 
-void AMeleeCharacter::SetMovementType(EMovementType Type)
-{
-	if(CurrentMovementType != Type)
-		CurrentMovementType = Type;
-	
+void ABaseCharacter::SetMovementType(EMovementType Type)
+{	
 	if(GetCharacterMovement() && StateManagerComp)
 	{
 		StateManagerComp->SetMovementType(Type);
-		switch(CurrentMovementType)
+		switch(Type)
 		{
 			case EMovementType::WALKING:
 				GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -867,7 +603,7 @@ void AMeleeCharacter::SetMovementType(EMovementType Type)
 		TargetingComp->UpdateRotationMode();
 }
 
-void AMeleeCharacter::Equip(ABaseEquippable* Equipment)
+void ABaseCharacter::Equip(ABaseEquippable* Equipment)
 {
 	if(CombatComp && Equipment)
 	{
@@ -875,13 +611,13 @@ void AMeleeCharacter::Equip(ABaseEquippable* Equipment)
 	}
 }
 
-void AMeleeCharacter::ToggleLockOn()
+void ABaseCharacter::ToggleLockOn()
 {
 	if(StateManagerComp && StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
 	if(TargetingComp) TargetingComp->ToggleLockOn();
 }
 
-bool AMeleeCharacter::CanBeTargeted()
+bool ABaseCharacter::CanBeTargeted()
 {
 	if(StateManagerComp)
 	{
@@ -892,7 +628,7 @@ bool AMeleeCharacter::CanBeTargeted()
 	return false;
 }
 
-void AMeleeCharacter::OnTargeted(bool IsTargeted)
+void ABaseCharacter::OnTargeted(bool IsTargeted)
 {
 	if(LockOnWidget)
 	{
@@ -900,7 +636,7 @@ void AMeleeCharacter::OnTargeted(bool IsTargeted)
 	}
 }
 
-void AMeleeCharacter::ApplyHitReaction(EDamageType DamageType)
+void ABaseCharacter::ApplyHitReaction(EDamageType DamageType)
 {
 	switch (DamageType)
 	{
@@ -913,7 +649,7 @@ void AMeleeCharacter::ApplyHitReaction(EDamageType DamageType)
 	}
 }
 
-void AMeleeCharacter::ApplyImpactEffect(EDamageType DamageType, FVector HitLocation)
+void ABaseCharacter::ApplyImpactEffect(EDamageType DamageType, FVector HitLocation)
 {
 	if(ImpactSound && ImpactParticle)
 	{
@@ -931,7 +667,7 @@ void AMeleeCharacter::ApplyImpactEffect(EDamageType DamageType, FVector HitLocat
 	}	
 }
 
-void AMeleeCharacter::PerformHitReact()
+void ABaseCharacter::PerformHitReact()
 {
 	if(bHitFront)
 	{
@@ -946,7 +682,7 @@ void AMeleeCharacter::PerformHitReact()
 	
 }
 
-void AMeleeCharacter::PerformKnockdown()
+void ABaseCharacter::PerformKnockdown()
 {
 	if(bHitFront)
 	{
@@ -960,7 +696,7 @@ void AMeleeCharacter::PerformKnockdown()
 	}
 }
 
-float AMeleeCharacter::PerformCombatAction(ECurrentAction Action, ECurrentState State)
+float ABaseCharacter::PerformCombatAction(ECurrentAction Action, ECurrentState State)
 {
 	return 0.f;
 }

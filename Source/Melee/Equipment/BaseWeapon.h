@@ -26,11 +26,13 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", Meta = (AllowPrivateAccess = "true"))
 	EWeaponType WeaponType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	UCollisionComponent* CollisionComponent;
+
 	UPROPERTY(VisibleAnywhere, Category = "Element", Meta = (AllowPrivateAccess = "true"))
 	EElements CurrentElement;
 public: //get
@@ -46,5 +48,6 @@ public: //set
 public:
 	void OnHit(FHitResult& HitResult);
 	void SimulateWeaponPhysics();
+	
 };	
 

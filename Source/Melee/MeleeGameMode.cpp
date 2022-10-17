@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MeleeGameMode.h"
-#include "Player/MeleeCharacter.h"
+#include "Player/BaseCharacter.h"
 #include "PlayerController/MeleePlayerController.h"
 
 AMeleeGameMode::AMeleeGameMode()
@@ -12,6 +12,6 @@ AMeleeGameMode::AMeleeGameMode()
 	// {
 	// 	DefaultPawnClass = PlayerPawnBPClass.Class;
 	// }
-	DefaultPawnClass = AMeleeCharacter::StaticClass();
+	DefaultPawnClass = ABaseCharacter::StaticClass();
 	PlayerControllerClass = AMeleePlayerController::StaticClass();
 }
