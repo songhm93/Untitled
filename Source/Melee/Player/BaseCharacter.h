@@ -35,8 +35,10 @@ public:
 	virtual bool CanRecieveDamage() override;
 	virtual bool CanBeTargeted() override; //타겟이 될 수 있는지
 	virtual void OnTargeted(bool IsTargeted) override;
-	virtual float PerformCombatAction(ECurrentAction Action, ECurrentState State) override;
 	virtual void Equip(ABaseEquippable* Weapon) override;
+	virtual void CalcReceiveDamage(float ATK) override;
+	virtual void ApplyHitReaction(EDamageType DamageType) override;
+	virtual void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -80,14 +82,21 @@ private:
 
 	void Dead();
 
-	void CalcReceiveDamage(float Damage);
-
 	void EnableRagdoll();
 
 	void ApplyHitReactionPhysicsVelocity(float InitSpeed);
 
 	void DestroyDead();
 
+	void ToggleLockOn();
+
+	void PerformHitReact();
+
+	void PerformKnockdown();
+
+	FName GetLightAttackSectionName(int32 AttackCount);
+
+	UFUNCTION(BlueprintCallable)
 	FRotator GetDesiredRotation();
 
 	UFUNCTION()
@@ -101,18 +110,6 @@ private:
 
 	UFUNCTION()
 	void CharacterActionEnd(ECurrentAction Action);
-
-	void ToggleLockOn();
-
-	void ApplyHitReaction(EDamageType DamageType);
-
-	void PerformHitReact();
-
-	void PerformKnockdown();
-
-	void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation);
-
-	FName GetLightAttackSectionName(int32 AttackCount);
 
 	UFUNCTION()
 	void ReceiveDamage(

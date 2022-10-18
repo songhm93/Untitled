@@ -52,32 +52,24 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-private:
-
-	void InitDataTable(FString Path);
-
-	void TrackingRegen(float DeltaTime);
-
-	void Regen();
-
+	virtual void InitDataTable(FString Path);
+	virtual void TrackingRegen(float DeltaTime);
+	virtual void Regen();
+	bool CurrentCompareMax(EStats Stat); //current 값과 max값을 비교해서 current가 max면 채울 필요없게. 아예 트래킹 차단.
 	UFUNCTION()
 	void ShouldRegen(bool ShouldRegen);
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TMap<EStats, float> CurrentStats;
-
 	UPROPERTY(VisibleAnywhere)
 	TMap<EStats, FBaseStat> BaseStats; //데이터 테이블로부터 받음
-
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess ="true"))
 	bool bShouldRegen;
-	
 	float RegenTime;
-
 	float StaminaRegenRate;
-
 	float HPRegenRate;
+	
+private:
+	
 
 public: //get	
 	FORCEINLINE TMap<EStats, FBaseStat> GetBaseStats() const { return BaseStats; }
@@ -91,6 +83,6 @@ public:
 	float GetMaxValue(EStats Stat);
 	UFUNCTION()
 	void PlusCurrentStatValue(EStats Stat, float Value);
-	bool CurrentCompareMax(EStats Stat); //current 값과 max값을 비교해서 current가 max면 채울 필요없게. 아예 트래킹 차단.
+	
 		
 };

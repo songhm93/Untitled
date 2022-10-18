@@ -3,7 +3,6 @@
 #include "../Type/Stats.h"
 #include "StateManagerComponent.h"
 #include "CombatComponent.h"
-#include "MonsterCombatComponent.h"
 
 
 
@@ -21,7 +20,7 @@ UStatsComponent::UStatsComponent()
 void UStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/BaseStatsTable"));
 	InitDataTable(Path);
 	if (GetOwner())
@@ -30,14 +29,12 @@ void UStatsComponent::BeginPlay()
 		if(StateManagerComp)
 			StateManagerComp->OnSprint.BindUObject(this, &ThisClass::ShouldRegen);
 		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
-		UMonsterCombatComponent* MonsterCombatComp = Cast<UMonsterCombatComponent>(GetOwner()->GetComponentByClass(UMonsterCombatComponent::StaticClass()));
+		
 		if (CombatComp)
 		{
 			CombatComp->OnUpdateCurrentStatValue.BindUObject(this, &ThisClass::PlusCurrentStatValue);
 			CombatComp->GetCurrentStatValue.BindUObject(this, &ThisClass::GetCurrentStatValue);
 		}
-		if(MonsterCombatComp)
-			MonsterCombatComp->GetCurrentStatValue.BindUObject(this, &ThisClass::GetCurrentStatValue);
 	}
 }
 
@@ -73,6 +70,7 @@ void UStatsComponent::Regen()
 
 bool UStatsComponent::CurrentCompareMax(EStats Stat) //true면 같은거
 {
+	if(!CurrentStats.FindRef(Stat)) return false;
 	if(CurrentStats.FindRef(Stat) == BaseStats[Stat].MaxValue) 
 		return true;
 	else

@@ -16,7 +16,6 @@ DECLARE_DELEGATE_RetVal(ECurrentCombatState, FGetCurrentCombatState);
 DECLARE_DELEGATE_RetVal(ECurrentState, FGetCurrentState);
 DECLARE_DELEGATE_RetVal(EMovementType, FGetCurrentMovementType);
 
-
 class ABaseWeapon;
 class ABaseEquippable;
 class ABaseArmor;
@@ -47,7 +46,12 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-
+	virtual FName GetLightAttackSectionName(int32 AttackCount);
+	virtual void LightAttack();
+	FVector HitFromDirection;
+	UPROPERTY()
+	UAnimInstance* AnimInst;
+	
 private:	
 	void WeaponBaseSetting();
 
@@ -55,15 +59,11 @@ private:
 
 	void Attack(int32 AttackCount);
 
-	void LightAttack();
-
 	void ChargedAttack();
 
 	void SubAttack(ECurrentAction Action);
 
 	bool CanAttack();
-	
-	FName GetLightAttackSectionName(int32 AttackCount);
 
 	// Common
 	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
@@ -135,13 +135,8 @@ private:
 
 	UPROPERTY()
 	UAttackDamageType* AttackDamageType;
-
-	UPROPERTY()
-	UAnimInstance* AnimInst;
 	
 	float DodgeStaminaCost;
-
-	FVector HitFromDirection;
 
 	float AttackActionCorrectionValue;
 
@@ -171,5 +166,6 @@ public:
 	void PerformDodge();
 	void ContinueAttack();
 	void HeavyAttack();
+	
 	
 };

@@ -1,24 +1,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
-#include "../Type/Stats.h"
-#include "MonsterCombatComponent.generated.h"
+#include "CombatComponent.h"
+#include "MonstersCombatComponent.generated.h"
 
 DECLARE_DELEGATE_RetVal_OneParam(float, FGetCurrentStatValue, EStats);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MELEE_API UMonsterCombatComponent : public UActorComponent
+class AEnemyAIController;
+class ACharacter;
+
+UCLASS()
+class MELEE_API UMonstersCombatComponent : public UCombatComponent
 {
 	GENERATED_BODY()
 
 public:	
-	UMonsterCombatComponent();
+	UMonstersCombatComponent();
 	FGetCurrentStatValue GetCurrentStatValue;
 
 protected:
 	virtual void BeginPlay() override;
-
+	virtual FName GetLightAttackSectionName(int32 AttackCount) override;
+	UFUNCTION(BlueprintCallable)
+	virtual void LightAttack() override;
+	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -27,12 +32,26 @@ private:
 
 	void ClearHitActors();
 
+	FName GetAttackSectionName();
+
+	void ReadyToAttack();
+
 	UPROPERTY()
 	TArray<AActor*> AlreadyHitActors;
 
 	UPROPERTY()
 	UPrimitiveComponent* CollisionMeshComponent;
 
+	UPROPERTY(EditAnywhere, Category= "AttackMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* CloseRangeAttackMontage;
+
+	UPROPERTY()
+	AEnemyAIController* AIController;
+
+	UPROPERTY()
+	ACharacter* OwnerCharacter;
+
+	bool bCanAttack;
 
 	bool bEnemyWeaponCollisionEnabled;
 
@@ -49,12 +68,16 @@ private:
 	FName WeaponEndSocketName;
 
 	float CloseAttackCorrectionValue;
+
+	FTimerHandle ReadyToAttackTimerHandle;
+
+	float ReadyToAttackTime;
 	
 public:	//get
 	FORCEINLINE	TArray<AActor*> GetAlreayHitActors() const { return AlreadyHitActors; }
 	FORCEINLINE	bool GetIsCollisionEnabled() const { return bEnemyWeaponCollisionEnabled; }
 	FORCEINLINE	UPrimitiveComponent* GetCollisionMeshComponent() const { return CollisionMeshComponent; }
-
+	FORCEINLINE	bool CanAttack() const { return bCanAttack; }
 public: //set
 	FORCEINLINE void SetCollisionMeshComponent(UPrimitiveComponent* Comp) { CollisionMeshComponent = Comp; }
 	FORCEINLINE void SetStartSocketName(FName SocketName) { RightWeaponStartSocketName = SocketName; }
@@ -66,6 +89,4 @@ public:
 	void EnableCollision(bool bLeftWeapon);
 	UFUNCTION(BlueprintCallable)
 	void DisableCollision();
-
-		
 };
