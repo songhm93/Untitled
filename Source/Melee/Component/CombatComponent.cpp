@@ -7,9 +7,9 @@
 #include "../Equipment/BaseArmor.h"
 #include "../AttackDamageType.h"
 #include "../Interface/CombatInterface.h"
+#include "../Interface/TargetingInterface.h"
 #include "../PlayerController/MeleePlayerController.h"
 #include "CollisionComponent.h"
-#include "StateManagerComponent.h"
 
 
 UCombatComponent::UCombatComponent()
@@ -38,9 +38,7 @@ void UCombatComponent::BeginPlay()
 		{
 			AnimInst = Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance();
 		}	
-		
 	}
-	
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -160,7 +158,7 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult) //내 총 공격력
 		{
 			HitFromDirection = GetOwner()->GetActorForwardVector();
 			
-			if(Cast<ICombatInterface>(HitResult.GetActor())->CanRecieveDamage())
+			if(HitResult.GetActor()->Implements<UCombatInterface>() &&  Cast<ICombatInterface>(HitResult.GetActor())->CanRecieveDamage())
 			{
 				if (GetCurrentStatValue.IsBound())
 				{
@@ -385,7 +383,6 @@ void UCombatComponent::ContinueAttack()
 
 bool UCombatComponent::CanAttack()
 {
-	
 	const ECurrentCombatState CurrentCombatState = GetCurrentCombatState.Execute();
 	bool Condition =  
 		(!EquippedWeapon || CurrentCombatState == ECurrentCombatState::NONE_COMBAT_STATE);
@@ -407,7 +404,6 @@ bool UCombatComponent::CanAttack()
 
 FName UCombatComponent::GetLightAttackSectionName(int32 Count)
 {
-	
 	if (Count == 0)
 	{
 		AttackActionCorrectionValue = 1.f;

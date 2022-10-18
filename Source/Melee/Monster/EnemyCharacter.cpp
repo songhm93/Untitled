@@ -17,9 +17,10 @@
 #include "../Widget/EnemyHPBarWidget.h"
 #include "../PlayerController/EnemyAIController.h"
 #include "../Component/StateManagerComponent.h"
-#include "../Component/StatsComponent.h"
-#include "../Component/MonsterCombatComponent.h"
+#include "../Component/MonsterStatsComponent.h"
+#include "../Component/MonstersCombatComponent.h"
 #include "../Type/Elements.h"
+
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -28,7 +29,7 @@ AEnemyCharacter::AEnemyCharacter()
 	LockOnWidget->SetupAttachment(GetMesh());
     HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBarWidget"));
     HPBarWidget->SetupAttachment(GetMesh());
-    StatComp = CreateDefaultSubobject<UStatsComponent>(TEXT("StatComp"));
+    MonsterStatComp = CreateDefaultSubobject<UMonsterStatsComponent>(TEXT("MonsterStatComp"));
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 	HideHPBarTime = 3.f;
@@ -40,11 +41,8 @@ AEnemyCharacter::AEnemyCharacter()
 	AttackMontageSectionNum = 3;
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	AIController = Cast<AEnemyAIController>(GetController());
-	MonsterCombatComp = CreateDefaultSubobject<UMonsterCombatComponent>(TEXT("MonsterCombatComp"));
-	
+	MonsterCombatComp = CreateDefaultSubobject<UMonstersCombatComponent>(TEXT("MonstersCC"));
 	bTargetingState = false;
-	ReadyToAttackTime = 3.f;
-	bCanAttack = true;
 	CurrentElement = EElements::NONE;
 }
 
@@ -52,12 +50,10 @@ void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(bTargetingState && Target && !bCanAttack)
+	if(MonsterCombatComp && bTargetingState && Target && !MonsterCombatComp->CanAttack())
 	{
 		LookAtPlayer(Target, DeltaTime);
 	}
-	
-
 }
 
 void AEnemyCharacter::BeginPlay()
@@ -66,8 +62,9 @@ void AEnemyCharacter::BeginPlay()
 
 	if(StateManagerComp)
 	{
-		StateManagerComp->OnStateBegin.AddDynamic(this, &ThisClass::CharacterStateBegin);
+		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
 		StateManagerComp->SetCurrentState(ECurrentState::GENERAL_STATE);
+		StateManagerComp->OnCombatState.AddUObject(this, &ThisClass::HPBarOnOff);
 	}
 
     if(LockOnWidget)
@@ -85,10 +82,10 @@ void AEnemyCharacter::BeginPlay()
 		AgroRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::AgroSphereEndOverlap);
 	}
 	
-	if(StatComp)
+	if(MonsterStatComp)
 	{
-		StatComp->InitStats();
-		StatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f);
+		MonsterStatComp->InitStats();
+		MonsterStatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f);
 	}
 
 	if(HPBarWidget)
@@ -98,7 +95,7 @@ void AEnemyCharacter::BeginPlay()
 		{
 			HPBarWidget->SetWidget(EnemyHPBarWidget);
 			HPBarWidget->SetVisibility(false);
-			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->Init(StatComp);
+			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->Init(MonsterStatComp);
 		}
 	}
 
@@ -106,31 +103,6 @@ void AEnemyCharacter::BeginPlay()
 	{
 		MonsterCombatComp->SetCollisionMeshComponent(GetMesh());
 	}
-}
-
-FName AEnemyCharacter::GetAttackSectionName()
-{
-	FName ReturnValue = TEXT("");
-	int32 RandomValue = FMath::RandRange(0, 2);
-	if (MonsterCombatComp)
-	{
-		if (RandomValue == 0)
-		{
-			MonsterCombatComp->SetCloseAttackCorrectionValue(1.f);
-			ReturnValue = TEXT("First");
-		}
-		else if (RandomValue == 1)
-		{
-			MonsterCombatComp->SetCloseAttackCorrectionValue(2.f);
-			ReturnValue = TEXT("Second");
-		}
-		else if (RandomValue == 2)
-		{
-			MonsterCombatComp->SetCloseAttackCorrectionValue(3.f);
-			ReturnValue = TEXT("Third");
-		}
-	}
-    return ReturnValue;
 }
 
 bool AEnemyCharacter::CanRecieveDamage()
@@ -145,7 +117,7 @@ void AEnemyCharacter::ResetCombat()
 {
 	if(StateManagerComp)
 	{
-		StateManagerComp->ResetState();
+		StateManagerComp->SetCurrentState(ECurrentState::GENERAL_STATE);
 		StateManagerComp->ResetAction();
 	}
 }
@@ -169,11 +141,10 @@ void AEnemyCharacter::OnTargeted(bool IsTargeted)
 
 		if(IsTargeted)
 			HPBarWidget->SetVisibility(IsTargeted);
-		else
-			GetWorldTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
-		
 	}
 }
+
+
 
 void AEnemyCharacter::HideHPBar()
 {
@@ -215,12 +186,12 @@ void AEnemyCharacter::ReceiveDamage(
 void AEnemyCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
 {
 	//대미지 계산
-	if(StatComp)
+	if(MonsterStatComp)
 	{
-		const float Def = StatComp->GetCurrentStatValue(EStats::DEF);
+		const float Def = MonsterStatComp->GetCurrentStatValue(EStats::DEF);
 		const float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
-		StatComp->PlusCurrentStatValue(EStats::HP, Result * -1); //HP 적용
-		if(StatComp->GetCurrentStatValue(EStats::HP) <= 0)
+		MonsterStatComp->PlusCurrentStatValue(EStats::HP, Result * -1); //HP 적용
+		if(MonsterStatComp->GetCurrentStatValue(EStats::HP) <= 0)
 		{
 			if(StateManagerComp)
 				StateManagerComp->SetCurrentState(ECurrentState::DEAD);
@@ -372,60 +343,8 @@ void AEnemyCharacter::AgroCancel()
 		bTargetingState = false;
 		Target = nullptr;
 		StateManagerComp->SetCurrentCombatState(ECurrentCombatState::NONE_COMBAT_STATE);
+		OnTargeted(false);
 	} 
-}
-
-
-
-float AEnemyCharacter::PerformCombatAction(ECurrentAction Action, ECurrentState State)
-{
-	return 0.f;
-}
-
-void AEnemyCharacter::PerformLightAttack(int32 AttackCount)
-{
-	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-	FName SectionName = GetLightAttackSectionName(AttackCount);
-
-	if(StateManagerComp && AnimInst)
-	{
-		if(CloseRangeAttackMontage)
-		{
-			AnimInst->Montage_Play(CloseRangeAttackMontage);
-			AnimInst->Montage_JumpToSection(SectionName, CloseRangeAttackMontage);
-		}
-		
-		StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
-		StateManagerComp->SetCurrentAction(ECurrentAction::LIGHT_ATTACK);
-
-		bCanAttack = false;
-		AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
-		if(AIController && AIController->GetBBComp())
-		{
-			AIController->GetBBComp()->SetValueAsBool("CanAttack" , false);
-		}
-		GetWorldTimerManager().SetTimer(ReadyToAttackTimerHandle, this, &ThisClass::ReadyToAttack, ReadyToAttackTime);
-	}
-}
-
-FName AEnemyCharacter::GetLightAttackSectionName(int32 AttackCount)
-{
-	if(AttackCount == 1) 
-	{
-		MonsterCombatComp->SetCloseAttackCorrectionValue(1.f);
-		return TEXT("First");
-	}
-	else if(AttackCount == 2) 
-	{
-		MonsterCombatComp->SetCloseAttackCorrectionValue(2.f);
-		return TEXT("Second");
-	}
-	else if(AttackCount == 3) 
-	{
-		MonsterCombatComp->SetCloseAttackCorrectionValue(3.f);
-		return TEXT("Third");
-	}
-	return NAME_None;
 }
 
 void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
@@ -441,11 +360,18 @@ void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 	}
 }
 
-void AEnemyCharacter::ReadyToAttack()
+
+void AEnemyCharacter::HPBarOnOff(bool Show)
 {
-	bCanAttack = true;
-	if(AIController && AIController->GetBBComp())
+	if(HPBarWidget)
 	{
-		AIController->GetBBComp()->SetValueAsBool("CanAttack" , true);
+		if(Show)
+		{
+			HPBarWidget->SetVisibility(Show);
+		}
+		else
+		{
+			GetWorldTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
+		}
 	}
 }

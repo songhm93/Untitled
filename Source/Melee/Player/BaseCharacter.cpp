@@ -23,6 +23,7 @@
 #include "../Component/StatsComponent.h"
 #include "../Component/TargetingComponent.h"
 
+
 ABaseCharacter::ABaseCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -33,7 +34,6 @@ ABaseCharacter::ABaseCharacter()
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -48,17 +48,13 @@ ABaseCharacter::ABaseCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false; 
-	
 
 	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 	StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerComp"));
 	StatComp = CreateDefaultSubobject<UStatsComponent>(TEXT("StatComp"));
-
-	if(StateManagerComp)
-		StateManagerComp->SetCurrentState(ECurrentState::NOTHING);
-
 	TargetingComp = CreateDefaultSubobject<UTargetingComponent>(TEXT("TargetingComp"));
 	LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
+	
 	LockOnWidget->SetupAttachment(GetMesh());
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
@@ -71,7 +67,6 @@ ABaseCharacter::ABaseCharacter()
 	MouseSensitivity = 25.f;
 	bHitFront = false;
 
-
     ResetCombat();
 }
 
@@ -82,10 +77,10 @@ void ABaseCharacter::BeginPlay()
 	OnTakePointDamage.AddDynamic(this, &ABaseCharacter::ReceiveDamage);
 	if(StateManagerComp)
 	{
-		StateManagerComp->OnStateBegin.AddDynamic(this, &ThisClass::CharacterStateBegin);
-		StateManagerComp->OnStateEnd.AddDynamic(this, &ThisClass::CharacterStateEnd);
-		StateManagerComp->OnActionBegin.AddDynamic(this, &ThisClass::CharacterActionBegin);
-		StateManagerComp->OnActionEnd.AddDynamic(this, &ThisClass::CharacterActionEnd);
+		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
+		StateManagerComp->OnStateEnd.AddUObject(this, &ThisClass::CharacterStateEnd);
+		StateManagerComp->OnActionBegin.AddUObject(this, &ThisClass::CharacterActionBegin);
+		StateManagerComp->OnActionEnd.AddUObject(this, &ThisClass::CharacterActionEnd);
 	}
 	
 	if(StatComp)
@@ -120,22 +115,21 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 
+	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &ABaseCharacter::TurnRight);
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ABaseCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &ABaseCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &ABaseCharacter::LookUp);
 	
-
 }
+
 
 void ABaseCharacter::TurnRight(float Rate)
 {
-	//if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerYawInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
 void ABaseCharacter::LookUp(float Rate)
 {
-	//if(TargetingComp && TargetingComp->GetIsTargeting()) return;
 	AddControllerPitchInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
@@ -696,9 +690,5 @@ void ABaseCharacter::PerformKnockdown()
 	}
 }
 
-float ABaseCharacter::PerformCombatAction(ECurrentAction Action, ECurrentState State)
-{
-	return 0.f;
-}
 
 

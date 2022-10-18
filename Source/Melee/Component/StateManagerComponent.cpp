@@ -97,13 +97,12 @@ void UStateManagerComponent::SetCurrentCombatState(ECurrentCombatState CombatSta
 	CurrentCombatState = CombatState;
 	if (CurrentCombatState == ECurrentCombatState::COMBAT_STATE)
 	{
-		OnCombatState.ExecuteIfBound(true);
+		OnCombatState.Broadcast(true);
 	}
 	else
 	{
-		OnCombatState.ExecuteIfBound(false);
+		OnCombatState.Broadcast(false);
 	}
-	
 }
 
 ECurrentCombatState UStateManagerComponent::GetCurrentCombatState()

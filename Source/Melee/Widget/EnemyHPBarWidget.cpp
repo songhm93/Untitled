@@ -15,8 +15,6 @@ void UEnemyHPBarWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    //UStatsComponent* Temp =  Cast<UStatsComponent>(GetOwningPlayer()->GetComponentByClass(UStatsComponent::StaticClass()));
-    //Init(Temp);
 
 }
 

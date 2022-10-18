@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "../Type/Types.h"
+#include "../Type/DamageTypes.h"
 #include "CombatInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -19,6 +19,7 @@ class MELEE_API ICombatInterface
 public:
 	virtual void ResetCombat() = 0; 
 	virtual bool CanRecieveDamage() = 0;
-	virtual float PerformCombatAction(ECurrentAction Action, ECurrentState State) = 0; 
-
+	virtual void CalcReceiveDamage(float ATK) = 0;
+	virtual void ApplyHitReaction(EDamageType DamageType) = 0;
+	virtual void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation) = 0;
 };

@@ -29,6 +29,4 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
             }
         }
     }
-    
-
 }

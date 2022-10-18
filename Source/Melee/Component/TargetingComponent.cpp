@@ -68,6 +68,7 @@ void UTargetingComponent::EnableLockOn()
 void UTargetingComponent::DisableLockOn()
 {
 	SetIsTargeting(false);
+	UpdateRotationMode();
 	TargetActor = nullptr;
 }
 

@@ -27,12 +27,12 @@ class USoundCue;
 class UBehaviorTree;
 class UStateManagerComponent;
 class UWidgetComponent;
-class UStatsComponent;
+class UMonsterStatsComponent;
 class ATargetPoint;
 class USphereComponent;
 class AEnemyAIController;
 class UEnemyAnimInstance;
-class UMonsterCombatComponent;
+class UMonstersCombatComponent;
 
 
 UCLASS()
@@ -44,23 +44,18 @@ public:
 	AEnemyCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual bool CanRecieveDamage() override;
+	UFUNCTION(BlueprintCallable)
 	virtual void ResetCombat() override;
 	virtual bool CanBeTargeted() override;
 	virtual void OnTargeted(bool IsTargeted) override;
-	virtual float PerformCombatAction(ECurrentAction Action, ECurrentState State) override;
-	
+	virtual void CalcReceiveDamage(float ATK) override;
+	virtual void ApplyHitReaction(EDamageType DamageType) override;
+	virtual void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation) override;
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	FName GetAttackSectionName();
-
-	void CalcReceiveDamage(float EnemyATK);
-
-	void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation);
-
-	void ApplyHitReaction(EDamageType DamageType);
-	
 	void Dead();
 
 	void EnableRagdoll();
@@ -75,17 +70,13 @@ private:
 
 	void LookAtPlayer(AActor* Player, float DeltaTime);
 
-	FName GetLightAttackSectionName(int32 AttackCount);
+	void HPBarOnOff(bool Show);
 
-	void ReadyToAttack();
-	
 	UFUNCTION()
 	void AgroSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	UFUNCTION()
 	void AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
-	UFUNCTION(BlueprintCallable)
-	void PerformLightAttack(int32 AttackCount);
 
 	UFUNCTION()
 	void CharacterStateBegin(ECurrentState State);
@@ -107,9 +98,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle;
-
-	UPROPERTY(EditAnywhere, Category= "AttackMontage", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* CloseRangeAttackMontage;
 
 	UPROPERTY(EditAnywhere, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HitReactFrontMontage;
@@ -136,7 +124,7 @@ private:
 	UWidgetComponent* HPBarWidget;
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UStatsComponent* StatComp;
+	UMonsterStatsComponent* MonsterStatComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Patrol", Meta = (AllowPrivateAccess = "true"))
 	TArray<ATargetPoint*> PatrolPoints;
@@ -162,8 +150,8 @@ private:
 	UPROPERTY()
 	UEnemyAnimInstance* EnemyAnimInst;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UMonsterCombatComponent* MonsterCombatComp;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UMonstersCombatComponent* MonsterCombatComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Element", Meta = (AllowPrivateAccess = "true"))
 	EElements CurrentElement;
@@ -188,14 +176,10 @@ private:
 	
 	bool bTargetingState;
 	
-	FTimerHandle ReadyToAttackTimerHandle;
 
-	float ReadyToAttackTime;
-	
-	bool bCanAttack;
 	
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
-
+	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
 	
 };
