@@ -73,7 +73,8 @@ private:
 
 public: //get	
 	FORCEINLINE TMap<EStats, FBaseStat> GetBaseStats() const { return BaseStats; }
-	
+public:
+	FORCEINLINE void SetShouldRegen(bool Boolean){ bShouldRegen = Boolean; }
 public:
 	void InitStats();
 	void SetCurrentStatValue(EStats Stat, float Value);

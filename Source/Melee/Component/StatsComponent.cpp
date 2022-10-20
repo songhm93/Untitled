@@ -27,7 +27,7 @@ void UStatsComponent::BeginPlay()
 	{
 		UStateManagerComponent* StateManagerComp = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
 		if(StateManagerComp)
-			StateManagerComp->OnSprint.BindUObject(this, &ThisClass::ShouldRegen);
+			StateManagerComp->ShouldRegen.BindUObject(this, &ThisClass::ShouldRegen);
 		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
 		
 		if (CombatComp)
@@ -42,7 +42,7 @@ void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(!CurrentCompareMax(EStats::HP) || !CurrentCompareMax(EStats::STAMINA) && bShouldRegen)
+	if((!CurrentCompareMax(EStats::HP) || !CurrentCompareMax(EStats::STAMINA)) && bShouldRegen)
 		TrackingRegen(DeltaTime);
 	else
 		RegenTime = 0.f;

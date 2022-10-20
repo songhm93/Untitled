@@ -115,6 +115,7 @@ void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 
 void UCombatComponent::AttachWeapon()
 {
+	if(!GetCurrentCombatState.IsBound()) return;
 	const ECurrentCombatState CurrentCombatState = GetCurrentCombatState.Execute();
 	if(CurrentCombatState == ECurrentCombatState::COMBAT_STATE && EquippedWeapon)
 	{
@@ -241,7 +242,7 @@ void UCombatComponent::ArmorBaseSetting(ABaseArmor* Armor)
 
 void UCombatComponent::LightAttack()
 {
-	if(!CanAttack()) return;
+	if(!CanAttack() || !GetCurrentState.IsBound()) return;
 	const ECurrentState CurrentState = GetCurrentState.Execute();
 	if(CurrentState == ECurrentState::NOTHING)
 	{
@@ -258,7 +259,7 @@ void UCombatComponent::LightAttack()
 
 void UCombatComponent::HeavyAttack()
 {
-	if(!CanAttack()) return;
+	if(!CanAttack() || !GetCurrentState.IsBound()) return;
 	const ECurrentState CurrentState = GetCurrentState.Execute();
 	if(CurrentState == ECurrentState::NOTHING)
 	{
@@ -275,7 +276,7 @@ void UCombatComponent::HeavyAttack()
 
 void UCombatComponent::ChargedAttack()
 {
-	if(!CanAttack()) return;
+	if(!CanAttack() || !GetCurrentState.IsBound()) return;
 	const ECurrentState CurrentState = GetCurrentState.Execute();
 	if(CurrentState == ECurrentState::NOTHING)
 	{
@@ -383,6 +384,7 @@ void UCombatComponent::ContinueAttack()
 
 bool UCombatComponent::CanAttack()
 {
+	if(!GetCurrentCombatState.IsBound() || !IsCurrentStateEqualToThis.IsBound()) return false;
 	const ECurrentCombatState CurrentCombatState = GetCurrentCombatState.Execute();
 	bool Condition =  
 		(!EquippedWeapon || CurrentCombatState == ECurrentCombatState::NONE_COMBAT_STATE);
