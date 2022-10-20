@@ -8,7 +8,7 @@ enum class EAIBehavior : uint8
     ATTACK UMETA(DisplayName="ATTACK"),
     CHASE UMETA(DisplayName="CHASE"),
     PATROL UMETA(DisplayName="PATROL"),
-    HIT UMETA(DisplayName="HIT"),
+    RETURN UMETA(DisplayName="RETURN"),
 
     MAX UMETA(DisplayName="MAX")
 };

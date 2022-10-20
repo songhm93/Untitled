@@ -12,7 +12,8 @@ EBTNodeResult::Type UBTTask_SetMovementSpeed::ExecuteTask(UBehaviorTreeComponent
         if(MonsterCharacter && MonsterCharacter->GetCharacterMovement())
         {
             MonsterCharacter->GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
+            return EBTNodeResult::Succeeded;
         }
     }
-    return EBTNodeResult::Succeeded;
+    return EBTNodeResult::Failed;
 }

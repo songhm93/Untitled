@@ -39,7 +39,6 @@ public:
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
 	virtual void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation) override;
-
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -54,6 +53,8 @@ protected:
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
+
+	void CameraZoomInOut(float Rate);
 	
 	void ToggleCombat();
 
@@ -101,15 +102,6 @@ private:
 
 	UFUNCTION()
 	void CharacterStateBegin(ECurrentState State);
-
-	UFUNCTION()
-	void CharacterStateEnd(ECurrentState State);
-
-	UFUNCTION()
-	void CharacterActionBegin(ECurrentAction Action);
-
-	UFUNCTION()
-	void CharacterActionEnd(ECurrentAction Action);
 
 	UFUNCTION()
 	void ReceiveDamage(
