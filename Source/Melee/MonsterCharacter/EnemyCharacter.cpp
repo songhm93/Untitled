@@ -170,7 +170,7 @@ void AEnemyCharacter::ReceiveDamage(
 		float DotProductResult = GetDotProductTo(InstigatedBy->GetPawn()); //맞은 캐릭터와 때린 캐릭터간의 내적
 		bHitFront = FMath::IsWithin(DotProductResult, -0.1f, 1.f);
 
-		if(DamageType)
+		if(Cast<UAttackDamageType>(DamageType))
 		{
 			ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
 			ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType(), HitLocation);
@@ -308,6 +308,7 @@ void AEnemyCharacter::AgroSphereBeginOverlap(
 			bTargetingState = true;
 			Target = OtherActor;
 			StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
+			AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), true);
 		}
 		if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
 		{
@@ -343,12 +344,19 @@ void AEnemyCharacter::AgroCancel()
 		bTargetingState = false;
 		Target = nullptr;
 		StateManagerComp->SetCurrentCombatState(ECurrentCombatState::NONE_COMBAT_STATE);
+		AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), false);
 		OnTargeted(false);
 	} 
 }
 
 void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 {
+	
+	if(Player && Player->Implements<UTargetingInterface>() && !(Cast<ITargetingInterface>(Player)->CanBeTargeted()))
+	{
+		AgroCancel();
+		return;
+	}
 	if(Player)
 	{
 		const FVector PlayerLocation = Player->GetActorLocation();
@@ -359,7 +367,6 @@ void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 		SetActorRotation(FRotator(0.f, ResultRotation.Yaw, 0.f));
 	}
 }
-
 
 void AEnemyCharacter::HPBarOnOff(bool Show)
 {

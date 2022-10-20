@@ -1,6 +1,6 @@
 #include "MeleePlayerController.h"
 
-#include "../Player/BaseCharacter.h"
+#include "../PlayerCharacter/BaseCharacter.h"
 #include "../Type/Types.h."
 #include "../Type/Stats.h"
 #include "../Component/StatsComponent.h"

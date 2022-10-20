@@ -66,8 +66,6 @@ private:
 	
 	void HideHPBar();
 
-	void AgroCancel();	
-
 	void LookAtPlayer(AActor* Player, float DeltaTime);
 
 	void HPBarOnOff(bool Show);
@@ -176,10 +174,12 @@ private:
 	
 	bool bTargetingState;
 	
-
-	
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
+	FORCEINLINE TArray<ATargetPoint*> GetPatrolPoints() const { return PatrolPoints; }
+
+public:
+	void AgroCancel();	
 	
 };

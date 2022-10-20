@@ -17,12 +17,13 @@ class MELEE_API UMonstersCombatComponent : public UCombatComponent
 public:	
 	UMonstersCombatComponent();
 	FGetCurrentStatValue GetCurrentStatValue;
-
+	UFUNCTION(BlueprintCallable)
+	virtual void LightAttack() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual FName GetLightAttackSectionName(int32 AttackCount) override;
-	UFUNCTION(BlueprintCallable)
-	virtual void LightAttack() override;
+	
+	
 	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
