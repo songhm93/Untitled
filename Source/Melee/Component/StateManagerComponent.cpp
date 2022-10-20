@@ -29,7 +29,6 @@ void UStateManagerComponent::BeginPlay()
 			CombatComp->OnUpdateCurrentAction.BindUObject(this, &ThisClass::SetCurrentAction);
 			CombatComp->GetCurrentMovementType.BindUObject(this, &ThisClass::GetMovementType);
 		}
-			
 	}
 }
 
@@ -42,9 +41,10 @@ void UStateManagerComponent::SetCurrentState(ECurrentState State)
 {
 	if(CurrentState != State)
 	{
-		OnStateEnd.Broadcast(CurrentState);
 		CurrentState = State;
 		OnStateBegin.Broadcast(CurrentState);
+		if(CurrentState == ECurrentState::DEAD)
+			ShouldRegen.ExecuteIfBound(false);
 	}
 }
 
@@ -67,9 +67,7 @@ void UStateManagerComponent::SetCurrentAction(ECurrentAction Action)
 {
 	if(CurrentAction != Action)
 	{
-		OnActionEnd.Broadcast(CurrentAction);
 		CurrentAction = Action;
-		OnActionBegin.Broadcast(CurrentAction);
 	}
 }
 
@@ -83,11 +81,11 @@ void UStateManagerComponent::SetMovementType(EMovementType Type)
 	CurrentMovementType = Type;
 	if (CurrentMovementType == EMovementType::SPRINTING)
 	{
-		OnSprint.ExecuteIfBound(false);
+		ShouldRegen.ExecuteIfBound(false);
 	}
 	else
 	{
-		OnSprint.ExecuteIfBound(true);
+		ShouldRegen.ExecuteIfBound(true);
 	}
 	
 }

@@ -26,7 +26,7 @@ void UMonsterStatsComponent::BeginPlay()
 		UStateManagerComponent* StateManagerComp = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
 		if(StateManagerComp)
 		{
-			StateManagerComp->OnSprint.BindUObject(this, &ThisClass::ShouldRegen);
+			StateManagerComp->ShouldRegen.BindUObject(this, &ThisClass::ShouldRegen);
 			StateManagerComp->OnCombatState.AddUObject(this, &ThisClass::UpdateCombatState);
 		}
 			

@@ -3,7 +3,7 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 
-#include "../Monster/EnemyCharacter.h"
+#include "../MonsterCharacter/EnemyCharacter.h"
 
 
 AEnemyAIController::AEnemyAIController()
@@ -26,6 +26,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
                 BBComp->InitializeBlackboard(*(EnemyCharacter->GetBT()->BlackboardAsset));
                 RunBehaviorTree(EnemyCharacter->GetBT());
                 BBComp->SetValueAsBool("CanAttack", true);
+                BBComp->SetValueAsInt("PatrolIndex", 0);
             }
         }
     }

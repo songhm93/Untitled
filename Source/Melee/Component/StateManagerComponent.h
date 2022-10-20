@@ -6,10 +6,7 @@
 #include "StateManagerComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnStateBegin, ECurrentState);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnStateEnd, ECurrentState);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnActionBegin, ECurrentAction);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnActionEnd, ECurrentAction);
-DECLARE_DELEGATE_OneParam(FOnSprint, bool);
+DECLARE_DELEGATE_OneParam(FShouldRegen, bool);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCombatState, bool);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -21,10 +18,7 @@ public:
 	UStateManagerComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	FOnStateBegin OnStateBegin;
-	FOnStateEnd OnStateEnd;
-	FOnActionBegin OnActionBegin;
-	FOnActionEnd OnActionEnd;
-	FOnSprint OnSprint;
+	FShouldRegen ShouldRegen;
 	FOnCombatState OnCombatState;
 
 protected:

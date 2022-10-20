@@ -78,9 +78,6 @@ void ABaseCharacter::BeginPlay()
 	if(StateManagerComp)
 	{
 		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
-		StateManagerComp->OnStateEnd.AddUObject(this, &ThisClass::CharacterStateEnd);
-		StateManagerComp->OnActionBegin.AddUObject(this, &ThisClass::CharacterActionBegin);
-		StateManagerComp->OnActionEnd.AddUObject(this, &ThisClass::CharacterActionEnd);
 	}
 	
 	if(StatComp)
@@ -112,6 +109,7 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::SprintButtonReleased);
 	PlayerInputComponent->BindAction("HeavyAttack", IE_Released, this, &ThisClass::HeavyAttack);
 	PlayerInputComponent->BindAction("ToggleLockOn", IE_Released, this, &ThisClass::ToggleLockOn);
+	
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 
@@ -119,6 +117,8 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ABaseCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &ABaseCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &ABaseCharacter::LookUp);
+	PlayerInputComponent->BindAxis("CameraZoomInOut", this, &ABaseCharacter::CameraZoomInOut);
+	
 	
 }
 
@@ -461,87 +461,6 @@ void ABaseCharacter::CharacterStateBegin(ECurrentState State)
 	}
 }
 
-void ABaseCharacter::CharacterStateEnd(ECurrentState State)
-{
-	switch (State)
-	{
-	case ECurrentState::NOTHING:
-		
-		break;
-	case ECurrentState::ATTACKING:
-		
-		break;
-	case ECurrentState::DODGING:
-		
-		break;
-	case ECurrentState::GENERAL_STATE:
-		
-		break;
-	case ECurrentState::DEAD:
-			
-		break;
-	case ECurrentState::DISABLED:
-		
-		break;
-	}
-}
-
-void ABaseCharacter::CharacterActionBegin(ECurrentAction Action)
-{
-	switch(Action)
-	{
-		case ECurrentAction::NOTHING:
-
-			break;
-		case ECurrentAction::LIGHT_ATTACK:
-
-			break;
-		case ECurrentAction::HEAVY_ATTACK:
-
-			break;
-		case ECurrentAction::CHARGED_ATTACK:
-
-			break;
-		case ECurrentAction::DODGE:
-
-			break;
-		case ECurrentAction::ENTER_COMBAT:
-
-			break;
-		case ECurrentAction::EXIT_COMBAT:
-
-			break;
-	}
-}
-
-void ABaseCharacter::CharacterActionEnd(ECurrentAction Action)
-{
-	switch(Action)
-	{
-		case ECurrentAction::NOTHING:
-
-			break;
-		case ECurrentAction::LIGHT_ATTACK:
-
-			break;
-		case ECurrentAction::HEAVY_ATTACK:
-
-			break;
-		case ECurrentAction::CHARGED_ATTACK:
-
-			break;
-		case ECurrentAction::DODGE:
-
-			break;
-		case ECurrentAction::ENTER_COMBAT:
-
-			break;
-		case ECurrentAction::EXIT_COMBAT:
-
-			break;
-	}
-}
-
 void ABaseCharacter::PerformAction(UAnimMontage* Montage, ECurrentState State, ECurrentAction Action)
 {
 	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp)
@@ -688,6 +607,11 @@ void ABaseCharacter::PerformKnockdown()
 		if(KnockdownBackMontage)
 			PlayAnimMontage(KnockdownBackMontage);
 	}
+}
+
+void ABaseCharacter::CameraZoomInOut(float Rate)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Rate: %f"), Rate);
 }
 
 

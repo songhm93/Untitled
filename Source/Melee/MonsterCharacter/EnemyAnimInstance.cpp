@@ -1,6 +1,6 @@
 #include "EnemyAnimInstance.h"
 
-#include "../Monster/EnemyCharacter.h"
+#include "../MonsterCharacter/EnemyCharacter.h"
 #include "../Component/StateManagerComponent.h"
 
 void UEnemyAnimInstance::NativeInitializeAnimation()
