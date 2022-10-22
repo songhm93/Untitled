@@ -23,6 +23,8 @@
 #include "../Component/StatsComponent.h"
 #include "../Component/TargetingComponent.h"
 
+#include "../Rock.h"
+
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -412,11 +414,27 @@ void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
 	
-	if(StatComp)
-	{
-		StatComp->PlusCurrentStatValue(EStats::HP, -50);
+	FActorSpawnParameters Params; 
+	Params.Owner = this;
+	Params.Instigator = Cast<APawn>(this);
+	FTransform TestTransform = FTransform(GetActorRotation(), GetActorLocation() + (GetActorForwardVector() * 500.f), GetActorScale3D());
+    ARock* Rock = GetWorld()->SpawnActor<ARock>(ARock::StaticClass(), TestTransform, Params);
+
+    
+
+	Rock->GetCapsuleComp()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	Rock->GetCapsuleComp()->SetSimulatePhysics(true);
+	Rock->GetCapsuleComp()->SetMassScale(NAME_None, 50.f);
+	FVector ThrowVector = GetActorForwardVector() * 3'000.f;
+	//Rock->GetCapsuleComp()->SetPhysicsLinearVelocity(ThrowVector);
+
+	Rock->GetCapsuleComp()->AddImpulse(ThrowVector, NAME_None, true);
+	 Rock->GetCapsuleComp()->SetNotifyRigidBodyCollision(true);
 	
-	}	
+	Rock->GetCapsuleComp()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	Rock->GetCapsuleComp()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	Rock->GetCapsuleComp()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+
 }
 
 bool ABaseCharacter::CanRecieveDamage()
@@ -611,7 +629,7 @@ void ABaseCharacter::PerformKnockdown()
 
 void ABaseCharacter::CameraZoomInOut(float Rate)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Rate: %f"), Rate);
+	
 }
 
 

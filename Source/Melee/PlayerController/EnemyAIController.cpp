@@ -27,6 +27,8 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
                 RunBehaviorTree(EnemyCharacter->GetBT());
                 BBComp->SetValueAsBool("CanAttack", true);
                 BBComp->SetValueAsInt("PatrolIndex", 0);
+                BBComp->SetValueAsBool("SpecialReady", true);
+                BBComp->SetValueAsBool("SpecialComplete", true);
             }
         }
     }

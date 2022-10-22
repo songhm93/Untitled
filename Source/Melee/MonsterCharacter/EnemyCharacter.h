@@ -54,7 +54,35 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UMonsterStatsComponent* MonsterStatComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true") )
+	USphereComponent* AgroRangeSphere;
+	UPROPERTY(EditAnywhere,  Meta = (AllowPrivateAccess = "true"))
+	float AgroRange;
+	UPROPERTY()
+	UEnemyAnimInstance* EnemyAnimInst;
+	UPROPERTY()
+	AEnemyAIController* AIController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UStateManagerComponent* StateManagerComp;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	float AgroCancelTime;
+	FTimerHandle AgroCancelTimerHandle;
+	bool bTargetingState;
+	UPROPERTY()
+	AActor* Target;
+	UFUNCTION()
+	virtual void ReceiveDamage(
+		AActor* DamagedActor, 
+		float EnemyATK, 
+		AController* InstigatedBy, 
+		FVector HitLocation, 
+		UPrimitiveComponent* FHitComponent, 
+		FName BoneName, 
+		FVector ShotFromDirection, 
+		const UDamageType* DamageType, 
+		AActor* DamageCauser);
 private:
 	void Dead();
 
@@ -71,25 +99,7 @@ private:
 	void HPBarOnOff(bool Show);
 
 	UFUNCTION()
-	void AgroSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
-	UFUNCTION()
-	void AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	UFUNCTION()
 	void CharacterStateBegin(ECurrentState State);
-
-	UFUNCTION()
-	void ReceiveDamage(
-		AActor* DamagedActor, 
-		float EnemyATK, 
-		AController* InstigatedBy, 
-		FVector HitLocation, 
-		UPrimitiveComponent* FHitComponent, 
-		FName BoneName, 
-		FVector ShotFromDirection, 
-		const UDamageType* DamageType, 
-		AActor* DamageCauser);
 	
 	UPROPERTY(EditAnywhere, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;
@@ -112,47 +122,26 @@ private:
 	UPROPERTY(EditAnywhere, Category = "BT", Meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BehaviorTree;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UStateManagerComponent* StateManagerComp;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* LockOnWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* HPBarWidget;
 
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	UMonsterStatsComponent* MonsterStatComp;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Patrol", Meta = (AllowPrivateAccess = "true"))
 	TArray<ATargetPoint*> PatrolPoints;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true") )
-	USphereComponent* AgroRangeSphere;
-
-	UPROPERTY(EditAnywhere,  Meta = (AllowPrivateAccess = "true"))
-	float AgroRange;
-
-	UPROPERTY()
-	AEnemyAIController* AIController;
-
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	float AgroCancelTime;
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 AttackMontageSectionNum;
-
-	UPROPERTY()
-	AActor* Target;
-
-	UPROPERTY()
-	UEnemyAnimInstance* EnemyAnimInst;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UMonstersCombatComponent* MonsterCombatComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Element", Meta = (AllowPrivateAccess = "true"))
 	EElements CurrentElement;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	float AttackRange;
 
 	EEnemyActionType EnemyActionType;
 
@@ -169,15 +158,13 @@ private:
 	FTimerHandle HideHPBarTimerHandle;
 
 	float HideHPBarTime;
-	
-	FTimerHandle AgroCancelTimerHandle;
-	
-	bool bTargetingState;
+
 	
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
 	FORCEINLINE TArray<ATargetPoint*> GetPatrolPoints() const { return PatrolPoints; }
+	FORCEINLINE float GetAttackRange() const { return AttackRange; }
 
 public:
 	void AgroCancel();	

@@ -60,6 +60,7 @@ void AEnemyCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
+
 	if(StateManagerComp)
 	{
 		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
@@ -75,12 +76,6 @@ void AEnemyCharacter::BeginPlay()
 	}
 
 	OnTakePointDamage.AddDynamic(this, &ThisClass::ReceiveDamage);
-
-	if(AgroRangeSphere)
-	{
-		AgroRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::AgroSphereBeginOverlap);
-		AgroRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::AgroSphereEndOverlap);
-	}
 	
 	if(MonsterStatComp)
 	{
@@ -143,8 +138,6 @@ void AEnemyCharacter::OnTargeted(bool IsTargeted)
 			HPBarWidget->SetVisibility(IsTargeted);
 	}
 }
-
-
 
 void AEnemyCharacter::HideHPBar()
 {
@@ -258,9 +251,9 @@ void AEnemyCharacter::CharacterStateBegin(ECurrentState State)
 
 void AEnemyCharacter::Dead()
 {
+	AgroCancel();
 	EnableRagdoll();
 	ApplyHitReactionPhysicsVelocity(2000.f);
-	
 	if(HPBarWidget)
 		HPBarWidget->SetVisibility(false);
 	GetWorldTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
@@ -288,50 +281,6 @@ void AEnemyCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 void AEnemyCharacter::DestroyDead()
 {
 	Destroy();
-}
-
-void AEnemyCharacter::AgroSphereBeginOverlap(
-	UPrimitiveComponent* OverlappedComponent, 
-	AActor* OtherActor, 
-	UPrimitiveComponent* OtherComp, 
-	int32 OtherBodyIndex, 
-	bool bFromSweep, 
-	const FHitResult& SweepResult)
-{
-	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
-
-	if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)) && AIController)
-	{
-		if(AIController && StateManagerComp)
-		{
-			AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), OtherActor);
-			bTargetingState = true;
-			Target = OtherActor;
-			StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
-			AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), true);
-		}
-		if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
-		{
-			GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
-		}
-	}
-}
-
-void AEnemyCharacter::AgroSphereEndOverlap(
-	UPrimitiveComponent* OverlappedComponent, 
-	AActor* OtherActor, 
-	UPrimitiveComponent* OtherComp, 
-	int32 OtherBodyIndex)
-{
-	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
-	
-	if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)) && AIController)
-	{
-		if(AIController)
-		{
-			GetWorldTimerManager().SetTimer(AgroCancelTimerHandle, this, &ThisClass::AgroCancel, AgroCancelTime);
-		}
-	}
 }
 
 void AEnemyCharacter::AgroCancel()
@@ -362,6 +311,8 @@ void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 		const FVector PlayerLocation = Player->GetActorLocation();
 		const FVector EnemyLocation = GetActorLocation();
 		const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(EnemyLocation, PlayerLocation);
+
+
 
 		FRotator ResultRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 3.f);
 		SetActorRotation(FRotator(0.f, ResultRotation.Yaw, 0.f));
