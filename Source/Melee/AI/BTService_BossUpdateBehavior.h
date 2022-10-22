@@ -3,21 +3,18 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTService.h"
 #include "../Type/AIBehavior.h"
-#include "BTService_UpdateBehavior.generated.h"
+#include "BTService_BossUpdateBehavior.generated.h"
+
 
 class AEnemyCharacter;
 class AAIController;
 class UBlackboardComponent;
 
-
 UCLASS()
-class MELEE_API UBTService_UpdateBehavior : public UBTService
+class MELEE_API UBTService_BossUpdateBehavior : public UBTService
 {
 	GENERATED_BODY()
 	
-public:
-	UBTService_UpdateBehavior();
-
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
@@ -32,10 +29,11 @@ private:
 	UBlackboardComponent* BlackBoardComp;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
-	FBlackboardKeySelector BasicBehavior;
+	FBlackboardKeySelector BossBehavior;
 
-	void SetBasicBehavior(EAIBasicBehavior AIBehavior);
-	
-	void SetTargetCanAttackLocation(AActor* Target, float Dist);
+
+	void BossCase(float Dist, AActor* Target);
+
+	void SetBossBehavior(EBossBehavior AIBehavior);
 
 };
