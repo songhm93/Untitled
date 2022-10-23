@@ -21,7 +21,6 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
-	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess ="true"))
 	UStaticMeshComponent* MeshComp;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess ="true"))

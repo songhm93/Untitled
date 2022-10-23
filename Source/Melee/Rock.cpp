@@ -1,6 +1,6 @@
 #include "Rock.h"
 #include "Components/CapsuleComponent.h"
-//#include "GeometryCollection/GeometryCollectionComponent.h"
+#include "PlayerCharacter/BaseCharacter.h"
 
 ARock::ARock()
 {
@@ -20,8 +20,8 @@ ARock::ARock()
 
 	
 	
-	//static ConstructorHelpers::FObjectFinder<UStaticMesh> RockMesh(TEXT("/Game/Migrated/SM_Rock_To_Hold"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> RockMesh(TEXT("/Game/CombatSystem/Blueprints/Monster/Rampage/SM_Rock_To_Hold1_GeometryCollection_SM"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> RockMesh(TEXT("/Game/Migrated/SM_Rock_To_Hold"));
+	
 	if (RockMesh.Succeeded())
 	{
 		MeshComp->SetStaticMesh(RockMesh.Object);
@@ -45,4 +45,19 @@ void ARock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveCo
 {
 	//캐릭터면 대미지 입히고,
 	//바위는 파괴.
+	if(OtherActor)
+	{	
+		ABaseCharacter* PlayerCharacter = Cast<ABaseCharacter>(OtherActor);
+		if(PlayerCharacter)
+		{
+			
+		}
+	}
+
+
+
+
+
+
+
 }

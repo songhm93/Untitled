@@ -22,4 +22,10 @@ protected:
 
 private:
 	void UpdateCombatState(bool CombatState);
+	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
+	float Special1ATK;
+	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
+	float Special2ATK;
+	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
+	float Special3ATK;
 };
