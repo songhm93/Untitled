@@ -27,6 +27,8 @@ private:
 	UPROPERTY()
 	ARock* Rock;
 
+	
+
 	void DeattachRock();
 	
 };
