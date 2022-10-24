@@ -14,14 +14,6 @@ public:
 	APreemptiveMonster();
 protected:
 	virtual void BeginPlay() override;
-	UPROPERTY(EditAnywhere, Category = "SpecialMontage", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Special1Montage;
-
-	UPROPERTY(EditAnywhere, Category = "SpecialMontage", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Special2Montage;
-
-	UPROPERTY(EditAnywhere, Category = "SpecialMontage", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Special3Montage;
 
 private:
 	UFUNCTION()

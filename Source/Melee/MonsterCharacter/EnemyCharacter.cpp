@@ -27,12 +27,9 @@ AEnemyCharacter::AEnemyCharacter()
     StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerrComp"));
     LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
 	LockOnWidget->SetupAttachment(GetMesh());
-    HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBarWidget"));
-    HPBarWidget->SetupAttachment(GetMesh());
     MonsterStatComp = CreateDefaultSubobject<UMonsterStatsComponent>(TEXT("MonsterStatComp"));
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
-	HideHPBarTime = 3.f;
 	AgroRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AgroRangeSphere"));
 	AgroRange = 400.f;
 	AgroRangeSphere->SetSphereRadius(AgroRange);
@@ -65,7 +62,7 @@ void AEnemyCharacter::BeginPlay()
 	{
 		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
 		StateManagerComp->SetCurrentState(ECurrentState::GENERAL_STATE);
-		StateManagerComp->OnCombatState.AddUObject(this, &ThisClass::HPBarOnOff);
+		
 	}
 
     if(LockOnWidget)
@@ -81,17 +78,6 @@ void AEnemyCharacter::BeginPlay()
 	{
 		MonsterStatComp->InitStats();
 		MonsterStatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f);
-	}
-
-	if(HPBarWidget)
-	{
-		UUserWidget* EnemyHPBarWidget = CreateWidget<UEnemyHPBarWidget>(GetWorld(), HPBarWidget->GetWidgetClass());
-		if(EnemyHPBarWidget)
-		{
-			HPBarWidget->SetWidget(EnemyHPBarWidget);
-			HPBarWidget->SetVisibility(false);
-			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->Init(MonsterStatComp);
-		}
 	}
 
 	if (MonsterCombatComp)
@@ -130,22 +116,12 @@ bool AEnemyCharacter::CanBeTargeted()
 
 void AEnemyCharacter::OnTargeted(bool IsTargeted)
 {
-    if(LockOnWidget && HPBarWidget)
+    if(LockOnWidget)
 	{
 		LockOnWidget->SetVisibility(IsTargeted);
-
-		if(IsTargeted)
-			HPBarWidget->SetVisibility(IsTargeted);
 	}
 }
 
-void AEnemyCharacter::HideHPBar()
-{
-	if(HPBarWidget)
-	{
-		HPBarWidget->SetVisibility(false);
-	}
-}
 
 void AEnemyCharacter::ReceiveDamage(
 	AActor* DamagedActor, 
@@ -254,8 +230,6 @@ void AEnemyCharacter::Dead()
 	AgroCancel();
 	EnableRagdoll();
 	ApplyHitReactionPhysicsVelocity(2000.f);
-	if(HPBarWidget)
-		HPBarWidget->SetVisibility(false);
 	GetWorldTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
 }
 
@@ -312,24 +286,8 @@ void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 		const FVector EnemyLocation = GetActorLocation();
 		const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(EnemyLocation, PlayerLocation);
 
-
-
 		FRotator ResultRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 3.f);
 		SetActorRotation(FRotator(0.f, ResultRotation.Yaw, 0.f));
 	}
 }
 
-void AEnemyCharacter::HPBarOnOff(bool Show)
-{
-	if(HPBarWidget)
-	{
-		if(Show)
-		{
-			HPBarWidget->SetVisibility(Show);
-		}
-		else
-		{
-			GetWorldTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
-		}
-	}
-}

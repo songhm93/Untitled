@@ -83,20 +83,17 @@ protected:
 		FVector ShotFromDirection, 
 		const UDamageType* DamageType, 
 		AActor* DamageCauser);
+	virtual void Dead();
 private:
-	void Dead();
+	
 
 	void EnableRagdoll();
 
 	void ApplyHitReactionPhysicsVelocity(float InitSpeed);
 
 	void DestroyDead();
-	
-	void HideHPBar();
 
 	void LookAtPlayer(AActor* Player, float DeltaTime);
-
-	void HPBarOnOff(bool Show);
 
 	UFUNCTION()
 	void CharacterStateBegin(ECurrentState State);
@@ -125,8 +122,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* LockOnWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent* HPBarWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Patrol", Meta = (AllowPrivateAccess = "true"))
 	TArray<ATargetPoint*> PatrolPoints;
@@ -155,9 +150,6 @@ private:
 
 	float DestroyDeadTime;
 
-	FTimerHandle HideHPBarTimerHandle;
-
-	float HideHPBarTime;
 
 	
 public: //get
@@ -165,6 +157,7 @@ public: //get
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
 	FORCEINLINE TArray<ATargetPoint*> GetPatrolPoints() const { return PatrolPoints; }
 	FORCEINLINE float GetAttackRange() const { return AttackRange; }
+	FORCEINLINE UMonsterStatsComponent* GetMonsterStatComp() const { return MonsterStatComp; }
 
 public:
 	void AgroCancel();	
