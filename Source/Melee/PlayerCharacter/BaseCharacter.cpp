@@ -76,7 +76,7 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	ResetCombat();
-	OnTakePointDamage.AddDynamic(this, &ABaseCharacter::ReceiveDamage);
+	OnTakeAnyDamage.AddDynamic(this, &ABaseCharacter::ReceiveDamage);
 	if(StateManagerComp)
 	{
 		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
@@ -329,13 +329,9 @@ void ABaseCharacter::ResetCombat()
 
 void ABaseCharacter::ReceiveDamage(
 	AActor* DamagedActor, 
-	float EnemyATK,
-	AController* InstigatedBy, 
-	FVector HitLocation, 
-	UPrimitiveComponent* FHitComponent, 
-	FName BoneName, 
-	FVector ShotFromDirection, 
+	float EnemyATK, 
 	const UDamageType* DamageType, 
+	AController* InstigatedBy, 
 	AActor* DamageCauser)
 {
 	if(InstigatedBy)
@@ -347,12 +343,12 @@ void ABaseCharacter::ReceiveDamage(
 	if (DamageType) //다른 대미지 타입 구현 안해놔서 임시.
 	{
 		ApplyHitReaction(EDamageType::MELEE_DAMAGE);
-		ApplyImpactEffect(EDamageType::MELEE_DAMAGE, HitLocation);
+		ApplyImpactEffect(EDamageType::MELEE_DAMAGE, GetActorLocation());
 	}
 	else if(Cast<UAttackDamageType>(DamageType))
 	{
 		ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
-		ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType(), HitLocation);
+		ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType(), GetActorLocation());
 	}
 		
 
@@ -414,26 +410,7 @@ void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
 	
-	FActorSpawnParameters Params; 
-	Params.Owner = this;
-	Params.Instigator = Cast<APawn>(this);
-	FTransform TestTransform = FTransform(GetActorRotation(), GetActorLocation() + (GetActorForwardVector() * 500.f), GetActorScale3D());
-    ARock* Rock = GetWorld()->SpawnActor<ARock>(ARock::StaticClass(), TestTransform, Params);
-
-    
-
-	Rock->GetCapsuleComp()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	Rock->GetCapsuleComp()->SetSimulatePhysics(true);
-	Rock->GetCapsuleComp()->SetMassScale(NAME_None, 50.f);
-	FVector ThrowVector = GetActorForwardVector() * 3'000.f;
-	//Rock->GetCapsuleComp()->SetPhysicsLinearVelocity(ThrowVector);
-
-	Rock->GetCapsuleComp()->AddImpulse(ThrowVector, NAME_None, true);
-	 Rock->GetCapsuleComp()->SetNotifyRigidBodyCollision(true);
 	
-	Rock->GetCapsuleComp()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-	Rock->GetCapsuleComp()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	Rock->GetCapsuleComp()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 
 }
 

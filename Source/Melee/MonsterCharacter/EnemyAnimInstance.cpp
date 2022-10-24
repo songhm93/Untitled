@@ -2,8 +2,10 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 #include "../MonsterCharacter/EnemyCharacter.h"
+#include "../MonsterCharacter/RampageMonster.h"
 #include "../Component/StateManagerComponent.h"
 #include "../PlayerController/EnemyAIController.h"
+
 
 void UEnemyAnimInstance::NativeInitializeAnimation()
 {
@@ -73,6 +75,5 @@ void UEnemyAnimInstance::AnimNotify_DeattachRock()
     if(EnemyCharacter)
     {
 		OnDeattachRock.ExecuteIfBound();
-	
     }
 }

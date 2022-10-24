@@ -52,26 +52,31 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 {
 	bool SpecialReady = Cast<AEnemyAIController>(MonsterController)->GetBBComp()->GetValueAsBool(TEXT("SpecialReady"));
 	bool SpecialComplete = Cast<AEnemyAIController>(MonsterController)->GetBBComp()->GetValueAsBool(TEXT("SpecialComplete"));
-	//Ready는 애니메이션 실행 전까지 true, 애니메이션 실행 완료 애님 노티파이 오면 false, 3.5초후 true로
-
-	//Complete은 애니메이션 실행 완료 애님 노티파이 오면 true. 이거 전까지는 무조건 MoveTo 해야해서.
-	if(SpecialReady && SpecialComplete) //처음에 둘다 true니까 거리에 따라 사용해야하는 스킬을 세팅
-	{								    //한번 세팅하면 거리가 좁혀져도 변하면 안되서 여기로 못들어오게 Complete을 바로 false로
+	//Ready는 애니메이션 실행 전까지 true, 애니메이션 실행 완료 애님 노티파이 오면 false, 타이머 후 true로
+	//Complete은 스킬 실행했으면 그 스킬은 꼭 수행하게 끔하는 변수. 애니메이션 실행 후 다 끝났을 때 true로.
+	
+	if(SpecialReady && SpecialComplete) 
+	{								   
 		if(Dist > 550.f)      
 		{
 			Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsVector(TEXT("DashLocation"), (Target->GetActorLocation() - (MonsterCharacter->GetActorForwardVector() * 200.f)));
-				UE_LOG(LogTemp, Warning, TEXT("Dist : %f"), Dist);
+				
             int32 RandValue = FMath::RandRange(0, 1);
-			RandValue = 1; // Test
             if(RandValue == 0)
                 SetBossBehavior(EBossBehavior::SPECIAL1);
             else if(RandValue == 1)
                 SetBossBehavior(EBossBehavior::SPECIAL2);
 			BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);			
 		}
-		else if(Dist > 300.f) //점프 공격
+		else if(Dist > 300.f)
 		{
-			SetBossBehavior(EBossBehavior::SPECIAL3);
+			int32 RandValue = FMath::RandRange(0, 2);
+            if(RandValue == 0)
+                SetBossBehavior(EBossBehavior::SPECIAL1);
+            else if(RandValue == 1)
+                SetBossBehavior(EBossBehavior::SPECIAL2);
+			else
+				SetBossBehavior(EBossBehavior::SPECIAL3);
 			BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);
 
 		}
@@ -84,13 +89,12 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 			SetBossBehavior(EBossBehavior::BASIC_ATTACK);
 		}
 	}
-	else if(SpecialReady && !SpecialComplete) //스페셜 스킬 사용 하기 전. Ready는 아직 true인 경우.
+	else if(SpecialReady && !SpecialComplete) //스킬 사용 하기 전. Ready는 아직 true인 경우.
 	{
         if(Dist <= MonsterCharacter->GetAttackRange())
 		{
 			BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), true);
 			Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), false);
-			//SetBossBehavior(EBossBehavior::BASIC_ATTACK);
 		}
 		else
 		{
