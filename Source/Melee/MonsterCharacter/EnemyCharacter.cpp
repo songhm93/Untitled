@@ -37,6 +37,7 @@ AEnemyCharacter::AEnemyCharacter()
 	AgroRangeSphere->SetupAttachment(RootComponent);
 	AttackMontageSectionNum = 3;
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	AIController = Cast<AEnemyAIController>(GetController());
 	MonsterCombatComp = CreateDefaultSubobject<UMonstersCombatComponent>(TEXT("MonstersCC"));
 	bTargetingState = false;

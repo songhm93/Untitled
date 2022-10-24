@@ -35,6 +35,10 @@ void ABossMonster::Tick(float DeltaTime)
             HiddenHPBar();
         }
     }
+    else
+    {
+        HideTime = 0.f;
+    }
     
 }
 
@@ -54,9 +58,6 @@ void ABossMonster::BeginPlay()
 		{
             BossHPBarWidget->AddToViewport();
             BossHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
-            //BossHPBarWidget->AddToViewport();
-            //HPBarWidgetComp->SetWidget(BossHPBarWidget);
-            //HPBarWidgetComp->SetVisibility(false);
             Cast<UEnemyHPBarWidget>(BossHPBarWidget)->Init(MonsterStatComp);
             Cast<UEnemyHPBarWidget>(BossHPBarWidget)->GetBossNameText()->SetText(BossName);
             
@@ -90,7 +91,6 @@ void ABossMonster::OnTargeted(bool IsTargeted)
         {
             Cast<UEnemyHPBarWidget>(BossHPBarWidget)->PlayOpacityAnim(false);
             bExecuteHide = true;
-            //BossHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
         }	
 	}
 }
@@ -101,19 +101,7 @@ void ABossMonster::HideHPBar()
 	{
 		Cast<UEnemyHPBarWidget>(BossHPBarWidget)->PlayOpacityAnim(false);
         bExecuteHide = true;
-        //BossHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
-}
-
-void ABossMonster::HiddenHPBar()
-{
-    if(BossHPBarWidget)
-	{
-        BossHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
-    }
-    bExecuteHide = false;
-    HideTime = 0.f;
-
 }
 
 void ABossMonster::HPBarOnOff(bool Show)
@@ -141,6 +129,16 @@ void ABossMonster::Dead()
         Cast<UEnemyHPBarWidget>(BossHPBarWidget)->PlayOpacityAnim(false);
         bExecuteHide = true;
     }
+}
+
+void ABossMonster::HiddenHPBar()
+{
+    if(BossHPBarWidget)
+	{
+        BossHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
+    }
+    bExecuteHide = false;
+    HideTime = 0.f;
 }
 
 
