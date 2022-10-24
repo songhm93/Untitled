@@ -4,6 +4,29 @@
 #include "StatsComponent.h"
 #include "MonsterStatsComponent.generated.h"
 
+USTRUCT()
+struct FSpecialATK
+{
+	GENERATED_BODY()
+
+	FSpecialATK(){}
+	FSpecialATK(float S1, float S2, float S3)
+	{
+		Special1ATK = S1;
+		Special2ATK = S2;
+		Special3ATK = S3;
+	}
+	
+	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
+	float Special1ATK;
+	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
+	float Special2ATK;
+	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
+	float Special3ATK;
+
+};
+
+
 
 UCLASS()
 class MELEE_API UMonsterStatsComponent : public UStatsComponent
@@ -20,12 +43,16 @@ protected:
 	virtual void TrackingRegen(float DeltaTime) override;
 	virtual void Regen() override;
 
+	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
+	FSpecialATK SATK;
+
 private:
 	void UpdateCombatState(bool CombatState);
-	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
-	float Special1ATK;
-	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
-	float Special2ATK;
-	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
-	float Special3ATK;
+	
+public: //get
+	FORCEINLINE FSpecialATK GetSpecialATK() const { return SATK; }
+
+public: //set
+	void SetSpecialATK(FSpecialATK ATK) { SATK = ATK; }
+
 };

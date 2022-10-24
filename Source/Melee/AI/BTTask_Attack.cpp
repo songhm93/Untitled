@@ -61,7 +61,7 @@ bool UBTTask_Attack::BossCase() //스페셜 실행
         bool SpecialComplete = Cast<AEnemyAIController>(OwnerController)->GetBBComp()->GetValueAsBool(TEXT("SpecialComplete"));
         UMonstersCombatComponent* MCC = Cast<UMonstersCombatComponent>(MonsterCharacter->GetComponentByClass(UMonstersCombatComponent::StaticClass()));
         APreemptiveMonster* BossCharacter = Cast<APreemptiveMonster>(MonsterCharacter);
-        UE_LOG(LogTemp, Warning, TEXT("BossBehavior : %d"), BossBehavior);
+        
         if(Cast<IBossInterface>(BossCharacter))
         {
             switch (BossBehavior)

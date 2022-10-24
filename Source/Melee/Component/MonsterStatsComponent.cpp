@@ -11,6 +11,9 @@ UMonsterStatsComponent::UMonsterStatsComponent()
 	HPRegenRate = 0.3f;
 	StaminaRegenRate = 1.0f;
 	bShouldRegen = true;
+	SATK.Special1ATK = 0.f;
+	SATK.Special2ATK = 0.f;
+	SATK.Special3ATK = 0.f;
 }
 
 

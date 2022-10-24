@@ -8,7 +8,8 @@
 
 class UProgressBar;
 class UStatsComponent;
-
+class UTextBlock;
+class UWidgetAnimation;
 
 UCLASS()
 class MELEE_API UEnemyHPBarWidget : public UUserWidget
@@ -17,6 +18,7 @@ class MELEE_API UEnemyHPBarWidget : public UUserWidget
 
 public:
 	void Init(UStatsComponent* Comp);
+	void PlayOpacityAnim(bool Forward);
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
@@ -24,12 +26,23 @@ protected:
 private:
 	UPROPERTY(Meta = (BindWidget))
 	UProgressBar* EnemyHPBar;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	EStats StatType;
+
 	UPROPERTY()
 	UStatsComponent* StatComp;
+
+	UPROPERTY(Meta = (BindWidget))
+	UTextBlock* BossName;
+
 	UFUNCTION()
 	void OnStatValueUpdated(EStats Stat, float Value);
+
+	UPROPERTY(Transient, Meta = (BindWidgetAnim))
+	UWidgetAnimation* OpacityAnim;
 	
+public: //set
+	UTextBlock* GetBossNameText() const { return BossName; };
 	
 };
