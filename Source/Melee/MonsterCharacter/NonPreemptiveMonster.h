@@ -4,6 +4,7 @@
 #include "EnemyCharacter.h"
 #include "NonPreemptiveMonster.generated.h"
 
+class UWidgetComponent;
 
 UCLASS()
 class MELEE_API ANonPreemptiveMonster : public AEnemyCharacter
@@ -12,7 +13,8 @@ class MELEE_API ANonPreemptiveMonster : public AEnemyCharacter
 
 public:
 	ANonPreemptiveMonster();
-
+	virtual void OnTargeted(bool IsTargeted) override;
+	virtual void Dead() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void ReceiveDamage(
@@ -30,4 +32,14 @@ private:
 	UFUNCTION()
 	void AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* HPBarWidget;
+
+	void HideHPBar();
+
+	void HPBarOnOff(bool Show);
+
+	FTimerHandle HideHPBarTimerHandle;
+
+	float HideHPBarTime;
 };
