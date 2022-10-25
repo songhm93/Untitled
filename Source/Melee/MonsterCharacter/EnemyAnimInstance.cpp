@@ -51,7 +51,6 @@ void UEnemyAnimInstance::AnimNotify_SpecialComplete()
             SpecialReadyTime = FMath::RandRange(5.f, 7.f);
             EnemyController->GetBBComp()->SetValueAsBool(TEXT("SpecialComplete"), true);
             EnemyController->GetBBComp()->SetValueAsBool(TEXT("SpecialReady"), false);
-            EnemyController->GetBBComp()->SetValueAsVector(TEXT("DashLocation"), FVector::ZeroVector);
             GetWorld()->GetTimerManager().SetTimer(SpecialReadyTimerHandle, this, &ThisClass::UpdateSpecialReady, SpecialReadyTime);
         }
     }

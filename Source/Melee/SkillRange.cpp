@@ -8,10 +8,7 @@
 
 ASkillRange::ASkillRange()
 {
- 	
-	PrimaryActorTick.bCanEverTick = true;
-
-
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 

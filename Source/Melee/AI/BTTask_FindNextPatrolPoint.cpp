@@ -37,7 +37,7 @@ bool UBTTask_FindNextPatrolPoint::SetPathLocation()
         if(PatrolPoint.Num() > CurrentIdx)
         {
             FVector PatrolLocation = UNavigationSystemV1::ProjectPointToNavigation(this, PatrolPoint[CurrentIdx]->GetActorLocation());
-            Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsVector(TEXT("TargetLocation"), PatrolLocation);
+            Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsVector(TEXT("PatrolLocation"), PatrolLocation);
         }
         return true;
     }

@@ -59,8 +59,6 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 	{								   
 		if(Dist > 550.f)      
 		{
-			Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsVector(TEXT("DashLocation"), (Target->GetActorLocation() - (MonsterCharacter->GetActorForwardVector() * 200.f)));
-				
             int32 RandValue = FMath::RandRange(0, 1);
             if(RandValue == 0)
                 SetBossBehavior(EBossBehavior::SPECIAL1);
@@ -89,31 +87,15 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 			SetBossBehavior(EBossBehavior::BASIC_ATTACK);
 		}
 	}
-	else if(SpecialReady && !SpecialComplete) //스킬 사용 하기 전. Ready는 아직 true인 경우.
-	{
-        if(Dist <= MonsterCharacter->GetAttackRange())
-		{
-			BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), true);
-			Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), false);
-		}
-		else
-		{
-			BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), false);
-			
-		}
-	}
 	else if(!SpecialReady) //스페셜 공격 불가능일 때. 쿨다운일 때.
 	{
 		if(Dist <= MonsterCharacter->GetAttackRange())
 		{
-			BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), true);
-			Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), false);
 			SetBossBehavior(EBossBehavior::BASIC_ATTACK);
 		}
 		else
 		{
 			SetBossBehavior(EBossBehavior::CHASE);
-			BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), false);
 			TArray<ATargetPoint*> PatrolPoint = MonsterCharacter->GetPatrolPoints();
 			const float CenterDist = MonsterCharacter->GetDistanceTo(Cast<AActor>(PatrolPoint[0]));
 			if(CenterDist > 1540.f) 
