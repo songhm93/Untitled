@@ -4,7 +4,7 @@
 
 AGreatSword::AGreatSword()
 {
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/CourseFiles/Meshes/Weapons/SM_GreatSword"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/Resource/Meshes/Weapons/SM_GreatSword"));
     if(Sword.Succeeded())
     {
         GetItemStaticMeshComp()->SetStaticMesh(Sword.Object);
