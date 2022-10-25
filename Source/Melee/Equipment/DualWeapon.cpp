@@ -23,11 +23,11 @@ ADualWeapon::ADualWeapon()
     SetAttachSocketName(TEXT("DualSword_R_Back"));
     SetHandSocketName(TEXT("WeaponSocket"));
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> SecondSword(TEXT("/Game/CombatSystem/CourseFiles/Meshes/Weapons/SM_ToughSword"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> SecondSword(TEXT("/Game/CombatSystem/Resource/Meshes/Weapons/SM_ToughSword"));
     if(SecondSword.Succeeded())
         DualSwordStaticMeshComp->SetStaticMesh(SecondSword.Object);
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/CourseFiles/Meshes/Weapons/SM_ToughSword"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/Resource/Meshes/Weapons/SM_ToughSword"));
     if(Sword.Succeeded())
         GetItemStaticMeshComp()->SetStaticMesh(Sword.Object);
 

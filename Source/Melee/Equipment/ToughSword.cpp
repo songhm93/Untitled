@@ -4,7 +4,7 @@
 
 AToughSword::AToughSword()
 {
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/CourseFiles/Meshes/Weapons/SM_ToughSword"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> Sword(TEXT("/Game/CombatSystem/Resource/Meshes/Weapons/SM_ToughSword"));
     if(Sword.Succeeded())
         GetItemStaticMeshComp()->SetStaticMesh(Sword.Object);
     
