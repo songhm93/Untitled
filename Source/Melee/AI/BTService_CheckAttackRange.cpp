@@ -28,7 +28,20 @@ void UBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 			{
 				if(BlackBoardComp)
 				{
-					
+					AActor* TargetActor = Cast<AActor>(BlackBoardComp->GetValueAsObject(TEXT("Target")));
+					if (TargetActor)
+					{								
+						const float Dist = MonsterCharacter->GetDistanceTo(TargetActor);
+						if(Dist <= MonsterCharacter->GetAttackRange())
+						{
+							BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), true);
+							Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), false);
+						}
+						else
+						{
+							BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), false);
+						}
+					}
 				}
 			}
 		}

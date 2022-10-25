@@ -88,7 +88,7 @@ void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 		if(EquippedWeapon)
 			EquippedWeapon->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 		break;
-	case EEquipmentType::ARMOR:
+	/*case EEquipmentType::ARMOR:
 		if(EquippedHelmet)
 		{
 			EquippedHelmet->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
@@ -109,7 +109,7 @@ void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 			EquippedBoot->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 			EquippedBoot->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<ACharacter>(GetOwner())->GetMesh());
 		}
-		break;
+		break;*/
 	}
 }
 
