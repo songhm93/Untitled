@@ -51,6 +51,15 @@ protected:
 	FVector HitFromDirection;
 	UPROPERTY()
 	UAnimInstance* AnimInst;
+	UPROPERTY()
+	TArray<AActor*> AlreadyHitActors;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BasicAttackImpactParticle;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	USoundCue* BasicAttackImpactSound;
+	virtual void ImpactTrace();
+	void ApplyImpact(AActor* HitActor);
+	void ClearHitActors();
 	
 private:	
 	void WeaponBaseSetting();

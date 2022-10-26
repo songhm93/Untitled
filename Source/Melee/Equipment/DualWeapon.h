@@ -23,21 +23,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
 	FName SecondWeaponHandSocket;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
-	UCollisionComponent* SecondWeaponCollisionComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
-	UCollisionComponent* RightFootCollisionComp;
-
-	UFUNCTION(BlueprintCallable)
-	void ActivateCollision(ECollisionPart CollisionPart);
-
-	UFUNCTION(BlueprintCallable)
-	void DeactivateCollision(ECollisionPart CollisionPart);
-
 public: //get
-	FORCEINLINE UCollisionComponent* GetSecondWeaponCollisionComp() const { return SecondWeaponCollisionComp;}
-	FORCEINLINE UCollisionComponent* GetRightFootCollisionComp() const { return RightFootCollisionComp;}
 	FORCEINLINE UStaticMeshComponent* GetDualSwordStaticMeshComp() const { return DualSwordStaticMeshComp;}
 	FORCEINLINE FName GetSecondWeaponHandSocket() const { return SecondWeaponHandSocket; }
 	FORCEINLINE FName GetSecondWeaponAttachSocket() const { return SecondWeaponAttachSocket; }

@@ -59,6 +59,11 @@ void UMeleeAnimInstance::AnimNotify_ResetCombat()
     }
 }
 
+void UMeleeAnimInstance::AnimNotify_Impact()
+{
+    OnImpact.ExecuteIfBound();
+}
+
 void UMeleeAnimInstance::SetWeaponType(EWeaponType Type)
 {
     WeaponType = Type;
