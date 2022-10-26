@@ -80,11 +80,6 @@ void AEnemyCharacter::BeginPlay()
 		MonsterStatComp->InitStats();
 		MonsterStatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f);
 	}
-
-	if (MonsterCombatComp)
-	{
-		MonsterCombatComp->SetCollisionMeshComponent(GetMesh());
-	}
 }
 
 bool AEnemyCharacter::CanRecieveDamage()

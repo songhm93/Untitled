@@ -3,15 +3,17 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystem.h"
 
 #include "../PlayerController/EnemyAIController.h"
+#include "../MonsterCharacter/EnemyAnimInstance.h"
 
 UMonstersCombatComponent::UMonstersCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	bEnemyWeaponCollisionEnabled = false;
-	CollisionMeshComponent = CreateDefaultSubobject<UPrimitiveComponent>(TEXT("CollisionMeshComponent"));
 
 	RightWeaponStartSocketName = TEXT("RightWeaponStart");
 	RightWeaponEndSocketName = TEXT("RightWeaponEnd");
@@ -31,6 +33,10 @@ void UMonstersCombatComponent::BeginPlay()
 	{
 		AIController = Cast<AEnemyAIController>(OwnerCharacter->GetController());
 		AnimInst = OwnerCharacter->GetMesh()->GetAnimInstance();
+		if(Cast<UEnemyAnimInstance>(AnimInst))
+		{
+			Cast<UEnemyAnimInstance>(AnimInst)->OnImpact.BindUObject(this, &ThisClass::ImpactTrace);
+		}
 	} 
 }
 
@@ -39,88 +45,9 @@ void UMonstersCombatComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bEnemyWeaponCollisionEnabled)
-		CollisionTrace();
-}
-
-void UMonstersCombatComponent::EnableCollision(bool bLeftWeapon) //true면 왼쪽무기.
-{
-	ClearHitActors();
-
-	bEnemyWeaponCollisionEnabled = true;
-
-	if (bLeftWeapon)
-	{
-		WeaponStartSocketName = LeftWeaponStartSocketName;
-		WeaponEndSocketName = LeftWeaponEndSocketName;
-	}
-	else
-	{
-		WeaponStartSocketName = RightWeaponStartSocketName;
-		WeaponEndSocketName = RightWeaponEndSocketName;
-	}
 
 }
 
-void UMonstersCombatComponent::DisableCollision()
-{
-	bEnemyWeaponCollisionEnabled = false;
-}
-
-void UMonstersCombatComponent::CollisionTrace()
-{
-	if (nullptr == CollisionMeshComponent) return;
-	const FVector Start = CollisionMeshComponent->GetSocketLocation(WeaponStartSocketName);
-	const FVector End = CollisionMeshComponent->GetSocketLocation(WeaponEndSocketName);
-	float TraceRadius = 30.f;
-
-	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
-	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-	CollisionObjectType.Add(Pawn);
-
-	TArray<AActor*> ActorsToIgnore;
-
-	ActorsToIgnore.Add(GetOwner());
-	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
-	TArray<FHitResult> OutHitResult;
-
-	UKismetSystemLibrary::SphereTraceMultiForObjects(
-		this,
-		Start,
-		End,
-		TraceRadius,
-		CollisionObjectType,
-		false,
-		ActorsToIgnore,
-		DebugTrace,
-		OutHitResult,
-		true,
-		FLinearColor::Red,
-		FLinearColor::Blue,
-		5.f);
-
-	if (!OutHitResult.IsEmpty())
-	{
-		for (auto LastHit : OutHitResult)
-		{
-			if (!AlreadyHitActors.Contains(LastHit.GetActor())) //중복이 아니면
-			{
-				HitFromDirection = GetOwner()->GetActorForwardVector();
-				AlreadyHitActors.Add(LastHit.GetActor());
-
-				const float MonsterATK = GetCurrentStatValue.Execute(EStats::ATK);
-				const float CalcATK = CloseAttackCorrectionValue * MonsterATK;
-
-				UGameplayStatics::ApplyPointDamage(LastHit.GetActor(), CalcATK, HitFromDirection, LastHit, GetOwner()->GetInstigatorController(), GetOwner(), UDamageType::StaticClass());
-			}
-		}
-	}
-}
-
-void UMonstersCombatComponent::ClearHitActors()
-{
-	AlreadyHitActors.Empty();
-}
 
 void UMonstersCombatComponent::LightAttack()
 {
@@ -179,4 +106,62 @@ void UMonstersCombatComponent::ReadyToAttack()
 	{
 		AIController->GetBBComp()->SetValueAsBool("CanAttack" , true);
 	}
+}
+
+void UMonstersCombatComponent::ImpactTrace()
+{
+	const FVector Start = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 50.f;
+	const FVector End = Start + GetOwner()->GetActorForwardVector() * 100.f;
+	const FVector HalfSize = FVector(50.f, 50.f, 100.f);
+	const FRotator Oritentation = GetOwner()->GetActorRotation();
+
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
+	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+	CollisionObjectType.Add(Pawn);
+
+	TArray<AActor*> ActorsToIgnore;
+
+	ActorsToIgnore.Add(GetOwner());
+	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
+	TArray<FHitResult> OutHitResult;
+
+	UKismetSystemLibrary::BoxTraceMultiForObjects(
+		this,
+		Start,
+		End,
+		HalfSize,
+		Oritentation,
+		CollisionObjectType,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		OutHitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Blue,
+		5.f
+	);
+
+	ClearHitActors();
+
+	if(!OutHitResult.IsEmpty())
+	{
+		for (auto LastHit : OutHitResult)
+		{
+			if (!AlreadyHitActors.Contains(LastHit.GetActor())) //중복이 아니면
+			{
+				HitFromDirection = GetOwner()->GetActorForwardVector();
+				AlreadyHitActors.Add(LastHit.GetActor());
+
+				const float MonsterATK = GetCurrentStatValue.Execute(EStats::ATK);
+				const float CalcATK = CloseAttackCorrectionValue * MonsterATK;
+
+				UGameplayStatics::ApplyPointDamage(LastHit.GetActor(), CalcATK, HitFromDirection, LastHit, GetOwner()->GetInstigatorController(), GetOwner(), UDamageType::StaticClass());
+
+				ApplyImpact(LastHit.GetActor());
+			}
+		}
+	}
+
 }

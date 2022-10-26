@@ -2,23 +2,17 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "../Type/Types.h"
-#include "../Component/CollisionComponent.h"
 
 
 ABaseWeapon::ABaseWeapon()
 {
-    CollisionComponent = CreateDefaultSubobject<UCollisionComponent>(TEXT("CollisionComponent"));
     
     SetEquipmentType(EEquipmentType::WEAPON);
     CurrentElement = EElements::NONE;
 }
 
 
-void ABaseWeapon::OnHit(FHitResult& HitResult)
-{
-    if(GetOwner())
-        OnHitResult.ExecuteIfBound(HitResult);
-}
+
 
 void ABaseWeapon::SimulateWeaponPhysics()
 {

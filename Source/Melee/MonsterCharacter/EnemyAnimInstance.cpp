@@ -71,8 +71,12 @@ void UEnemyAnimInstance::UpdateSpecialReady()
 
 void UEnemyAnimInstance::AnimNotify_DeattachRock()
 {
-    if(EnemyCharacter)
-    {
-		OnDeattachRock.ExecuteIfBound();
-    }
+    
+	OnDeattachRock.ExecuteIfBound();
+    
+}
+
+void UEnemyAnimInstance::AnimNotify_Impact()
+{
+    OnImpact.ExecuteIfBound();
 }

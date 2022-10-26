@@ -409,7 +409,38 @@ void ABaseCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
-	
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * 50.f;
+	const FVector End = Start + GetActorForwardVector() * 100.f;
+	const FVector HalfSize = FVector(50.f, 50.f, 100.f);
+	const FRotator Oritentation = GetActorRotation();
+
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
+	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+	CollisionObjectType.Add(Pawn);
+
+	TArray<AActor*> ActorsToIgnore;
+
+	ActorsToIgnore.Add(GetOwner());
+	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
+	TArray<FHitResult> OutHitResult;
+
+	UKismetSystemLibrary::BoxTraceMultiForObjects(
+		this,
+		Start,
+		End,
+		HalfSize,
+		Oritentation,
+		CollisionObjectType,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		OutHitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Blue,
+		5.f
+	);
 	
 
 }

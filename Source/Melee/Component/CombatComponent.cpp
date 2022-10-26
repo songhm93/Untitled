@@ -2,6 +2,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystem.h"
 
 #include "../Equipment/DualWeapon.h"
 #include "../Equipment/BaseArmor.h"
@@ -9,7 +11,7 @@
 #include "../Interface/CombatInterface.h"
 #include "../Interface/TargetingInterface.h"
 #include "../PlayerController/MeleePlayerController.h"
-#include "CollisionComponent.h"
+#include "../PlayerCharacter/MeleeAnimInstance.h"
 
 
 UCombatComponent::UCombatComponent()
@@ -37,7 +39,12 @@ void UCombatComponent::BeginPlay()
 		if(Cast<ACharacter>(GetOwner())->GetMesh())
 		{
 			AnimInst = Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance();
-		}	
+			if(Cast<UMeleeAnimInstance>(AnimInst))
+			{
+				Cast<UMeleeAnimInstance>(AnimInst)->OnImpact.BindUObject(this, &ThisClass::ImpactTrace);
+			}
+		}
+
 	}
 }
 
@@ -62,7 +69,6 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 
 			if(EquippedWeapon)
 			{
-				EquippedWeapon->OnHitResult.BindUObject(this, &ThisClass::HitCauseDamage);
 				AttachWeapon();
 				WeaponBaseSetting();
 			}
@@ -180,15 +186,11 @@ void UCombatComponent::WeaponBaseSetting()
 	
 	OnUpdateWeaponType.ExecuteIfBound(EquippedWeapon->GetWeaponType());
 	
-	EquippedWeapon->GetCollisionComp()->SetCollisionMeshComponent(EquippedWeapon->GetItemMeshComp());
+
 	if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
 	{
 		ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
-		if(DualWeapon && Character)
-		{
-			DualWeapon->GetSecondWeaponCollisionComp()->SetCollisionMeshComponent(DualWeapon->GetDualSwordStaticMeshComp());
-			DualWeapon->GetRightFootCollisionComp()->SetCollisionMeshComponent(Character->GetMesh());
-		}
+
 	}
 	OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, EquippedWeapon->GetWeaponATK());
 }
@@ -442,5 +444,75 @@ void UCombatComponent::PerformDodge()
 		Cast<ACharacter>(GetOwner())->PlayAnimMontage(DodgeMontage);
 		OnUpdateCurrentStatValue.ExecuteIfBound(EStats::STAMINA, -(DodgeStaminaCost));
 		
+	}
+}
+
+void UCombatComponent::ImpactTrace()
+{
+	const FVector Start = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 50.f;
+	const FVector End = Start + GetOwner()->GetActorForwardVector() * 100.f;
+	const FVector HalfSize = FVector(50.f, 50.f, 100.f);
+	const FRotator Oritentation = GetOwner()->GetActorRotation();
+
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
+	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+	CollisionObjectType.Add(Pawn);
+
+	TArray<AActor*> ActorsToIgnore;
+
+	ActorsToIgnore.Add(GetOwner());
+	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
+	TArray<FHitResult> OutHitResult;
+
+	UKismetSystemLibrary::BoxTraceMultiForObjects(
+		this,
+		Start,
+		End,
+		HalfSize,
+		Oritentation,
+		CollisionObjectType,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		OutHitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Blue,
+		5.f
+	);
+
+	ClearHitActors();
+
+	if(!OutHitResult.IsEmpty())
+	{
+		for (auto LastHit : OutHitResult)
+		{
+			if (!AlreadyHitActors.Contains(LastHit.GetActor())) //중복이 아니면
+			{
+				HitFromDirection = GetOwner()->GetActorForwardVector();
+				AlreadyHitActors.Add(LastHit.GetActor());
+
+
+				HitCauseDamage(LastHit);
+				//UGameplayStatics::ApplyPointDamage(LastHit.GetActor(), CalcATK, HitFromDirection, LastHit, GetOwner()->GetInstigatorController(), GetOwner(), UDamageType::StaticClass());
+
+				ApplyImpact(LastHit.GetActor());
+			}
+		}
+	}
+}
+
+void UCombatComponent::ClearHitActors()
+{
+	AlreadyHitActors.Empty();
+}
+
+void UCombatComponent::ApplyImpact(AActor* HitActor)
+{
+	if(BasicAttackImpactSound && BasicAttackImpactParticle && HitActor)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, BasicAttackImpactSound, HitActor->GetActorLocation());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BasicAttackImpactParticle, HitActor->GetActorTransform());
 	}
 }
