@@ -5,6 +5,8 @@
 #include "../Type/Types.h"
 #include "MeleeAnimInstance.generated.h"
 
+DECLARE_DELEGATE(FOnImpact);
+
 class ABaseCharacter;
 
 UCLASS()
@@ -15,7 +17,7 @@ class MELEE_API UMeleeAnimInstance : public UAnimInstance
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
-	
+	FOnImpact OnImpact;
 private:
 	
 	UFUNCTION()
@@ -29,6 +31,9 @@ private:
 
 	UFUNCTION()
 	void AnimNotify_ResetCombat();
+
+	UFUNCTION()
+	void AnimNotify_Impact();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Speed;
