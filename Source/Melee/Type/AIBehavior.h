@@ -5,7 +5,7 @@ UENUM(BlueprintType)
 enum class EAIBasicBehavior : uint8
 {
     NONE UMETA(DisplayName = "NONE"),
-    BASIC_ATTACK UMETA(DisplayName="ATTACK"),
+    BASIC_ATTACK UMETA(DisplayName="BASIC_ATTACK"),
     CHASE UMETA(DisplayName="CHASE"),
     PATROL UMETA(DisplayName="PATROL"),
     RETURN UMETA(DisplayName="RETURN"),
@@ -17,7 +17,7 @@ UENUM(BlueprintType)
 enum class EBossBehavior : uint8
 {
     NONE UMETA(DisplayName = "NONE"),
-    BASIC_ATTACK UMETA(DisplayName="ATTACK"),
+    BASIC_ATTACK UMETA(DisplayName="BASIC_ATTACK"),
     CHASE UMETA(DisplayName="CHASE"),
     PATROL UMETA(DisplayName="PATROL"),
     SPECIAL1 UMETA(DisplayName="SPECIAL1"),

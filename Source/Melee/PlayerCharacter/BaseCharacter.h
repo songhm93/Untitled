@@ -97,6 +97,14 @@ private:
 
 	FName GetLightAttackSectionName(int32 AttackCount);
 
+	void Skill1ButtonPressed();
+
+	void Skill2ButtonPressed();
+
+	void Skill3ButtonPressed();
+
+	void SkillUltimateButtonPressed();
+
 	UFUNCTION(BlueprintCallable)
 	FRotator GetDesiredRotation();
 
@@ -111,8 +119,8 @@ private:
 		AController* InstigatedBy, 
 		AActor* DamageCauser);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* CombatComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", Meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* CombatCompo;
 
 	UPROPERTY(VisibleAnywhere)
 	UStateManagerComponent* StateManagerComp;
@@ -168,7 +176,7 @@ private:
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	FORCEINLINE UCombatComponent* GetCombatComp() const { return CombatComp; }
+	FORCEINLINE UCombatComponent* GetCombatComp() const { return CombatCompo; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
 	FORCEINLINE float GetSprintStaminaCost() const { return SprintStaminaCost; }
 	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp; }

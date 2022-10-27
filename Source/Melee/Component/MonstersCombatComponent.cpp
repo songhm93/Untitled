@@ -8,6 +8,7 @@
 
 #include "../PlayerController/EnemyAIController.h"
 #include "../MonsterCharacter/EnemyAnimInstance.h"
+#include "../MonsterCharacter/EnemyCharacter.h"
 
 UMonstersCombatComponent::UMonstersCombatComponent()
 {
@@ -15,10 +16,6 @@ UMonstersCombatComponent::UMonstersCombatComponent()
 
 	bEnemyWeaponCollisionEnabled = false;
 
-	RightWeaponStartSocketName = TEXT("RightWeaponStart");
-	RightWeaponEndSocketName = TEXT("RightWeaponEnd");
-	LeftWeaponStartSocketName = TEXT("LeftWeaponStart");
-	LeftWeaponEndSocketName = TEXT("LeftWeaponEnd");
 	CloseAttackCorrectionValue = 1.f;
     ReadyToAttackTime = 3.f;
 }
@@ -44,7 +41,6 @@ void UMonstersCombatComponent::BeginPlay()
 void UMonstersCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 
 }
 
@@ -110,9 +106,10 @@ void UMonstersCombatComponent::ReadyToAttack()
 
 void UMonstersCombatComponent::ImpactTrace()
 {
-	const FVector Start = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 50.f;
+	float AttackRange = Cast<AEnemyCharacter>(GetOwner())->GetAttackRange();
+	const FVector Start = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * ( AttackRange * 0.5f );
 	const FVector End = Start + GetOwner()->GetActorForwardVector() * 100.f;
-	const FVector HalfSize = FVector(50.f, 50.f, 100.f);
+	const FVector HalfSize = FVector(( AttackRange * 0.5f ), ( AttackRange * 0.5f ), 100.f);
 	const FRotator Oritentation = GetOwner()->GetActorRotation();
 
 
@@ -163,5 +160,4 @@ void UMonstersCombatComponent::ImpactTrace()
 			}
 		}
 	}
-
 }

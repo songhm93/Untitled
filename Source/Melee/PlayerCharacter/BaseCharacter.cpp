@@ -51,7 +51,7 @@ ABaseCharacter::ABaseCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false; 
 
-	CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
+	CombatCompo = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatCompo"));
 	StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerComp"));
 	StatComp = CreateDefaultSubobject<UStatsComponent>(TEXT("StatComp"));
 	TargetingComp = CreateDefaultSubobject<UTargetingComponent>(TEXT("TargetingComp"));
@@ -109,8 +109,12 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("ToggleWalk", IE_Pressed, this, &ThisClass::ToggleWalk);
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ThisClass::SprintButtonPressed);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::SprintButtonReleased);
-	PlayerInputComponent->BindAction("HeavyAttack", IE_Released, this, &ThisClass::HeavyAttack);
-	PlayerInputComponent->BindAction("ToggleLockOn", IE_Released, this, &ThisClass::ToggleLockOn);
+	PlayerInputComponent->BindAction("HeavyAttack", IE_Pressed, this, &ThisClass::HeavyAttack);
+	PlayerInputComponent->BindAction("ToggleLockOn", IE_Pressed, this, &ThisClass::ToggleLockOn);
+	PlayerInputComponent->BindAction("Skill1", IE_Pressed, this, &ThisClass::Skill1ButtonPressed);
+	PlayerInputComponent->BindAction("Skill2", IE_Pressed, this, &ThisClass::Skill2ButtonPressed);
+	PlayerInputComponent->BindAction("Skill3", IE_Pressed, this, &ThisClass::Skill3ButtonPressed);
+	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ThisClass::SkillUltimateButtonPressed);
 	
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
@@ -176,9 +180,9 @@ void ABaseCharacter::MoveRight(float Value)
 
 void ABaseCharacter::ToggleCombat()
 {
-	if(!CanToggleCombat() || (CombatComp && !CombatComp->GetEquippedWeapon())) return;
+	if(!CanToggleCombat() || (CombatCompo && !CombatCompo->GetEquippedWeapon())) return;
 
-	EWeaponType WeaponType = CombatComp->GetEquippedWeapon()->GetWeaponType();
+	EWeaponType WeaponType = CombatCompo->GetEquippedWeapon()->GetWeaponType();
 
 	if(StateManagerComp)
 	{
@@ -189,12 +193,12 @@ void ABaseCharacter::ToggleCombat()
 		switch (WeaponType)
 		{
 		case EWeaponType::LIGHT_SWORD:
-			EnterCombatMontage = CombatComp->GetLSEnterCombatMontage();
-			ExitCombatMontage = CombatComp->GetLSExitCombatMontage();
+			EnterCombatMontage = CombatCompo->GetLSEnterCombatMontage();
+			ExitCombatMontage = CombatCompo->GetLSExitCombatMontage();
 			break;
 		case EWeaponType::DUAL_SWORD:
-			EnterCombatMontage = CombatComp->GetDSEnterCombatMontage();
-			ExitCombatMontage = CombatComp->GetDSEnterCombatMontage();
+			EnterCombatMontage = CombatCompo->GetDSEnterCombatMontage();
+			ExitCombatMontage = CombatCompo->GetDSEnterCombatMontage();
 			break;
 		}
 
@@ -212,7 +216,7 @@ void ABaseCharacter::ToggleCombat()
 		else if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::COMBAT_STATE)
 		{
 			PerformAction(ExitCombatMontage, ECurrentState::GENERAL_STATE, ECurrentAction::EXIT_COMBAT);
-			CombatComp->ResetAttackCount();
+			CombatCompo->ResetAttackCount();
 			StateManagerComp->SetCurrentCombatState(ECurrentCombatState::NONE_COMBAT_STATE);
 			if(GetMesh() && GetMesh()->GetAnimInstance())
 			{
@@ -264,15 +268,15 @@ void ABaseCharacter::InteractButtonPressed()
 
 void ABaseCharacter::HeavyAttack()
 {
-	if(CombatComp)
-		CombatComp->HeavyAttack();
+	if(CombatCompo)
+		CombatCompo->HeavyAttack();
 }
 
 void ABaseCharacter::Dodge()
 {
-	if(!CanDodge() || (CombatComp && !CombatComp->GetEquippedWeapon())) return;
+	if(!CanDodge() || (CombatCompo && !CombatCompo->GetEquippedWeapon())) return;
 	
-	CombatComp->PerformDodge();
+	CombatCompo->PerformDodge();
 }
 
 
@@ -291,7 +295,7 @@ bool ABaseCharacter::CanToggleCombat()
 
 bool ABaseCharacter::CanDodge()
 {
-	if(StatComp && CombatComp && (StatComp->GetCurrentStatValue(EStats::STAMINA) < CombatComp->GetDodgeStaminaCost())) return false;
+	if(StatComp && CombatCompo && (StatComp->GetCurrentStatValue(EStats::STAMINA) < CombatCompo->GetDodgeStaminaCost())) return false;
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::DODGING);
 	CharacterStates.Add(ECurrentState::DEAD);
@@ -319,7 +323,7 @@ FRotator ABaseCharacter::GetDesiredRotation() //구르기시 캐릭터가 움직
 
 void ABaseCharacter::ResetCombat()
 {
-	if(CombatComp) CombatComp->ResetAttackCount();
+	if(CombatCompo) CombatCompo->ResetAttackCount();
 	if(StateManagerComp)
 	{
 		StateManagerComp->ResetState();
@@ -334,6 +338,9 @@ void ABaseCharacter::ReceiveDamage(
 	AController* InstigatedBy, 
 	AActor* DamageCauser)
 {
+	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DODGING) return;
+		
+	
 	if(InstigatedBy)
 	{
 		float DotProductResult = GetDotProductTo(InstigatedBy->GetPawn()); //맞은 캐릭터와 때린 캐릭터간의 내적
@@ -378,9 +385,9 @@ void ABaseCharacter::Dead()
 {
 	EnableRagdoll();
 	ApplyHitReactionPhysicsVelocity(2000.f);
-	if(CombatComp && CombatComp->GetEquippedWeapon())
+	if(CombatCompo && CombatCompo->GetEquippedWeapon())
 	{
-		CombatComp->GetEquippedWeapon()->SimulateWeaponPhysics();
+		CombatCompo->GetEquippedWeapon()->SimulateWeaponPhysics();
 	}
 	GetWorldTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
 }
@@ -409,39 +416,7 @@ void ABaseCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
-	const FVector Start = GetActorLocation() + GetActorForwardVector() * 50.f;
-	const FVector End = Start + GetActorForwardVector() * 100.f;
-	const FVector HalfSize = FVector(50.f, 50.f, 100.f);
-	const FRotator Oritentation = GetActorRotation();
-
-
-	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
-	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-	CollisionObjectType.Add(Pawn);
-
-	TArray<AActor*> ActorsToIgnore;
-
-	ActorsToIgnore.Add(GetOwner());
-	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
-	TArray<FHitResult> OutHitResult;
-
-	UKismetSystemLibrary::BoxTraceMultiForObjects(
-		this,
-		Start,
-		End,
-		HalfSize,
-		Oritentation,
-		CollisionObjectType,
-		false,
-		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
-		OutHitResult,
-		true,
-		FLinearColor::Red,
-		FLinearColor::Blue,
-		5.f
-	);
-	
+	SetActorLocation(GetActorLocation() + GetActorForwardVector() * FVector(300.f, 0.f, 300.f));
 
 }
 
@@ -455,9 +430,9 @@ bool ABaseCharacter::CanRecieveDamage()
 
 void ABaseCharacter::DestroyDead()
 {
-	if(CombatComp && CombatComp->GetEquippedWeapon())
+	if(CombatCompo && CombatCompo->GetEquippedWeapon())
 	{
-		CombatComp->GetEquippedWeapon()->Destroy();
+		CombatCompo->GetEquippedWeapon()->Destroy();
 	}
 	Destroy();
 }
@@ -489,7 +464,7 @@ void ABaseCharacter::CharacterStateBegin(ECurrentState State)
 
 void ABaseCharacter::PerformAction(UAnimMontage* Montage, ECurrentState State, ECurrentAction Action)
 {
-	if(CombatComp && CombatComp->GetEquippedWeapon() && StateManagerComp)
+	if(CombatCompo && CombatCompo->GetEquippedWeapon() && StateManagerComp)
 	{
 		StateManagerComp->SetCurrentState(State);
 		StateManagerComp->SetCurrentAction(Action);
@@ -544,9 +519,9 @@ void ABaseCharacter::SetMovementType(EMovementType Type)
 
 void ABaseCharacter::Equip(ABaseEquippable* Equipment)
 {
-	if(CombatComp && Equipment)
+	if(CombatCompo && Equipment)
 	{
-		CombatComp->OnEquipped(Equipment);
+		CombatCompo->OnEquipped(Equipment);
 	}
 }
 
@@ -640,5 +615,37 @@ void ABaseCharacter::CameraZoomInOut(float Rate)
 	
 }
 
+void ABaseCharacter::Skill1ButtonPressed()
+{
+	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+	if(CombatCompo)
+		CombatCompo->Skill1();
+	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
+}
+
+void ABaseCharacter::Skill2ButtonPressed()
+{
+	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+	if(CombatCompo)
+		CombatCompo->Skill2();
+	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
+}
+
+void ABaseCharacter::Skill3ButtonPressed()
+{
+	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+	if(CombatCompo)
+		CombatCompo->Skill3();
+	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
+	//스킬은 State를 여기서 하면 안될 듯.
+}
+
+void ABaseCharacter::SkillUltimateButtonPressed()
+{
+	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+	if(CombatCompo)
+		CombatCompo->SkillUltimate();
+	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
+}
 
 

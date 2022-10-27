@@ -6,6 +6,7 @@
 #include "MeleeAnimInstance.generated.h"
 
 DECLARE_DELEGATE(FOnImpact);
+DECLARE_DELEGATE(FOnUltimateComplete);
 
 class ABaseCharacter;
 
@@ -18,6 +19,7 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	FOnImpact OnImpact;
+	FOnUltimateComplete OnUltimateComplete;
 private:
 	
 	UFUNCTION()
@@ -34,6 +36,9 @@ private:
 
 	UFUNCTION()
 	void AnimNotify_Impact();
+
+	UFUNCTION()
+	void AnimNotify_UltimateComplete();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Speed;

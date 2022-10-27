@@ -130,7 +130,7 @@ private:
 	int32 AttackMontageSectionNum;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UMonstersCombatComponent* MonsterCombatComp;
+	UMonstersCombatComponent* MonsterCombatCompo;
 
 	UPROPERTY(VisibleAnywhere, Category = "Element", Meta = (AllowPrivateAccess = "true"))
 	EElements CurrentElement;
