@@ -1,8 +1,6 @@
 #include "MeleeAnimInstance.h"
 
 #include "BaseCharacter.h"
-#include "../Equipment/ToughSword.h"
-#include "../Equipment/GreatSword.h"
 #include "../Component/CombatComponent.h"
 #include "../Component/StateManagerComponent.h"
 #include "../Type/Types.h"
@@ -67,4 +65,9 @@ void UMeleeAnimInstance::AnimNotify_Impact()
 void UMeleeAnimInstance::SetWeaponType(EWeaponType Type)
 {
     WeaponType = Type;
+}
+
+void UMeleeAnimInstance::AnimNotify_UltimateComplete()
+{
+    OnUltimateComplete.ExecuteIfBound();
 }

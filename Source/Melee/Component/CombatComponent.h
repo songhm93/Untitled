@@ -149,6 +149,30 @@ private:
 
 	float AttackActionCorrectionValue;
 
+	float FirstSkillSlotCooldown;
+
+	float SecondSkillSlotCooldown;
+
+	float ThirdSkillSlotCooldown;
+
+	float UltimateSkillSlotCooldown;
+
+	FTimerHandle FirstSkillTimerHandle;
+
+	FTimerHandle SecondSkillTimerHandle;
+
+	FTimerHandle ThirdSkillTimerHandle;
+
+	FTimerHandle UltimateSkillTimerHandle;
+
+	bool bFirstSkillTimerRunning;
+
+	bool bSecondSkillTimerRunning;
+
+	bool bThirdSkillTimerRunning;
+
+	bool bUltimateSkillTimerRunning;
+
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 	FORCEINLINE bool GetIsAttackSaved() const { return bIsAttackSaved; }
@@ -158,7 +182,8 @@ public: //get
 	FORCEINLINE UAnimMontage* GetDSEnterCombatMontage() const { return DSEnterCombatMontage; }
 	FORCEINLINE UAnimMontage* GetDSExitCombatMontage() const { return DSExitCombatMontage; }
 	FORCEINLINE float GetDodgeStaminaCost() const { return DodgeStaminaCost; }
-
+	UFUNCTION()
+	FORCEINLINE bool GetThirdSkillTimerRunning() const { return bThirdSkillTimerRunning; }
 public: //set
 	FORCEINLINE void SetIsAttackSaved(bool Boolean) { bIsAttackSaved = Boolean; }
 	FORCEINLINE void SetAttackCount(int32 Count) { AttackCount = Count; }
@@ -175,6 +200,10 @@ public:
 	void PerformDodge();
 	void ContinueAttack();
 	void HeavyAttack();
+	void Skill1();
+	void Skill2();
+	void Skill3();
+	void SkillUltimate();
 	
 	
 };

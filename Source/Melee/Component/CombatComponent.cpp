@@ -16,12 +16,16 @@
 
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	AttackCount = 0;
 	HitFromDirection = FVector::ZeroVector;
 	AttackActionCorrectionValue = 1.f;
 	DodgeStaminaCost = 10.f;
+	bFirstSkillTimerRunning = false;
+	bSecondSkillTimerRunning = false;
+	bThirdSkillTimerRunning = false;
+	bUltimateSkillTimerRunning = false;
 }
 
 void UCombatComponent::BeginPlay()
@@ -51,6 +55,42 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if(bFirstSkillTimerRunning)
+	{
+		float Skill1Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
+		if(Skill1Remaning <= 0)
+		{
+			bFirstSkillTimerRunning = false;
+		}
+	}
+
+	if(bSecondSkillTimerRunning)
+	{
+		float Skill2Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
+		if(Skill2Remaning <= 0)
+		{
+			bSecondSkillTimerRunning = false;
+		}
+	}
+
+	if(bThirdSkillTimerRunning)
+	{
+		float Skill3Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
+		if(Skill3Remaning <= 0)
+		{
+			bThirdSkillTimerRunning = false;
+		}
+	}
+
+	if(bUltimateSkillTimerRunning)
+	{
+		float SkillUltimateRemaning = GetWorld()->GetTimerManager().GetTimerRemaining(UltimateSkillTimerHandle);
+		if(SkillUltimateRemaning <= 0)
+		{
+			bUltimateSkillTimerRunning = false;
+		}
+	}
 
 }
 
@@ -94,29 +134,13 @@ void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 		if(EquippedWeapon)
 			EquippedWeapon->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 		break;
-	/*case EEquipmentType::ARMOR:
-		if(EquippedHelmet)
-		{
-			EquippedHelmet->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
-			EquippedHelmet->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<ACharacter>(GetOwner())->GetMesh());
-		}
-		else if(EquippedGauntlet)
-		{
-			EquippedGauntlet->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
-			EquippedGauntlet->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<ACharacter>(GetOwner())->GetMesh());
-		}
-		else if(EquippedChest)
-		{
-			EquippedChest->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
-			EquippedChest->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<ACharacter>(GetOwner())->GetMesh());
-		}
-		else if(EquippedBoot)
-		{
-			EquippedBoot->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
-			EquippedBoot->GetItemSkeletalMeshComp()->SetMasterPoseComponent(Cast<ACharacter>(GetOwner())->GetMesh());
-		}
-		break;*/
 	}
+}
+
+void UCombatComponent::AttachSecondWeapon(FName SocketName)
+{
+	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
+	Cast<ADualWeapon>(EquippedWeapon)->GetDualSwordStaticMeshComp()->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
 }
 
 void UCombatComponent::AttachWeapon()
@@ -129,6 +153,7 @@ void UCombatComponent::AttachWeapon()
 		{
 			AttachSecondWeapon(Cast<ADualWeapon>(EquippedWeapon)->GetSecondWeaponHandSocket());
 			AttachActor(EEquipmentType::WEAPON, EquippedWeapon->GetHandSocketName());
+			Cast<ADualWeapon>(EquippedWeapon)->GetSkillTimerRunning.BindUObject(this, &ThisClass::GetThirdSkillTimerRunning);
 		}
 		else
 		{
@@ -148,12 +173,6 @@ void UCombatComponent::AttachWeapon()
 		}
 	}
 } 
-
-void UCombatComponent::AttachSecondWeapon(FName SocketName)
-{
-	FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
-	Cast<ADualWeapon>(EquippedWeapon)->GetDualSwordStaticMeshComp()->AttachToComponent(Cast<ACharacter>(GetOwner())->GetMesh(), Rules, SocketName);
-}
 
 void UCombatComponent::HitCauseDamage(FHitResult& HitResult) //내 총 공격력을 계산해서 적용. 대미지 받는 쪽에서 추가 계산
 {
@@ -493,10 +512,7 @@ void UCombatComponent::ImpactTrace()
 				HitFromDirection = GetOwner()->GetActorForwardVector();
 				AlreadyHitActors.Add(LastHit.GetActor());
 
-
 				HitCauseDamage(LastHit);
-				//UGameplayStatics::ApplyPointDamage(LastHit.GetActor(), CalcATK, HitFromDirection, LastHit, GetOwner()->GetInstigatorController(), GetOwner(), UDamageType::StaticClass());
-
 				ApplyImpact(LastHit.GetActor());
 			}
 		}
@@ -510,9 +526,91 @@ void UCombatComponent::ClearHitActors()
 
 void UCombatComponent::ApplyImpact(AActor* HitActor)
 {
-	if(BasicAttackImpactSound && BasicAttackImpactParticle && HitActor)
+	if(HitActor)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, BasicAttackImpactSound, HitActor->GetActorLocation());
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BasicAttackImpactParticle, HitActor->GetActorTransform());
+		if(BasicAttackImpactSound)
+			UGameplayStatics::PlaySoundAtLocation(this, BasicAttackImpactSound, HitActor->GetActorLocation());
+		if(BasicAttackImpactParticle)
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BasicAttackImpactParticle, HitActor->GetActorTransform());
+	}
+}
+
+void UCombatComponent::Skill1()
+{
+	if(bFirstSkillTimerRunning)
+	{
+		float Skill1Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
+		UE_LOG(LogTemp, Warning, TEXT("스킬 1 쿨타임 도는중 남은 시간 :%f"), Skill1Remaning);
+		return;
+	}
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->Skill1();
+		//범위랑 대미지는 여기서 해야겠지?
+		FirstSkillSlotCooldown = EquippedWeapon->GetSkill1Cooldown();
+		GetWorld()->GetTimerManager().SetTimer(FirstSkillTimerHandle, FirstSkillSlotCooldown, false);
+		bFirstSkillTimerRunning = true;
+	}
+}
+
+void UCombatComponent::Skill2()
+{
+	if(bSecondSkillTimerRunning)
+	{
+		float Skill2Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
+		UE_LOG(LogTemp, Warning, TEXT("스킬 2 쿨타임 도는중 남은 시간 :%f"), Skill2Remaning);
+		return;
+	}
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->Skill2();
+		//범위랑 대미지는 여기서 해야겠지?
+		SecondSkillSlotCooldown = EquippedWeapon->GetSkill2Cooldown();
+		GetWorld()->GetTimerManager().SetTimer(SecondSkillTimerHandle, SecondSkillSlotCooldown, false);
+		bSecondSkillTimerRunning = true;
+	}
+}
+
+void UCombatComponent::Skill3()
+{
+	if(bThirdSkillTimerRunning)
+	{
+		float Skill3Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
+		UE_LOG(LogTemp, Warning, TEXT("스킬 3 쿨타임 도는중 남은 시간 :%f"), Skill3Remaning);
+		
+		if(!Cast<ADualWeapon>(EquippedWeapon)) return;
+		
+		
+	}
+	if(Cast<ADualWeapon>(EquippedWeapon)->GetbBlinkReturnTimerRunning())
+	{
+		EquippedWeapon->Skill3(); //재사용
+		return;
+	}
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->Skill3();
+		//범위랑 대미지는 여기서 해야겠지?
+		if(bThirdSkillTimerRunning) return; //위는 블링크 재사용때
+		ThirdSkillSlotCooldown = EquippedWeapon->GetSkill3Cooldown();
+		GetWorld()->GetTimerManager().SetTimer(ThirdSkillTimerHandle, ThirdSkillSlotCooldown, false);
+		bThirdSkillTimerRunning = true;
+	}
+}
+
+void UCombatComponent::SkillUltimate()
+{
+	if(bUltimateSkillTimerRunning)
+	{
+		float SkillUltimateRemaning = GetWorld()->GetTimerManager().GetTimerRemaining(UltimateSkillTimerHandle);
+		UE_LOG(LogTemp, Warning, TEXT("궁극기 쿨타임 도는중 남은 시간 :%f"), SkillUltimateRemaning);
+		return;
+	}
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->SkillUltimate();
+		UltimateSkillSlotCooldown = EquippedWeapon->GetSkillUltimateCooldown();
+		GetWorld()->GetTimerManager().SetTimer(UltimateSkillTimerHandle, UltimateSkillSlotCooldown, false);
+		bUltimateSkillTimerRunning = true;
 	}
 }

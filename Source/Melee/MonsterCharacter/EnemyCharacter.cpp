@@ -39,7 +39,7 @@ AEnemyCharacter::AEnemyCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	AIController = Cast<AEnemyAIController>(GetController());
-	MonsterCombatComp = CreateDefaultSubobject<UMonstersCombatComponent>(TEXT("MonstersCC"));
+	MonsterCombatCompo = CreateDefaultSubobject<UMonstersCombatComponent>(TEXT("MonstersCC"));
 	bTargetingState = false;
 	CurrentElement = EElements::NONE;
 }
@@ -48,7 +48,7 @@ void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(MonsterCombatComp && bTargetingState && Target && !MonsterCombatComp->CanAttack())
+	if(MonsterCombatCompo && bTargetingState && Target && !MonsterCombatCompo->CanAttack())
 	{
 		LookAtPlayer(Target, DeltaTime);
 	}
