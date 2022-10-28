@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "../Type/Types.h"
+#include "../Component/StateManagerComponent.h"
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -21,20 +22,36 @@ void ABaseWeapon::SimulateWeaponPhysics()
 
 void ABaseWeapon::Skill1()
 {
-
+    UStateManagerComponent* StateManager = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
+    if(StateManager)
+    {
+        StateManager->SetCurrentState(ECurrentState::ATTACKING);
+    }
 }
 
 void ABaseWeapon::Skill2()
 {
-
+    UStateManagerComponent* StateManager = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
+    if(StateManager)
+    {
+        StateManager->SetCurrentState(ECurrentState::ATTACKING);
+    }
 }
 
 void ABaseWeapon::Skill3()
 {
-
+    UStateManagerComponent* StateManager = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
+    if(StateManager)
+    {
+        StateManager->SetCurrentState(ECurrentState::ATTACKING);
+    }
 }
 
 void ABaseWeapon::SkillUltimate()
 {
-    
+    UStateManagerComponent* StateManager = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
+    if(StateManager)
+    {
+        StateManager->SetCurrentState(ECurrentState::ATTACKING);
+    }
 }
