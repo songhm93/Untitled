@@ -6,6 +6,7 @@
 #include "../Type/Elements.h"
 #include "BaseWeapon.generated.h"
 
+
 class UAnimMontage;
 
 UCLASS()

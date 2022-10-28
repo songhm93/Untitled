@@ -83,6 +83,7 @@ void ADualWeapon::BeginPlay()
 
 void ADualWeapon::Skill1()
 {
+    Super::Skill1();
     ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
     if(OwnerCharacter && OwnerCharacter->GetMesh())
     {
@@ -96,6 +97,7 @@ void ADualWeapon::Skill1()
 
 void ADualWeapon::Skill2()
 {
+    Super::Skill2();
     ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
     if(OwnerCharacter && OwnerCharacter->GetMesh())
     {
@@ -130,22 +132,36 @@ void ADualWeapon::Skill3() //블링크
         BlinkCurrentLocation = GetOwner()->GetActorLocation();
         GetWorld()->GetTimerManager().SetTimer(BlinkReturnTimerHandle, BlinkReturnCooldown, false);
         bBlinkReturnTimerRunning = true;
+        FHitResult HitResult;
+        const FVector Start = BlinkCurrentLocation + GetOwner()->GetActorForwardVector() * 450.f;
+        const FVector End = BlinkCurrentLocation + GetOwner()->GetActorForwardVector() * 500.f;
+        GetWorld()->LineTraceSingleByChannel(
+            HitResult,
+            Start,
+            End,
+            ECollisionChannel::ECC_Visibility
+        );
+        if(HitResult.bBlockingHit)
+        {
+            
+        }
         if(BlinkShadowParticle)
-        BlinkShadowParticleComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BlinkShadowParticle, GetActorTransform());
+            BlinkShadowParticleComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BlinkShadowParticle, GetActorTransform());
         //앞으로 순간이동
-        GetOwner()->SetActorLocation(BlinkCurrentLocation + GetOwner()->GetActorForwardVector() * 300.f);
+        GetOwner()->SetActorLocation(BlinkCurrentLocation + GetOwner()->GetActorForwardVector() * 500.f);
+        
         bReturnComplete = false;
 
         UAnimInstance* AnimInst = OwnerCharacter->GetMesh()->GetAnimInstance();
         if(AnimInst && Skill3Montage)
-        {
             AnimInst->Montage_Play(Skill3Montage);
-        }
+        
     }
 }
 
 void ADualWeapon::SkillUltimate()
 {
+    Super::SkillUltimate();
     ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
     if(OwnerCharacter && OwnerCharacter->GetMesh())
     {

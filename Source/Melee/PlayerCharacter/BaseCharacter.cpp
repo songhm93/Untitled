@@ -620,7 +620,6 @@ void ABaseCharacter::Skill1ButtonPressed()
 	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
 	if(CombatCompo)
 		CombatCompo->Skill1();
-	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
 }
 
 void ABaseCharacter::Skill2ButtonPressed()
@@ -628,7 +627,6 @@ void ABaseCharacter::Skill2ButtonPressed()
 	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
 	if(CombatCompo)
 		CombatCompo->Skill2();
-	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
 }
 
 void ABaseCharacter::Skill3ButtonPressed()
@@ -636,8 +634,6 @@ void ABaseCharacter::Skill3ButtonPressed()
 	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
 	if(CombatCompo)
 		CombatCompo->Skill3();
-	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
-	//스킬은 State를 여기서 하면 안될 듯.
 }
 
 void ABaseCharacter::SkillUltimateButtonPressed()
@@ -645,7 +641,6 @@ void ABaseCharacter::SkillUltimateButtonPressed()
 	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
 	if(CombatCompo)
 		CombatCompo->SkillUltimate();
-	StateManagerComp->SetCurrentState(ECurrentState::ATTACKING);
 }
 
 
