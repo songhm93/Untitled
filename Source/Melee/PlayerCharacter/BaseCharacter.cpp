@@ -17,7 +17,11 @@
 #include "../Interface/Interactable.h"
 #include "../Type/Stats.h"
 #include "../Type/Types.h"
+<<<<<<< HEAD
 #include "../Equipment/DualWeapon.h"
+=======
+#include "../Equipment/BaseWeapon.h"
+>>>>>>> 3c152bf6a5db82d8cc8a3b470f94e03344d6de8a
 #include "../Component/CombatComponent.h"
 #include "../Component/StateManagerComponent.h"
 #include "../Component/StatsComponent.h"
@@ -95,10 +99,14 @@ void ABaseCharacter::BeginPlay()
 		LockOnWidget->SetWidgetSpace(EWidgetSpace::Screen);
 		LockOnWidget->SetDrawSize(FVector2D(14.f, 14.f));
 	}
+<<<<<<< HEAD
 	if(Weapon)
 	{
 		Equip();
 	}
+=======
+	
+>>>>>>> 3c152bf6a5db82d8cc8a3b470f94e03344d6de8a
 }
 
 void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -237,7 +245,11 @@ void ABaseCharacter::ToggleCombat()
 void ABaseCharacter::InteractButtonPressed()
 {
 	FVector Start = GetActorLocation();
+<<<<<<< HEAD
 	FVector End = Start + GetActorForwardVector() * 300.f;
+=======
+	FVector End = Start + GetActorForwardVector() * 100.f;
+>>>>>>> 3c152bf6a5db82d8cc8a3b470f94e03344d6de8a
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
 	ObjectTypesArray.Reserve(1);
 	ObjectTypesArray.Emplace(ECollisionChannel::ECC_GameTraceChannel1);
@@ -252,7 +264,11 @@ void ABaseCharacter::InteractButtonPressed()
 		ObjectTypesArray, 
 		false, 
 		IgnoredActors, 
+<<<<<<< HEAD
 		EDrawDebugTrace::ForDuration, 
+=======
+		EDrawDebugTrace::None, 
+>>>>>>> 3c152bf6a5db82d8cc8a3b470f94e03344d6de8a
 		OutHit, 
 		true,
 		FLinearColor::Red,
@@ -520,6 +536,7 @@ void ABaseCharacter::SetMovementType(EMovementType Type)
 		TargetingComp->UpdateRotationMode();
 }
 
+<<<<<<< HEAD
 void ABaseCharacter::Equip()
 {
 	FActorSpawnParameters Params; 
@@ -528,6 +545,10 @@ void ABaseCharacter::Equip()
 
 	ABaseEquippable* Equipment = GetWorld()->SpawnActor<ABaseEquippable>(Weapon, GetActorTransform(), Params);
 	
+=======
+void ABaseCharacter::Equip(ABaseEquippable* Equipment)
+{
+>>>>>>> 3c152bf6a5db82d8cc8a3b470f94e03344d6de8a
 	if(CombatCompo && Equipment)
 	{
 		CombatCompo->OnEquipped(Equipment);
