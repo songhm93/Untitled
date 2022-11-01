@@ -17,7 +17,7 @@
 #include "../Interface/Interactable.h"
 #include "../Type/Stats.h"
 #include "../Type/Types.h"
-#include "../Equipment/BaseWeapon.h"
+#include "../Equipment/DualWeapon.h"
 #include "../Component/CombatComponent.h"
 #include "../Component/StateManagerComponent.h"
 #include "../Component/StatsComponent.h"
@@ -95,7 +95,10 @@ void ABaseCharacter::BeginPlay()
 		LockOnWidget->SetWidgetSpace(EWidgetSpace::Screen);
 		LockOnWidget->SetDrawSize(FVector2D(14.f, 14.f));
 	}
-	
+	if(Weapon)
+	{
+		Equip();
+	}
 }
 
 void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -234,7 +237,7 @@ void ABaseCharacter::ToggleCombat()
 void ABaseCharacter::InteractButtonPressed()
 {
 	FVector Start = GetActorLocation();
-	FVector End = Start + GetActorForwardVector() * 100.f;
+	FVector End = Start + GetActorForwardVector() * 300.f;
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
 	ObjectTypesArray.Reserve(1);
 	ObjectTypesArray.Emplace(ECollisionChannel::ECC_GameTraceChannel1);
@@ -249,7 +252,7 @@ void ABaseCharacter::InteractButtonPressed()
 		ObjectTypesArray, 
 		false, 
 		IgnoredActors, 
-		EDrawDebugTrace::None, 
+		EDrawDebugTrace::ForDuration, 
 		OutHit, 
 		true,
 		FLinearColor::Red,
@@ -517,8 +520,14 @@ void ABaseCharacter::SetMovementType(EMovementType Type)
 		TargetingComp->UpdateRotationMode();
 }
 
-void ABaseCharacter::Equip(ABaseEquippable* Equipment)
+void ABaseCharacter::Equip()
 {
+	FActorSpawnParameters Params; 
+	Params.Owner = this;
+	Params.Instigator = Cast<APawn>(this);
+
+	ABaseEquippable* Equipment = GetWorld()->SpawnActor<ABaseEquippable>(Weapon, GetActorTransform(), Params);
+	
 	if(CombatCompo && Equipment)
 	{
 		CombatCompo->OnEquipped(Equipment);

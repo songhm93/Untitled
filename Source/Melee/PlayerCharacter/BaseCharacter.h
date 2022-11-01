@@ -22,9 +22,10 @@ class UParticleSystem;
 class ABaseEquippable;
 class USpringArmComponent;
 class UCameraComponent;
+class ADualWeapon;
 
 UCLASS(config=Game)
-class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IEquipmentInterface
+class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
 {
 	GENERATED_BODY()
 public:
@@ -35,7 +36,7 @@ public:
 	virtual bool CanRecieveDamage() override;
 	virtual bool CanBeTargeted() override; //타겟이 될 수 있는지
 	virtual void OnTargeted(bool IsTargeted) override;
-	virtual void Equip(ABaseEquippable* Weapon) override;
+	
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
 	virtual void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation) override;
@@ -76,6 +77,8 @@ protected:
 	
 private:
 	void Test(); //테스트할 함수
+
+	void Equip();
 
 	void TurnRight(float Rate);
 
@@ -154,6 +157,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* LockOnWidget;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ADualWeapon> Weapon; //임시
 
 	FName PelvisBoneName;
 
