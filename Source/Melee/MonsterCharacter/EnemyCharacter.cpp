@@ -73,7 +73,7 @@ void AEnemyCharacter::BeginPlay()
 		LockOnWidget->SetDrawSize(FVector2D(14.f, 14.f));
 	}
 
-	OnTakePointDamage.AddDynamic(this, &ThisClass::ReceiveDamage);
+	OnTakeAnyDamage.AddDynamic(this, &ThisClass::ReceiveDamage);
 	
 	if(MonsterStatComp)
 	{
@@ -121,13 +121,9 @@ void AEnemyCharacter::OnTargeted(bool IsTargeted)
 
 void AEnemyCharacter::ReceiveDamage(
 	AActor* DamagedActor, 
-	float EnemyATK,
-	AController* InstigatedBy, 
-	FVector HitLocation, 
-	UPrimitiveComponent* FHitComponent, 
-	FName BoneName, 
-	FVector ShotFromDirection, 
+	float EnemyATK, 
 	const UDamageType* DamageType, 
+	AController* InstigatedBy, 
 	AActor* DamageCauser)
 {
 	if(InstigatedBy)
@@ -138,7 +134,7 @@ void AEnemyCharacter::ReceiveDamage(
 		if(Cast<UAttackDamageType>(DamageType))
 		{
 			ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
-			ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType(), HitLocation);
+			ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType());
 		}
 
 		if(StateManagerComp)
@@ -164,19 +160,19 @@ void AEnemyCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 �
 	}
 }
 
-void AEnemyCharacter::ApplyImpactEffect(EDamageType DamageType, FVector HitLocation)
+void AEnemyCharacter::ApplyImpactEffect(EDamageType DamageType)
 {
 	if(ImpactSound && ImpactParticle)
 	{
 		switch (DamageType)
 		{
 		case EDamageType::MELEE_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation); 
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); 
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
 			break;
 		case EDamageType::KNOCKDOWN_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation); //나중에 다른걸로 추가
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); //나중에 다른걸로 추가
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
 			break;
 		}
 	}	

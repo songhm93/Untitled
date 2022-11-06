@@ -8,11 +8,9 @@ ABaseEquippable::ABaseEquippable()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	ItemSkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemSkeletalMeshComp"));
 	ItemStaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMeshComp"));
 	RootSceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("EmRootSceneCompptyComp"));
 	RootComponent = RootSceneComp;
-	ItemSkeletalMeshComp->SetupAttachment(RootComponent);
 	ItemStaticMeshComp->SetupAttachment(RootComponent);
 	AttachSocketName = TEXT("SwordHipAttachSocket");
 	
@@ -34,9 +32,8 @@ UPrimitiveComponent* ABaseEquippable::GetItemMeshComp()
 {
 	if(ItemStaticMeshComp)
 		return ItemStaticMeshComp;
-	else 
-		return ItemSkeletalMeshComp;
-	
+		
+	return nullptr;
 }
 
 void ABaseEquippable::Interact(AActor* Caller)

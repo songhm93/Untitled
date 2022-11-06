@@ -20,12 +20,8 @@ protected:
 	virtual void ReceiveDamage(
 		AActor* DamagedActor, 
 		float EnemyATK, 
-		AController* InstigatedBy, 
-		FVector HitLocation, 
-		UPrimitiveComponent* FHitComponent, 
-		FName BoneName, 
-		FVector ShotFromDirection, 
 		const UDamageType* DamageType, 
+		AController* InstigatedBy, 
 		AActor* DamageCauser) override;
 
 private:

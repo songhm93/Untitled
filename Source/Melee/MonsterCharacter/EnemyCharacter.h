@@ -50,7 +50,7 @@ public:
 	virtual void OnTargeted(bool IsTargeted) override;
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
-	virtual void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation) override;
+	virtual void ApplyImpactEffect(EDamageType DamageType) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -76,17 +76,12 @@ protected:
 	virtual void ReceiveDamage(
 		AActor* DamagedActor, 
 		float EnemyATK, 
-		AController* InstigatedBy, 
-		FVector HitLocation, 
-		UPrimitiveComponent* FHitComponent, 
-		FName BoneName, 
-		FVector ShotFromDirection, 
 		const UDamageType* DamageType, 
+		AController* InstigatedBy, 
 		AActor* DamageCauser);
 	virtual void Dead();
 private:
 	
-
 	void EnableRagdoll();
 
 	void ApplyHitReactionPhysicsVelocity(float InitSpeed);

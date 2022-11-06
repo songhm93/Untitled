@@ -115,7 +115,7 @@ void ABossMonster::HPBarOnOff(bool Show)
 		}
 		else
 		{
-			GetWorldTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
+			GetWorld()->GetTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
 		}
 	}
 }

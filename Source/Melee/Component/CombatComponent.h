@@ -74,6 +74,10 @@ private:
 
 	bool CanAttack();
 
+	void ApplySkillExplodeDamage(float SkillATK, FHitResult HitResult);
+
+	void UltimateImpact();
+
 	// Common
 	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DodgeMontage;
@@ -184,6 +188,7 @@ public: //get
 	FORCEINLINE float GetDodgeStaminaCost() const { return DodgeStaminaCost; }
 	UFUNCTION()
 	FORCEINLINE bool GetThirdSkillTimerRunning() const { return bThirdSkillTimerRunning; }
+
 public: //set
 	FORCEINLINE void SetIsAttackSaved(bool Boolean) { bIsAttackSaved = Boolean; }
 	FORCEINLINE void SetAttackCount(int32 Count) { AttackCount = Count; }

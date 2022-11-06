@@ -54,57 +54,52 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 	bool SpecialComplete = Cast<AEnemyAIController>(MonsterController)->GetBBComp()->GetValueAsBool(TEXT("SpecialComplete"));
 	//Ready는 애니메이션 실행 전까지 true, 애니메이션 실행 완료 애님 노티파이 오면 false, 타이머 후 true로
 	//Complete은 스킬 실행했으면 그 스킬은 꼭 수행하게 끔하는 변수. 애니메이션 실행 후 다 끝났을 때 true로.
-	
-	if(SpecialReady && SpecialComplete) 
-	{								   
-		if(Dist > 550.f)      
-		{
-            int32 RandValue = FMath::RandRange(0, 1);
-            if(RandValue == 0)
-                SetBossBehavior(EBossBehavior::SPECIAL1);
-            else if(RandValue == 1)
-                SetBossBehavior(EBossBehavior::SPECIAL2);
-			BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);			
-		}
-		else if(Dist > 300.f)
-		{
-			int32 RandValue = FMath::RandRange(0, 2);
-            if(RandValue == 0)
-                SetBossBehavior(EBossBehavior::SPECIAL1);
-            else if(RandValue == 1)
-                SetBossBehavior(EBossBehavior::SPECIAL2);
-			else
-				SetBossBehavior(EBossBehavior::SPECIAL3);
-			BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);
-
-		}
-		else if(Dist > 150.f)
-		{
-			SetBossBehavior(EBossBehavior::CHASE);
-		}
-		else
-		{
-			SetBossBehavior(EBossBehavior::BASIC_ATTACK);
-		}
-	}
-	else if(!SpecialReady) //스페셜 공격 불가능일 때. 쿨다운일 때.
+	if(BlackBoardComp)
 	{
-		if(Dist <= MonsterCharacter->GetAttackRange())
-		{
-			SetBossBehavior(EBossBehavior::BASIC_ATTACK);
+		if(SpecialReady && SpecialComplete) 
+		{								   
+			if(Dist > 550.f)      
+			{
+				int32 RandValue = FMath::RandRange(0, 1);
+				if(RandValue == 0)
+					SetBossBehavior(EBossBehavior::SPECIAL1);
+				else if(RandValue == 1)
+					SetBossBehavior(EBossBehavior::SPECIAL2);
+				BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);			
+			}
+			else if(Dist > 300.f)
+			{
+				SetRandSpecial();
+			}
+			else if(Dist > 150.f)
+			{
+				SetBossBehavior(EBossBehavior::CHASE);
+			}
+			else
+			{
+				SetRandSpecial();
+			}
 		}
-		else
+		else if(!SpecialReady) //스페셜 공격 불가능일 때. 쿨다운일 때.
 		{
-			SetBossBehavior(EBossBehavior::CHASE);
-			TArray<ATargetPoint*> PatrolPoint = MonsterCharacter->GetPatrolPoints();
-			const float CenterDist = MonsterCharacter->GetDistanceTo(Cast<AActor>(PatrolPoint[0]));
-			if(CenterDist > 1540.f) 
-			{					   
-				Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), true);
-				SetBossBehavior(EBossBehavior::RETURN);
+			if(Dist <= MonsterCharacter->GetAttackRange())
+			{
+				SetBossBehavior(EBossBehavior::BASIC_ATTACK);
+			}
+			else
+			{
+				SetBossBehavior(EBossBehavior::CHASE);
+				TArray<ATargetPoint*> PatrolPoint = MonsterCharacter->GetPatrolPoints();
+				const float CenterDist = MonsterCharacter->GetDistanceTo(Cast<AActor>(PatrolPoint[0]));
+				if(CenterDist > 1540.f) 
+				{					   
+					Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), true);
+					SetBossBehavior(EBossBehavior::RETURN);
+				}
 			}
 		}
 	}
+	
 }
 
 void UBTService_BossUpdateBehavior::SetBossBehavior(EBossBehavior AIBehavior)
@@ -139,4 +134,16 @@ void UBTService_BossUpdateBehavior::SetBossBehavior(EBossBehavior AIBehavior)
 		break;
 	}
 	BlackBoardComp->SetValueAsEnum(BossBehavior.SelectedKeyName, EnumIdx);
+}
+
+void UBTService_BossUpdateBehavior::SetRandSpecial()
+{
+	int32 RandValue = FMath::RandRange(0, 2);
+	if(RandValue == 0)
+		SetBossBehavior(EBossBehavior::SPECIAL1);
+	else if(RandValue == 1)
+		SetBossBehavior(EBossBehavior::SPECIAL2);
+	else
+		SetBossBehavior(EBossBehavior::SPECIAL3);
+	BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);
 }

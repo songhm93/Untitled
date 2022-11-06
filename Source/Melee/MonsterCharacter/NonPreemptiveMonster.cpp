@@ -46,18 +46,14 @@ void ANonPreemptiveMonster::BeginPlay()
 
 void ANonPreemptiveMonster::ReceiveDamage(
 	AActor* DamagedActor, 
-	float EnemyATK,
-	AController* InstigatedBy, 
-	FVector HitLocation, 
-	UPrimitiveComponent* FHitComponent, 
-	FName BoneName, 
-	FVector ShotFromDirection, 
+	float EnemyATK, 
 	const UDamageType* DamageType, 
+	AController* InstigatedBy, 
 	AActor* DamageCauser)
 {
 	if(InstigatedBy)
 	{
-		Super::ReceiveDamage(DamagedActor, EnemyATK, InstigatedBy, HitLocation, FHitComponent, BoneName, ShotFromDirection, DamageType, DamageCauser);
+		Super::ReceiveDamage(DamagedActor, EnemyATK, DamageType, InstigatedBy, DamageCauser);
         AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 
         if(DamageCauser && DamageCauser->GetOwner()->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(DamageCauser->GetOwner())) && AIController)

@@ -24,22 +24,39 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Comp", Meta = (AllowPrivateAccess = "true"))
 	float WeaponATK; //무기 공격력
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Skill1Montage;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Skill2Montage;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Skill3Montage;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* SkillUltimateMontage;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float Skill1Cooldown;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float Skill2Cooldown;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float Skill3Cooldown;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float SkillUltimateCooldown;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	float Skill1ATK;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	float Skill2ATK;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	float Skill3ATK;
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;

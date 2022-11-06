@@ -6,10 +6,13 @@
 
 
 DECLARE_DELEGATE_RetVal(bool, FGetSkillTimerRunning);
+DECLARE_DELEGATE_TwoParams(FSetSkillATK, float, FHitResult);
 
 class UCurveFloat;
 class UParticleSystem;
 class UParticleSystemComponent;
+class AFlameSkill;
+class UUserWidget;
 
 UCLASS()
 class MELEE_API ADualWeapon : public ABaseWeapon
@@ -25,6 +28,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	FGetSkillTimerRunning GetSkillTimerRunning;
+	FSetSkillATK SetSkillATK;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* DualSwordStaticMeshComp;
@@ -50,19 +55,40 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UParticleSystemComponent* BlinkShadowParticleComponent;
 
-	bool bPlayCurve;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BlinkSupplementalParticle;
 
-	void SetPlayerHeight(float DeltaTime);
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystemComponent* BlinkSupplementalParticleComponent;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BlinkBeginParticle;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystemComponent* BlinkBeginParticleComponent;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BlinkReturnParticle;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BlinkShadowBurstParticle;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* Skill1ExplodeParticle;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* Skill2FlameParticle;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AFlameSkill> FlameActor;
+
+	FTransform ShadowTransform;
+
+	bool bPlayCurve;
 
 	FTimerHandle HeightCurveTimerHandle;
 
 	float CurveTime;
-
-	void UltimateSocketChange(bool Start);
-
-	void UltimateComplete();
-
-	void FinishSetHeight();
 
 	FVector CurrentLocation; //궁극기 사용시 캐릭터의 위치
 
@@ -75,6 +101,40 @@ private:
 	bool bBlinkReturnTimerRunning;
 
 	bool bReturnComplete;
+	
+	FTimerHandle Skill1ExpodeTimerHandle;
+
+	float Skill1ExpodeTime;
+
+	FTimerHandle BlinkShowCharacterTimerHandle;
+
+	FTimerDelegate BlinkShowCharacterDelegate;
+
+	float BlinkShowCharacterTime;
+
+	FTimerHandle BlinkMoveTimerHandle;
+
+	float BlinkMoveTime;
+
+	void SetPlayerHeight();
+
+	void UltimateSocketChange(bool Start);
+
+	void UltimateComplete();
+
+	void FinishSetHeight();
+
+	void Skill1Explode();
+
+	void Skill2Range();
+
+	UFUNCTION()
+	void ShowHideCharacter(bool Hide);
+
+	void BlinkMove();
+	
+	void BlinkDestroyShadow();
+
 	
 public: //get
 	FORCEINLINE UStaticMeshComponent* GetDualSwordStaticMeshComp() const { return DualSwordStaticMeshComp;}

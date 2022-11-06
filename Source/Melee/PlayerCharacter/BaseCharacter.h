@@ -39,7 +39,7 @@ public:
 	
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
-	virtual void ApplyImpactEffect(EDamageType DamageType, FVector HitLocation) override;
+	virtual void ApplyImpactEffect(EDamageType DamageType) override;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;

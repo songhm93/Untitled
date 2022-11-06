@@ -7,6 +7,7 @@
 
 DECLARE_DELEGATE(FOnImpact);
 DECLARE_DELEGATE(FOnUltimateComplete);
+DECLARE_DELEGATE(FOnUltimateImpact);
 
 class ABaseCharacter;
 
@@ -20,6 +21,7 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	FOnImpact OnImpact;
 	FOnUltimateComplete OnUltimateComplete;
+	FOnUltimateImpact OnUltimateImpact;
 private:
 	
 	UFUNCTION()
@@ -39,6 +41,9 @@ private:
 
 	UFUNCTION()
 	void AnimNotify_UltimateComplete();
+
+	UFUNCTION()
+	void AnimNotify_UltimateImpact();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Speed;

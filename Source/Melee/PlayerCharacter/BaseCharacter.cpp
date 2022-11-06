@@ -147,6 +147,7 @@ void ABaseCharacter::Jump()
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::DODGING);
 	CharacterStates.Add(ECurrentState::DISABLED);
+	CharacterStates.Add(ECurrentState::ATTACKING);
 	
 	if(StateManagerComp && StateManagerComp->IsCurrentStateEqualToThis(CharacterStates) && StateManagerComp->GetCurrentAction() == ECurrentAction::CHARGED_ATTACK) return;
 	StopAnimMontage();
@@ -353,12 +354,12 @@ void ABaseCharacter::ReceiveDamage(
 	if (DamageType) //다른 대미지 타입 구현 안해놔서 임시.
 	{
 		ApplyHitReaction(EDamageType::MELEE_DAMAGE);
-		ApplyImpactEffect(EDamageType::MELEE_DAMAGE, GetActorLocation());
+		ApplyImpactEffect(EDamageType::MELEE_DAMAGE);
 	}
 	else if(Cast<UAttackDamageType>(DamageType))
 	{
 		ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
-		ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType(), GetActorLocation());
+		ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType());
 	}
 		
 
@@ -392,7 +393,7 @@ void ABaseCharacter::Dead()
 	{
 		CombatCompo->GetEquippedWeapon()->SimulateWeaponPhysics();
 	}
-	GetWorldTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
+	GetWorld()->GetTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
 }
 
 void ABaseCharacter::EnableRagdoll()
@@ -572,19 +573,19 @@ void ABaseCharacter::ApplyHitReaction(EDamageType DamageType)
 	}
 }
 
-void ABaseCharacter::ApplyImpactEffect(EDamageType DamageType, FVector HitLocation)
+void ABaseCharacter::ApplyImpactEffect(EDamageType DamageType)
 {
 	if(ImpactSound && ImpactParticle)
 	{
 		switch (DamageType)
 		{
 		case EDamageType::MELEE_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation); 
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); 
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
 			break;
 		case EDamageType::KNOCKDOWN_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation); //나중에 다른걸로 추가
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, HitLocation);
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); //나중에 다른걸로 추가
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
 			break;
 		}
 	}	
@@ -626,28 +627,40 @@ void ABaseCharacter::CameraZoomInOut(float Rate)
 
 void ABaseCharacter::Skill1ButtonPressed()
 {
-	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
+		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
+		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
+	if(Condition) return;
 	if(CombatCompo)
 		CombatCompo->Skill1();
 }
 
 void ABaseCharacter::Skill2ButtonPressed()
 {
-	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
+		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
+		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
+	if(Condition) return;
 	if(CombatCompo)
 		CombatCompo->Skill2();
 }
 
 void ABaseCharacter::Skill3ButtonPressed()
 {
-	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
-	if(CombatCompo)
-		CombatCompo->Skill3();
+	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
+		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
+		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
+	if(Condition) return;
+	if(CombatCompo)											
+		CombatCompo->Skill3();								
 }
 
 void ABaseCharacter::SkillUltimateButtonPressed()
 {
-	if(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
+		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
+		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
+	if(Condition) return;
 	if(CombatCompo)
 		CombatCompo->SkillUltimate();
 }

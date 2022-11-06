@@ -46,6 +46,7 @@ void UCombatComponent::BeginPlay()
 			if(Cast<UMeleeAnimInstance>(AnimInst))
 			{
 				Cast<UMeleeAnimInstance>(AnimInst)->OnImpact.BindUObject(this, &ThisClass::ImpactTrace);
+				Cast<UMeleeAnimInstance>(AnimInst)->OnUltimateImpact.BindUObject(this, &ThisClass::UltimateImpact);
 			}
 		}
 
@@ -184,7 +185,7 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult) //내 총 공격력
 		{
 			HitFromDirection = GetOwner()->GetActorForwardVector();
 			
-			if(HitResult.GetActor()->Implements<UCombatInterface>() &&  Cast<ICombatInterface>(HitResult.GetActor())->CanRecieveDamage())
+			if(HitResult.GetActor()->Implements<UCombatInterface>() && Cast<ICombatInterface>(HitResult.GetActor())->CanRecieveDamage())
 			{
 				if (GetCurrentStatValue.IsBound())
 				{
@@ -209,6 +210,10 @@ void UCombatComponent::WeaponBaseSetting()
 	if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
 	{
 		ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
+		if(DualWeapon)
+		{
+			DualWeapon->SetSkillATK.BindUObject(this, &ThisClass::ApplySkillExplodeDamage);
+		}
 
 	}
 	OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, EquippedWeapon->GetWeaponATK());
@@ -479,9 +484,8 @@ void UCombatComponent::ImpactTrace()
 	CollisionObjectType.Add(Pawn);
 
 	TArray<AActor*> ActorsToIgnore;
-
 	ActorsToIgnore.Add(GetOwner());
-	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
+
 	TArray<FHitResult> OutHitResult;
 
 	UKismetSystemLibrary::BoxTraceMultiForObjects(
@@ -540,13 +544,14 @@ void UCombatComponent::Skill1()
 	if(bFirstSkillTimerRunning)
 	{
 		float Skill1Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
-		UE_LOG(LogTemp, Warning, TEXT("스킬 1 쿨타임 도는중 남은 시간 :%f"), Skill1Remaning);
+		
 		return;
 	}
+
 	if(EquippedWeapon)
 	{
 		EquippedWeapon->Skill1();
-		//범위랑 대미지는 여기서 해야겠지?
+
 		FirstSkillSlotCooldown = EquippedWeapon->GetSkill1Cooldown();
 		GetWorld()->GetTimerManager().SetTimer(FirstSkillTimerHandle, FirstSkillSlotCooldown, false);
 		bFirstSkillTimerRunning = true;
@@ -558,13 +563,14 @@ void UCombatComponent::Skill2()
 	if(bSecondSkillTimerRunning)
 	{
 		float Skill2Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
-		UE_LOG(LogTemp, Warning, TEXT("스킬 2 쿨타임 도는중 남은 시간 :%f"), Skill2Remaning);
+		
 		return;
 	}
+
 	if(EquippedWeapon)
 	{
 		EquippedWeapon->Skill2();
-		//범위랑 대미지는 여기서 해야겠지?
+
 		SecondSkillSlotCooldown = EquippedWeapon->GetSkill2Cooldown();
 		GetWorld()->GetTimerManager().SetTimer(SecondSkillTimerHandle, SecondSkillSlotCooldown, false);
 		bSecondSkillTimerRunning = true;
@@ -576,21 +582,20 @@ void UCombatComponent::Skill3()
 	if(bThirdSkillTimerRunning)
 	{
 		float Skill3Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
-		UE_LOG(LogTemp, Warning, TEXT("스킬 3 쿨타임 도는중 남은 시간 :%f"), Skill3Remaning);
 		
-		if(!Cast<ADualWeapon>(EquippedWeapon)) return;
-		
-		
+		if(!Cast<ADualWeapon>(EquippedWeapon)) return; //DualWeapon만 해당
 	}
-	if(Cast<ADualWeapon>(EquippedWeapon)->GetbBlinkReturnTimerRunning())
+
+	if(Cast<ADualWeapon>(EquippedWeapon)->GetbBlinkReturnTimerRunning()) //DualWeapon만 해당
 	{
 		EquippedWeapon->Skill3(); //재사용
 		return;
 	}
+
 	if(EquippedWeapon)
 	{
 		EquippedWeapon->Skill3();
-		//범위랑 대미지는 여기서 해야겠지?
+
 		if(bThirdSkillTimerRunning) return; //위는 블링크 재사용때
 		ThirdSkillSlotCooldown = EquippedWeapon->GetSkill3Cooldown();
 		GetWorld()->GetTimerManager().SetTimer(ThirdSkillTimerHandle, ThirdSkillSlotCooldown, false);
@@ -603,7 +608,7 @@ void UCombatComponent::SkillUltimate()
 	if(bUltimateSkillTimerRunning)
 	{
 		float SkillUltimateRemaning = GetWorld()->GetTimerManager().GetTimerRemaining(UltimateSkillTimerHandle);
-		UE_LOG(LogTemp, Warning, TEXT("궁극기 쿨타임 도는중 남은 시간 :%f"), SkillUltimateRemaning);
+		
 		return;
 	}
 	if(EquippedWeapon)
@@ -612,5 +617,68 @@ void UCombatComponent::SkillUltimate()
 		UltimateSkillSlotCooldown = EquippedWeapon->GetSkillUltimateCooldown();
 		GetWorld()->GetTimerManager().SetTimer(UltimateSkillTimerHandle, UltimateSkillSlotCooldown, false);
 		bUltimateSkillTimerRunning = true;
+	}
+}
+
+void UCombatComponent::ApplySkillExplodeDamage(float SkillATK, FHitResult HitResult)
+{
+	if(HitResult.bBlockingHit)
+	{
+		TArray<AActor*> Ignore;
+		Ignore.Add(GetOwner());
+	
+		UGameplayStatics::ApplyRadialDamage(this, SkillATK, HitResult.GetActor()->GetActorLocation(), 256.f, UDamageType::StaticClass(), Ignore, EquippedWeapon, Cast<APawn>(GetOwner())->GetController());
+	}
+}
+
+void UCombatComponent::UltimateImpact()
+{
+	const FVector Start = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector() * 50.f) + (GetOwner()->GetActorUpVector() * -150.f);
+	const FVector End = Start + GetOwner()->GetActorForwardVector() * 100.f;
+	const FVector HalfSize = FVector(50.f, 50.f, 50.f);
+	const FRotator Oritentation = GetOwner()->GetActorRotation();
+
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
+	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+	CollisionObjectType.Add(Pawn);
+
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(GetOwner());
+
+	TArray<FHitResult> OutHitResult;
+
+	UKismetSystemLibrary::BoxTraceMultiForObjects(
+		this,
+		Start,
+		End,
+		HalfSize,
+		Oritentation,
+		CollisionObjectType,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		OutHitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Blue,
+		5.f
+	);
+
+	ClearHitActors();
+
+	if(!OutHitResult.IsEmpty())
+	{
+		for (auto LastHit : OutHitResult)
+		{
+			if (!AlreadyHitActors.Contains(LastHit.GetActor())) //중복이 아니면
+			{
+				HitFromDirection = GetOwner()->GetActorForwardVector();
+				AlreadyHitActors.Add(LastHit.GetActor());
+
+				HitCauseDamage(LastHit);
+				ApplyImpact(LastHit.GetActor());
+			}
+		}
 	}
 }

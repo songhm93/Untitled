@@ -71,3 +71,8 @@ void UMeleeAnimInstance::AnimNotify_UltimateComplete()
 {
     OnUltimateComplete.ExecuteIfBound();
 }
+
+void UMeleeAnimInstance::AnimNotify_UltimateImpact()
+{
+    OnUltimateImpact.ExecuteIfBound();
+}

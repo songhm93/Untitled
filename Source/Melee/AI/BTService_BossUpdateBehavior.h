@@ -31,9 +31,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	FBlackboardKeySelector BossBehavior;
 
-
 	void BossCase(float Dist, AActor* Target);
 
 	void SetBossBehavior(EBossBehavior AIBehavior);
+
+	void SetRandSpecial();
 
 };
