@@ -23,6 +23,7 @@ class ABaseEquippable;
 class USpringArmComponent;
 class UCameraComponent;
 class ADualWeapon;
+class UInventoryComponent;
 
 UCLASS(config=Game)
 class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
@@ -39,7 +40,7 @@ public:
 	
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
-	virtual void ApplyImpactEffect(EDamageType DamageType) override;
+	virtual void ApplyImpactEffect() override;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -109,6 +110,9 @@ private:
 	void SkillUltimateButtonPressed();
 
 	UFUNCTION(BlueprintCallable)
+	EPhysicalSurface GetPhysicsSurface();
+
+	UFUNCTION(BlueprintCallable)
 	FRotator GetDesiredRotation();
 
 	UFUNCTION()
@@ -127,6 +131,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UStateManagerComponent* StateManagerComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", Meta = (AllowPrivateAccess = "true"))
+	UInventoryComponent* InventoryComp;
 
 	UPROPERTY(EditAnywhere, Category = "MouseSensitivity", Meta = (AllowPrivateAccess = "true"))
 	float MouseSensitivity;

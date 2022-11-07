@@ -12,6 +12,7 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
 #include "Components/WidgetComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 #include "../AttackDamageType.h"
 #include "../Interface/Interactable.h"
@@ -22,8 +23,9 @@
 #include "../Component/StateManagerComponent.h"
 #include "../Component/StatsComponent.h"
 #include "../Component/TargetingComponent.h"
+#include "../Component/InventoryComponent.h"
 
-#include "../Rock.h"
+#include "../SkillActor/Rock.h"
 
 
 ABaseCharacter::ABaseCharacter()
@@ -56,7 +58,8 @@ ABaseCharacter::ABaseCharacter()
 	StatComp = CreateDefaultSubobject<UStatsComponent>(TEXT("StatComp"));
 	TargetingComp = CreateDefaultSubobject<UTargetingComponent>(TEXT("TargetingComp"));
 	LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
-	
+	InventoryComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
+
 	LockOnWidget->SetupAttachment(GetMesh());
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
@@ -351,20 +354,13 @@ void ABaseCharacter::ReceiveDamage(
 		bHitFront = FMath::IsWithin(DotProductResult, -0.1f, 1.f);
 	}
 
-	if (DamageType) //다른 대미지 타입 구현 안해놔서 임시.
-	{
-		ApplyHitReaction(EDamageType::MELEE_DAMAGE);
-		ApplyImpactEffect(EDamageType::MELEE_DAMAGE);
-	}
-	else if(Cast<UAttackDamageType>(DamageType))
+	ApplyImpactEffect();
+
+	if(Cast<UAttackDamageType>(DamageType))
 	{
 		ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
-		ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType());
 	}
 		
-
-	if(StateManagerComp)
-		StateManagerComp->SetCurrentState(ECurrentState::DISABLED);
 	
 	CalcReceiveDamage(EnemyATK);
 }
@@ -573,22 +569,13 @@ void ABaseCharacter::ApplyHitReaction(EDamageType DamageType)
 	}
 }
 
-void ABaseCharacter::ApplyImpactEffect(EDamageType DamageType)
+void ABaseCharacter::ApplyImpactEffect()
 {
 	if(ImpactSound && ImpactParticle)
 	{
-		switch (DamageType)
-		{
-		case EDamageType::MELEE_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); 
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
-			break;
-		case EDamageType::KNOCKDOWN_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); //나중에 다른걸로 추가
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
-			break;
-		}
-	}	
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); 
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
+	}
 }
 
 void ABaseCharacter::PerformHitReact()
@@ -663,4 +650,23 @@ void ABaseCharacter::SkillUltimateButtonPressed()
 	if(Condition) return;
 	if(CombatCompo)
 		CombatCompo->SkillUltimate();
+}
+
+EPhysicalSurface ABaseCharacter::GetPhysicsSurface()
+{
+	FHitResult HitResult;
+	const FVector Start = GetActorLocation();
+	const FVector End = Start + FVector(0.f, 0.f, -400.f);
+	FCollisionQueryParams Params;
+	Params.bReturnPhysicalMaterial = true;
+
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECollisionChannel::ECC_Visibility,
+		Params
+	);
+	
+	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
 }

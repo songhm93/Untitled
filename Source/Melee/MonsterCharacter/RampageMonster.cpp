@@ -6,7 +6,7 @@
 
 #include "EnemyAnimInstance.h"
 #include "../Component/MonsterStatsComponent.h"
-#include "../Rock.h"
+#include "../SkillActor/Rock.h"
 #include "../Melee.h"
 
 ARampageMonster::ARampageMonster()

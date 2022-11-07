@@ -31,20 +31,11 @@ void APreemptiveMonster::AgroSphereBeginOverlap(
 {
 	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 
+	if(GetStateManagerComp()->GetCurrentCombatState() == ECurrentCombatState::COMBAT_STATE) return;
+	
 	if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)) && AIController)
 	{
-		if(AIController && StateManagerComp)
-		{
-			AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), OtherActor);
-			bTargetingState = true;
-			Target = OtherActor;
-			StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
-			AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), true);
-		}
-		if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
-		{
-			GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
-		}
+		EnterCombat(OtherActor, true);
 	}
 }
 

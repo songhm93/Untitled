@@ -134,7 +134,7 @@ void AEnemyCharacter::ReceiveDamage(
 		if(Cast<UAttackDamageType>(DamageType))
 		{
 			ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
-			ApplyImpactEffect(Cast<UAttackDamageType>(DamageType)->GetDamageType());
+			ApplyImpactEffect();
 		}
 
 		if(StateManagerComp)
@@ -160,21 +160,12 @@ void AEnemyCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 �
 	}
 }
 
-void AEnemyCharacter::ApplyImpactEffect(EDamageType DamageType)
+void AEnemyCharacter::ApplyImpactEffect()
 {
 	if(ImpactSound && ImpactParticle)
 	{
-		switch (DamageType)
-		{
-		case EDamageType::MELEE_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); 
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
-			break;
-		case EDamageType::KNOCKDOWN_DAMAGE:
-			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); //나중에 다른걸로 추가
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
-			break;
-		}
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation()); 
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorLocation());
 	}	
 }
 
@@ -283,3 +274,37 @@ void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 	}
 }
 
+void AEnemyCharacter::EnterCombat(AActor* Player, bool First)
+{
+	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
+	
+	if(AIController && StateManagerComp)
+	{
+		AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), Player);
+		bTargetingState = true;
+		Target = Player;
+		StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
+		AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), true);
+	}
+	if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
+	}
+	if(First)
+	{
+		TArray<AActor*> OutActor;
+		UGameplayStatics::GetAllActorsOfClass(this, AEnemyCharacter::StaticClass(), OutActor);
+
+		if(!OutActor.IsEmpty())
+		{
+			for(auto Mob : OutActor)
+			{
+				if(Cast<AEnemyCharacter>(Mob)->GetAreaNum() == AreaNum)
+				{
+					Cast<AEnemyCharacter>(Mob)->EnterCombat(Player, false);
+				}
+			}
+		}
+	}
+	
+}

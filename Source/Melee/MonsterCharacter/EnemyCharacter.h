@@ -50,7 +50,7 @@ public:
 	virtual void OnTargeted(bool IsTargeted) override;
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
-	virtual void ApplyImpactEffect(EDamageType DamageType) override;
+	virtual void ApplyImpactEffect() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -80,8 +80,11 @@ protected:
 		AController* InstigatedBy, 
 		AActor* DamageCauser);
 	virtual void Dead();
+	void EnterCombat(AActor* Player, bool First);
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	FString AreaNum;
+
 private:
-	
 	void EnableRagdoll();
 
 	void ApplyHitReactionPhysicsVelocity(float InitSpeed);
@@ -117,7 +120,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* LockOnWidget;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Patrol", Meta = (AllowPrivateAccess = "true"))
 	TArray<ATargetPoint*> PatrolPoints;
 
@@ -144,8 +146,6 @@ private:
 	FTimerHandle DestroyDeadTimerHandle; //죽은 캐릭터, 무기 destory
 
 	float DestroyDeadTime;
-
-
 	
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
@@ -153,7 +153,7 @@ public: //get
 	FORCEINLINE TArray<ATargetPoint*> GetPatrolPoints() const { return PatrolPoints; }
 	FORCEINLINE float GetAttackRange() const { return AttackRange; }
 	FORCEINLINE UMonsterStatsComponent* GetMonsterStatComp() const { return MonsterStatComp; }
-
+	FORCEINLINE FString GetAreaNum() const { return AreaNum; }
 public:
 	void AgroCancel();	
 	

@@ -21,5 +21,5 @@ public:
 	virtual bool CanRecieveDamage() = 0;
 	virtual void CalcReceiveDamage(float ATK) = 0;
 	virtual void ApplyHitReaction(EDamageType DamageType) = 0;
-	virtual void ApplyImpactEffect(EDamageType DamageType) = 0;
+	virtual void ApplyImpactEffect() = 0;
 };

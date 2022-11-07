@@ -54,22 +54,14 @@ void ANonPreemptiveMonster::ReceiveDamage(
 	if(InstigatedBy)
 	{
 		Super::ReceiveDamage(DamagedActor, EnemyATK, DamageType, InstigatedBy, DamageCauser);
-        AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
-
+        
+		AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
+	
+		if(GetStateManagerComp()->GetCurrentCombatState() == ECurrentCombatState::COMBAT_STATE) return;
+		
         if(DamageCauser && DamageCauser->GetOwner()->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(DamageCauser->GetOwner())) && AIController)
         {
-            if(AIController && StateManagerComp)
-            {
-                AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), DamageCauser->GetOwner());
-                bTargetingState = true;
-                Target = DamageCauser->GetOwner();
-                StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
-                AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), true);
-            }
-            if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
-            {
-                GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
-            }
+			EnterCombat(DamageCauser->GetOwner(), true);
         }
 	}
 }

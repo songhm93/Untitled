@@ -7,7 +7,7 @@
 #include "../PlayerCharacter/BaseCharacter.h"
 #include "../PlayerCharacter/MeleeAnimInstance.h"
 #include "../Component/StateManagerComponent.h"
-#include "../FlameSkill.h"
+#include "../SkillActor/FlameSkill.h"
 
 
 
