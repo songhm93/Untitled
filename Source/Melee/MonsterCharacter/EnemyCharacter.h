@@ -9,18 +9,6 @@
 #include "../Type/Elements.h"
 #include "EnemyCharacter.generated.h"
 
-UENUM(BlueprintType)
-enum class EEnemyActionType : uint8
-{
-    NONE UMETA(DisplayName = "NONE"),
-    CLOSE_RANGE_ATTACK UMETA(DisplayName="CLOSE_RANGE_ATTACK"),
-    DODGE UMETA(DisplayName="DODGE"),
-	ENTER_COMBAT UMETA(DisplayName="ENTER_COMBAT"),
-	EXIT_COMBAT UMETA(DisplayName="EXIT_COMBAT"),
-    
-    MAX UMETA(DisplayName="MAX")
-};
-
 class UParticleSystem;
 class UAnimMontage;
 class USoundCue;
@@ -33,6 +21,18 @@ class USphereComponent;
 class AEnemyAIController;
 class UEnemyAnimInstance;
 class UMonstersCombatComponent;
+
+UENUM(BlueprintType)
+enum class EEnemyActionType : uint8
+{
+    NONE UMETA(DisplayName = "NONE"),
+    CLOSE_RANGE_ATTACK UMETA(DisplayName="CLOSE_RANGE_ATTACK"),
+    DODGE UMETA(DisplayName="DODGE"),
+	ENTER_COMBAT UMETA(DisplayName="ENTER_COMBAT"),
+	EXIT_COMBAT UMETA(DisplayName="EXIT_COMBAT"),
+    
+    MAX UMETA(DisplayName="MAX")
+};
 
 
 UCLASS()
@@ -83,6 +83,8 @@ protected:
 	void EnterCombat(AActor* Player, bool First);
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	FString AreaNum;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	int32 MId;
 
 private:
 	void EnableRagdoll();
@@ -154,6 +156,7 @@ public: //get
 	FORCEINLINE float GetAttackRange() const { return AttackRange; }
 	FORCEINLINE UMonsterStatsComponent* GetMonsterStatComp() const { return MonsterStatComp; }
 	FORCEINLINE FString GetAreaNum() const { return AreaNum; }
+	FORCEINLINE int32 GetMId() const { return MId; }
 public:
 	void AgroCancel();	
 	

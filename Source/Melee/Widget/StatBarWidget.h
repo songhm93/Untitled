@@ -28,4 +28,5 @@ private:
 	UStatsComponent* StatComp;
 	UFUNCTION()
 	void OnStatValueUpdated(EStats Stat, float Value);
+	void Init();
 };

@@ -2,7 +2,6 @@
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
-
 #include "Blueprint/UserWidget.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
@@ -14,12 +13,14 @@
 #include "EnemyAnimInstance.h"
 #include "../AttackDamageType.h"
 #include "../Interface/TargetingInterface.h"
+#include "../Interface/InventoryInterface.h"
 #include "../Widget/EnemyHPBarWidget.h"
 #include "../PlayerController/EnemyAIController.h"
 #include "../Component/StateManagerComponent.h"
 #include "../Component/MonsterStatsComponent.h"
 #include "../Component/MonstersCombatComponent.h"
 #include "../Type/Elements.h"
+
 
 
 AEnemyCharacter::AEnemyCharacter()
@@ -210,6 +211,15 @@ void AEnemyCharacter::CharacterStateBegin(ECurrentState State)
 
 void AEnemyCharacter::Dead()
 {
+	if(Target && Target->Implements<UInventoryInterface>())
+	{
+		//나를 죽인 플레이어에게 아이템 지급.
+		//인터페이스로 해보자.
+		//Cast<IInventoryInterface>(Target)->AddItem();
+		//여기서 Delegate로 플레이어에게 내가 이 몬스터를 죽여서 아이템을 얻었다 라고 알림.
+		//인벤을 열때마다 DB에서 가져와서 동기화하겠지만, 인벤을 연 상태에서
+		//몬스터를 죽였을 때 비동기처럼 업데이트 되는것을 보이기 위해.
+	}
 	AgroCancel();
 	EnableRagdoll();
 	ApplyHitReactionPhysicsVelocity(2000.f);

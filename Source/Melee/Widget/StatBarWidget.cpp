@@ -12,7 +12,8 @@ void UStatBarWidget::NativeConstruct()
 {
     Super::NativeConstruct();
     
-    StatComp = Cast<UStatsComponent>(GetOwningPlayerPawn()->GetComponentByClass(UStatsComponent::StaticClass()));
+    if(GetOwningPlayerPawn())
+        StatComp = Cast<UStatsComponent>(GetOwningPlayerPawn()->GetComponentByClass(UStatsComponent::StaticClass()));
     if(StatComp)
     {
         StatComp->OnPlusCurrentStatValue.AddDynamic(this, &ThisClass::OnStatValueUpdated);
@@ -26,4 +27,9 @@ void UStatBarWidget::OnStatValueUpdated(EStats Stat, float Value)
         float ResultValue = Value / StatComp->GetMaxValue(Stat);
         StatBar->SetPercent(ResultValue);
     }
+}
+
+void UStatBarWidget::Init()
+{
+    
 }

@@ -1,19 +1,19 @@
 #include "StatsComponent.h"
+#include "JsonObjectConverter.h"
 
 #include "../Type/Stats.h"
 #include "StateManagerComponent.h"
 #include "CombatComponent.h"
 
-
-
 UStatsComponent::UStatsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	
-	
 	HPRegenRate = 0.3f;
 	StaminaRegenRate = 1.0f;
 	bShouldRegen = true;
+
+	Http = &FHttpModule::Get();
 }
 
 
@@ -21,15 +21,16 @@ void UStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	FString Path = FString(TEXT("/Game/CombatSystem/DataTable/BaseStatsTable"));
-	InitDataTable(Path);
+	InitStats();
+	InitDBInfo();
+
 	if (GetOwner())
 	{
 		UStateManagerComponent* StateManagerComp = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
 		if(StateManagerComp)
 			StateManagerComp->ShouldRegen.BindUObject(this, &ThisClass::ShouldRegen);
-		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
 		
+		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
 		if (CombatComp)
 		{
 			CombatComp->OnUpdateCurrentStatValue.BindUObject(this, &ThisClass::PlusCurrentStatValue);
@@ -41,7 +42,7 @@ void UStatsComponent::BeginPlay()
 void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	if((!CurrentCompareMax(EStats::HP) || !CurrentCompareMax(EStats::STAMINA)) && bShouldRegen)
 		TrackingRegen(DeltaTime);
 	else
@@ -70,16 +71,25 @@ void UStatsComponent::Regen()
 
 bool UStatsComponent::CurrentCompareMax(EStats Stat) //true면 같은거
 {
-	if(!CurrentStats.FindRef(Stat)) return false;
-	if(CurrentStats.FindRef(Stat) == BaseStats[Stat].MaxValue) 
-		return true;
-	else
-		return false;
+	if(CurrentStats.Contains(Stat))
+	{
+		if(CurrentStats[Stat] == MaxStats[Stat])
+			return true;
+		else
+			return false;
+	}
+
+	return true;
 }
 
 void UStatsComponent::SetCurrentStatValue(EStats Stat, float Value)
 {
 	CurrentStats.Add(Stat, Value);
+}
+
+void UStatsComponent::SetMaxStatValue(EStats Stat, float Value)
+{
+	MaxStats.Add(Stat, Value);
 }
 
 float UStatsComponent::GetCurrentStatValue(EStats Stat)
@@ -89,49 +99,78 @@ float UStatsComponent::GetCurrentStatValue(EStats Stat)
 
 void UStatsComponent::InitStats()
 {
-	for(auto Stat : BaseStats)
-	{
-		SetCurrentStatValue(Stat.Key, Stat.Value.BaseValue);
-	}
+	SetCurrentStatValue(EStats::HP, 9999.f);
+	SetCurrentStatValue(EStats::STAMINA, 9999.f);
+	SetCurrentStatValue(EStats::ATK, 9999.f);
+	SetCurrentStatValue(EStats::DEF, 9999.f);
+
+	SetMaxStatValue(EStats::HP, 9999.f);
+	SetMaxStatValue(EStats::STAMINA, 9999.f);
+	SetMaxStatValue(EStats::ATK, 9999.f);
+	SetMaxStatValue(EStats::DEF, 9999.f);
+		
 }
 
 void UStatsComponent::PlusCurrentStatValue(EStats Stat, float Value) 
 {
 	if(Value != 0.f)
 	{
-		SetCurrentStatValue(Stat, FMath::Clamp(CurrentStats[Stat] + Value, 0.f, BaseStats[Stat].MaxValue));
+		SetCurrentStatValue(Stat, FMath::Clamp(CurrentStats[Stat] + Value, 0.f, MaxStats[Stat]));
 		OnPlusCurrentStatValue.Broadcast(Stat, CurrentStats[Stat]); // 위젯으로 Broadcast
 	}
 }
 
-void UStatsComponent::InitDataTable(FString Path)
+void UStatsComponent::InitDBInfo() //DB에서 꺼내온다.
 {
-	UDataTable* TableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *Path));
-	if(TableObject)
+	FString PID = "9824"; //얘를 어떤식으로?
+	
+	if(Http)
 	{
-		FBaseStatTable* Row = TableObject->FindRow<FBaseStatTable>(FName("HP"), TEXT(""));
-		if(Row)
-			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
+		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+	
+		Request->OnProcessRequestComplete().BindUObject(this, &UStatsComponent::OnProcessRequestComplete);
+		Request->SetURL("http://localhost:8080/api/PlayerInfo/" + PID);
+		Request->SetVerb("GET");
+		Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 
-		Row = TableObject->FindRow<FBaseStatTable>(FName("Stamina"), TEXT(""));
-		if(Row)
-			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
-
-		Row = TableObject->FindRow<FBaseStatTable>(FName("Def"), TEXT(""));
-		if(Row)
-			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
-
-		Row = TableObject->FindRow<FBaseStatTable>(FName("Atk"), TEXT(""));
-		if(Row)
-			BaseStats.Add(Row->Stat, FBaseStat(Row->BaseValue, Row->MaxValue));
-		
+		Request->ProcessRequest();
 	}
 }
 
+void UStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
+{
+	if(Success)
+	{
+        FPlayerInfo PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
+		SetCurrentStatValue(EStats::HP, PlayerInfo.Currenthp);
+		SetCurrentStatValue(EStats::STAMINA, PlayerInfo.Currentstamina);
+		SetCurrentStatValue(EStats::ATK, PlayerInfo.Atk);
+		SetCurrentStatValue(EStats::DEF, PlayerInfo.Def);
+
+		SetMaxStatValue(EStats::HP, PlayerInfo.Maxhp);
+		SetMaxStatValue(EStats::STAMINA, PlayerInfo.Maxstamina);
+		SetMaxStatValue(EStats::ATK, PlayerInfo.Atk);
+		SetMaxStatValue(EStats::DEF, PlayerInfo.Def);
+	
+	}
+}
+
+FPlayerInfo UStatsComponent::ConvertToPlayerInfo(const FString& ResponseString)
+{
+	FPlayerInfo PlayerInfo;
+    if(!ResponseString.Contains("timestamp")) //테이블에 해당하는 PID가 있을 때
+    {
+        FJsonObjectConverter::JsonObjectStringToUStruct(*ResponseString, &PlayerInfo, 0, 0);
+    }
+
+    return PlayerInfo;
+}
+
+
 float UStatsComponent::GetMaxValue(EStats Stat)
 {
-	if(!BaseStats.IsEmpty())
-		return BaseStats[Stat].MaxValue;
+	if(!MaxStats.IsEmpty())
+		return MaxStats[Stat];
 	else
 		return 0.f;
 }

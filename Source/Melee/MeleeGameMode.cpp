@@ -14,4 +14,19 @@ AMeleeGameMode::AMeleeGameMode()
 	// }
 	DefaultPawnClass = ABaseCharacter::StaticClass();
 	PlayerControllerClass = AMeleePlayerController::StaticClass();
+
+	
 }
+
+void AMeleeGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	AMeleePlayerController* MPC = Cast<AMeleePlayerController>(NewPlayer);
+	if(MPC)
+	{
+		MPC->RequestEntry();
+	}
+
+}
+

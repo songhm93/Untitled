@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "MeleeGameMode.generated.h"
 
+
 UCLASS(minimalapi)
 class AMeleeGameMode : public AGameModeBase
 {
@@ -13,7 +14,10 @@ class AMeleeGameMode : public AGameModeBase
 
 public:
 	AMeleeGameMode();
-	
+
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+
 };
 
 

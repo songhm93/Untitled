@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Http.h"
+#include "../Interface/DBInterface.h"
 #include "MeleePlayerController.generated.h"
 
 
@@ -9,6 +11,9 @@ DECLARE_DELEGATE(FOnLightAttack);
 DECLARE_DELEGATE(FOnChargedAttack);
 
 class ABaseCharacter;
+class UUserWidget;
+
+
 
 UCLASS()
 class MELEE_API AMeleePlayerController : public APlayerController
@@ -16,20 +21,17 @@ class MELEE_API AMeleePlayerController : public APlayerController
 	GENERATED_BODY()
 public:
 	AMeleePlayerController();
-
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void OnPossess(APawn* InPawn) override;
-
 	virtual void BeginPlay() override;
-
 	FOnLightAttack OnLightAttack;
-	
 	FOnChargedAttack OnChargedAttack;
-
+	void RequestEntry();
 protected:
 	virtual void SetupInputComponent() override;
-
+	FHttpModule* Http;
+	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
+	FPlayerInfo ConvertToPlayerInfo(const FString& ResponseString);
 private:
 	void AttackButtonPressed();
 
@@ -41,6 +43,12 @@ private:
 
 	UPROPERTY()
 	ABaseCharacter* BaseCharacter;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> MainHUDClass;
+
+	UPROPERTY()
+	UUserWidget* MainHUDWidget;
 
 	bool bLeftClickIsPressed;
 

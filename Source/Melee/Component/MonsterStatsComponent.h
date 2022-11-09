@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "StatsComponent.h"
+#include "../Interface/DBInterface.h"
 #include "MonsterStatsComponent.generated.h"
 
 USTRUCT()
@@ -26,8 +27,6 @@ struct FSpecialATK
 
 };
 
-
-
 UCLASS()
 class MELEE_API UMonsterStatsComponent : public UStatsComponent
 {
@@ -36,10 +35,10 @@ class MELEE_API UMonsterStatsComponent : public UStatsComponent
 public:	
 	UMonsterStatsComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+	virtual void InitStats() override;
+	virtual void InitDBInfo() override;
 protected:
 	virtual void BeginPlay() override;
-	virtual void InitDataTable(FString Path) override;
 	virtual void TrackingRegen(float DeltaTime) override;
 	virtual void Regen() override;
 
@@ -48,7 +47,11 @@ protected:
 
 private:
 	void UpdateCombatState(bool CombatState);
-	
+
+	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
+
+	FMonsterInfo ConvertToMonsterInfo(const FString& ResponseString);
+
 public: //get
 	FORCEINLINE FSpecialATK GetSpecialATK() const { return SATK; }
 

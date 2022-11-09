@@ -4,7 +4,7 @@
 #include "GameFramework/Character.h"
 #include "../Interface/CombatInterface.h"
 #include "../Interface/TargetingInterface.h"
-#include "../Interface/EquipmentInterface.h"
+#include "../Interface/InventoryInterface.h"
 #include "../Type/Types.h"
 #include "../Type/DamageTypes.h"
 #include "BaseCharacter.generated.h"
@@ -26,7 +26,7 @@ class ADualWeapon;
 class UInventoryComponent;
 
 UCLASS(config=Game)
-class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
+class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IInventoryInterface
 {
 	GENERATED_BODY()
 public:
@@ -41,6 +41,9 @@ public:
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
 	virtual void ApplyImpactEffect() override;
+	virtual bool AddItem(AMasterItem* Item, int32 Amount) override;
+	virtual void AddGold() override;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -79,7 +82,7 @@ protected:
 private:
 	void Test(); //테스트할 함수
 
-	void Equip();
+	void Equip(ABaseEquippable* Equippable);
 
 	void TurnRight(float Rate);
 
@@ -164,9 +167,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* LockOnWidget;
-
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ADualWeapon> Weapon; //임시
 
 	FName PelvisBoneName;
 

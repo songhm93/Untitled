@@ -24,7 +24,7 @@
 #include "../Component/StatsComponent.h"
 #include "../Component/TargetingComponent.h"
 #include "../Component/InventoryComponent.h"
-
+#include "../Item/MasterItem.h"
 #include "../SkillActor/Rock.h"
 
 
@@ -88,8 +88,8 @@ void ABaseCharacter::BeginPlay()
 	if(StatComp)
 	{
 		StatComp->InitStats();
-		StatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f); //위젯 띄우는거, 스탯 초기화, 테이블 초기화 순서때문에 게임 시작시 스탯 비어보임을 가리는 꼼수
-		StatComp->PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);
+		//StatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f); //위젯 띄우는거, 스탯 초기화, 테이블 초기화 순서때문에 게임 시작시 스탯 비어보임을 가리는 꼼수
+		//StatComp->PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);
 	}
 
 	if(LockOnWidget)
@@ -98,11 +98,22 @@ void ABaseCharacter::BeginPlay()
 		LockOnWidget->SetWidgetSpace(EWidgetSpace::Screen);
 		LockOnWidget->SetDrawSize(FVector2D(14.f, 14.f));
 	}
-	if(Weapon)
+
+	if(InventoryComp)
 	{
-		Equip();
+		for(auto SlotItem : InventoryComp->GetInventorySlot())
+		{
+			if(SlotItem.Item->GetItemInfo().Name == TEXT("기본 듀얼 검"))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("장착!"));
+				Equip(Cast<ABaseEquippable>(SlotItem.Item));
+			}
+		}
 	}
+	
 }
+
+
 
 void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -517,13 +528,13 @@ void ABaseCharacter::SetMovementType(EMovementType Type)
 		TargetingComp->UpdateRotationMode();
 }
 
-void ABaseCharacter::Equip()
+void ABaseCharacter::Equip(ABaseEquippable* Equippable)
 {
 	FActorSpawnParameters Params; 
 	Params.Owner = this;
 	Params.Instigator = Cast<APawn>(this);
-
-	ABaseEquippable* Equipment = GetWorld()->SpawnActor<ABaseEquippable>(Weapon, GetActorTransform(), Params);
+	
+	ABaseEquippable* Equipment = GetWorld()->SpawnActor<ABaseEquippable>(Equippable->GetClass(), GetActorTransform(), Params);
 
 	if(CombatCompo && Equipment)
 	{
@@ -669,4 +680,14 @@ EPhysicalSurface ABaseCharacter::GetPhysicsSurface()
 	);
 	
 	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+}
+
+bool ABaseCharacter::AddItem(AMasterItem* Item, int32 Amount)
+{
+	return false;
+}
+
+void ABaseCharacter::AddGold()
+{
+
 }
