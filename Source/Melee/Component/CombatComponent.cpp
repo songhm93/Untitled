@@ -202,22 +202,21 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult) //내 총 공격력
 
 void UCombatComponent::WeaponBaseSetting()
 {
-	// ACharacter* Character = Cast<ACharacter>(GetOwner());
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	
-	// OnUpdateWeaponType.ExecuteIfBound(EquippedWeapon->GetWeaponType());
+	OnUpdateWeaponType.ExecuteIfBound(EquippedWeapon->GetWeaponType());
 	
 
-	// if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
-	// {
-	// 	ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
-	// 	if(DualWeapon)
-	// 	{
-	// 		DualWeapon->SetSkillATK.BindUObject(this, &ThisClass::ApplySkillExplodeDamage);
-	// 	}
+	if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
+	{
+		ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
+		if(DualWeapon)
+		{
+			DualWeapon->SetSkillATK.BindUObject(this, &ThisClass::ApplySkillExplodeDamage);
+		}
 
-	// }
-	// OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, EquippedWeapon->GetWeaponATK());
-	UE_LOG(LogTemp, Warning, TEXT("무기 세팅!"));
+	}
+	OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, EquippedWeapon->GetWeaponATK());
 }
 
 void UCombatComponent::ArmorBaseSetting(ABaseArmor* Armor)

@@ -193,6 +193,7 @@ public: //get
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
 	FORCEINLINE float GetSprintStaminaCost() const { return SprintStaminaCost; }
 	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp; }
+	FORCEINLINE UInventoryComponent* GetInventoryComp() const { return InventoryComp; }
 
 public:
 	void HeavyAttack();

@@ -18,6 +18,6 @@ class MELEE_API IInventoryInterface
 	GENERATED_BODY()
 
 public:
-	virtual bool AddItem(AMasterItem* Item, int32 Amount) = 0;
-	virtual void AddGold() = 0;
+	virtual bool AddItem(int32 ItemId, int32 Amount) = 0;
+	virtual void AddGold(int32 GoldAmount) = 0;
 };

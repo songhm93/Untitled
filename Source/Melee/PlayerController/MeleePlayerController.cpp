@@ -8,6 +8,7 @@
 #include "../Component/StatsComponent.h"
 #include "../Component/CombatComponent.h"
 #include "../Component/StateManagerComponent.h"
+#include "../Component/InventoryComponent.h"
 #include "../MeleeGameMode.h"
 
 AMeleePlayerController::AMeleePlayerController()
@@ -112,37 +113,23 @@ void AMeleePlayerController::RequestEntry()
     {
         TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
 
-        Request->OnProcessRequestComplete().BindUObject(this, &AMeleePlayerController::OnProcessRequestComplete);
+        Request->OnProcessRequestComplete().BindUObject(this, &AMeleePlayerController::OnPlayerInfoRequestComplete);
         Request->SetURL("http://localhost:8080/api/PlayerInfo/" + PID);
         Request->SetVerb("GET");
         Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-
-        // FString JsonString;
-        // FPlayerInfo PlayerInfo;
-        // PlayerInfo.Isvalid = true;
-        // PlayerInfo.Xcoord = -200.f;
-        // PlayerInfo.Ycoord = -70.f;
-        // PlayerInfo.Zcoord = 66.f;
-
-        
-        // FJsonObjectConverter::UStructToJsonObjectString(PlayerInfo, JsonString);
-        // Request->SetContentAsString(JsonString);
         
         Request->ProcessRequest();
     }
-    
 }
 
-void AMeleePlayerController::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
+void AMeleePlayerController::OnPlayerInfoRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
 {
 	FVector SpawnLocaton = FVector(1455.f, 1975.f, 400.f);
     if(Success) //요청 성공.
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("요청 성공 %s"), *Response->GetContentAsString());
         FPlayerInfo PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
         if(PlayerInfo.Isvalid)
         {
-            UE_LOG(LogTemp, Warning, TEXT("요청 성공 %f"), PlayerInfo.Currenthp);
             SpawnLocaton = FVector(PlayerInfo.Xcoord, PlayerInfo.Ycoord, PlayerInfo.Zcoord);
             if(BaseCharacter && BaseCharacter->GetStatComp())
             {
@@ -163,6 +150,40 @@ void AMeleePlayerController::OnProcessRequestComplete(FHttpRequestPtr Request, F
     {
         GetPawn()->SetActorLocation(SpawnLocaton);
     }
+    //플레이어가 가지고 있는 아이템가져와서 인벤토리 컴포넌트에 
+    //플레이어의 정보 가지고 와서 스탯 컴포넌트에
+
+    if(Request->OnProcessRequestComplete().IsBound())
+    {
+        Request->OnProcessRequestComplete().Unbind();
+        Request->OnProcessRequestComplete().BindUObject(this, &AMeleePlayerController::OnInventoryRequestComplete);
+    }
+    FString PID = "9824"; //얘를 어떤식으로?
+    Request->SetURL("http://localhost:8080/api/PlayerInventory/" + PID);
+    Request->SetVerb("GET");
+    Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+    
+    Request->ProcessRequest(); 
+}
+
+void AMeleePlayerController::OnInventoryRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
+{
+    if(Success)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("인벤토리 가져오기 성공!"));
+        TArray<FPlayerInventory> PlayerInventory = ConvertToPlayerInventory(Response->GetContentAsString());
+        if(!PlayerInventory.IsEmpty())
+        {
+            if(BaseCharacter && BaseCharacter->GetInventoryComp())
+            {
+                BaseCharacter->GetInventoryComp()->InitInventory(PlayerInventory);
+            }
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("인벤토리 가져오기 실패..."));
+    }
 }
 
 FPlayerInfo AMeleePlayerController::ConvertToPlayerInfo(const FString& ResponseString)
@@ -174,4 +195,52 @@ FPlayerInfo AMeleePlayerController::ConvertToPlayerInfo(const FString& ResponseS
     }
 
     return PlayerInfo;
+}
+
+TArray<FPlayerInventory> AMeleePlayerController::ConvertToPlayerInventory(const FString& ResponseString)
+{
+    TArray<FPlayerInventory> PlayerInventory;
+    if(!ResponseString.Contains("timestamp"))
+    {
+        FJsonObjectConverter::JsonArrayStringToUStruct(*ResponseString, &PlayerInventory, 0, 0);
+    }
+
+    return PlayerInventory;
+}
+
+void AMeleePlayerController::SaveData()
+{
+    FPlayerInfo PlayerInfo;
+    PlayerInfo.Pid = 9824;
+    if(BaseCharacter && BaseCharacter->GetStatComp())
+    {
+        PlayerInfo.Isvalid = true;
+        PlayerInfo.Currenthp = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::HP);
+        PlayerInfo.Maxhp = BaseCharacter->GetStatComp()->GetMaxValue(EStats::HP);
+        PlayerInfo.Currentstamina = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::STAMINA);
+        PlayerInfo.Maxstamina = BaseCharacter->GetStatComp()->GetMaxValue(EStats::STAMINA);
+        PlayerInfo.Xcoord = BaseCharacter->GetActorLocation().X;
+        PlayerInfo.Ycoord = BaseCharacter->GetActorLocation().Y;
+        PlayerInfo.Zcoord = BaseCharacter->GetActorLocation().Z;
+        PlayerInfo.Level = 1;
+        PlayerInfo.Currentexp = 0.f;
+        PlayerInfo.Maxexp = 100.f;
+        PlayerInfo.Atk = BaseCharacter->GetStatComp()->GetMaxValue(EStats::ATK);
+        PlayerInfo.Def = BaseCharacter->GetStatComp()->GetMaxValue(EStats::DEF);
+    }
+
+    if(Http)
+    {
+        TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+
+        Request->SetURL("http://localhost:8080/api/PlayerInfo/");
+        Request->SetVerb("PUT");
+        Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+        
+        FString JsonString;
+        FJsonObjectConverter::UStructToJsonObjectString(PlayerInfo, JsonString);
+        Request->SetContentAsString(JsonString);
+
+        Request->ProcessRequest();
+    }
 }

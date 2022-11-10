@@ -88,8 +88,6 @@ void ABaseCharacter::BeginPlay()
 	if(StatComp)
 	{
 		StatComp->InitStats();
-		//StatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f); //위젯 띄우는거, 스탯 초기화, 테이블 초기화 순서때문에 게임 시작시 스탯 비어보임을 가리는 꼼수
-		//StatComp->PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);
 	}
 
 	if(LockOnWidget)
@@ -103,7 +101,7 @@ void ABaseCharacter::BeginPlay()
 	{
 		for(auto SlotItem : InventoryComp->GetInventorySlot())
 		{
-			if(SlotItem.Item->GetItemInfo().Name == TEXT("기본 듀얼 검"))
+			if(SlotItem.Item->GetItemInfo().Name == TEXT("듀얼 소드"))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("장착!"));
 				Equip(Cast<ABaseEquippable>(SlotItem.Item));
@@ -427,7 +425,7 @@ void ABaseCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
-	SetActorLocation(GetActorLocation() + GetActorForwardVector() * FVector(300.f, 0.f, 300.f));
+	
 
 }
 

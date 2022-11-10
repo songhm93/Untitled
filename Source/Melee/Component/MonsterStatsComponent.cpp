@@ -25,6 +25,7 @@ void UMonsterStatsComponent::BeginPlay()
 
 	InitStats();
 	InitDBInfo();
+	
 
 	if (GetOwner())
 	{
@@ -116,6 +117,8 @@ void UMonsterStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, F
 		SetMaxStatValue(EStats::HP, MonsterInfo.Maxhp);
 		SetMaxStatValue(EStats::ATK, MonsterInfo.Atk);
 		SetMaxStatValue(EStats::DEF, MonsterInfo.Def);
+
+		
         
 	}
 }

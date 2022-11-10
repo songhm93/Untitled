@@ -85,6 +85,8 @@ protected:
 	FString AreaNum;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 MId;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TArray<int32> ItemId;
 
 private:
 	void EnableRagdoll();

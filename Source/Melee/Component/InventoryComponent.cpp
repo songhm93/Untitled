@@ -7,20 +7,19 @@ UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	AmountOfSlot = 10;
+	TotalSlotNum = 20;
 	MaxStackSize = 99;
-	Gold = 0;
+	CurrentSlotNum = 0;
 }
 
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	Slots.Reserve(AmountOfSlot);
+	Slots.Reserve(TotalSlotNum);
 	if(BaseWeapon)
 	{
 		Slots.Add(FInventorySlot(Cast<AMasterItem>(BaseWeapon.GetDefaultObject()), 1));
 	}
-	
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -29,129 +28,172 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 }
 
-bool UInventoryComponent::IsSlotEmpty(int32 Index)
-{
-	return !(Slots.IsValidIndex(Index));
-}
 
-FInventorySlot UInventoryComponent::GetSlotItem(int32 Index)
-{
-	if(Slots.IsValidIndex(Index))
-	{
-		return Slots[Index];
-	}
-
-	return FInventorySlot();
-}
-
-int32 UInventoryComponent::GetEmptySlot() //빈 슬롯이 있으면 해당하는 인덱스 반환, 없으면 -1 반환
-{
-	for(int32 i = 0; i < AmountOfSlot; ++i)
-	{
-		if(!Slots.IsValidIndex(i))
-			return i;
-	}
-
-	return -1;
-}
-
-int32 UInventoryComponent::CanStackThisItem(AMasterItem* Item) //슬롯에 이미 있어서, 쌓을 수 있으면 해당 인덱스 반환.
-{
-	if(!Item) return -1;
-
-	for(int32 i = 0; i < AmountOfSlot; ++i)
-	{
-		if(Slots.IsValidIndex(i))
-		{
-			if(Slots[i].Item->GetItemInfo().Name == Item->GetItemInfo().Name)
-			{
-				if(Slots[i].Amount < MaxStackSize)
-				{
-					return i;
-				}
-			}
-		}
-	}
-	return -1;
-}
 
 //AddItem을 몬스터 잡았을 때, 상점에서 샀을 때 필요,
-bool UInventoryComponent::AddItem(AMasterItem* Item, int32 Amount) //성공시 true 반환, 가득차서 못넣는 경우 false.
+//하나의 아이템의 총 갯수를 갖고 있음. 그래서 그걸 토대로 스택사이즈를 넘어서면 해당하는 자리만큼 차지하게 해서
+//인벤토리 현 칸수를 알고 있음.
+bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount) //성공시 true 반환, 가득차서 못넣는 경우 false.
 {
-	if(Item)
+	FString ItemInfoTablePath = FString(TEXT("/Game/CombatSystem/DataTable/ItemInfo"));
+	UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
+	if(ItemInfoTableObject)
 	{
-		if(Item->GetItemInfo().bCanbeStacked) //아이템이 스택이 되는 아이템이면
+		FItemInfoTable* ItemRow = nullptr;
+		ItemRow = ItemInfoTableObject->FindRow<FItemInfoTable>(FName(FString::FromInt(ItemId)), TEXT(""));
+		if(ItemRow)
 		{
-			if(CanStackThisItem(Item) == -1) //슬롯에 없거나 갯수 때문에 쌓을 수 없음(빈 슬롯에 쌓아야 함)
+			if(CurrentSlotNum < TotalSlotNum) //인벤 공간 있음
 			{
-				int32 EmptySlotIdx = GetEmptySlot();
-				if(EmptySlotIdx == -1) //빈 슬롯이 없음
+				if(ItemRow->Canstack == 1) //겹쳐지는 아이템이면
 				{
-					return false;
+					for(auto Inven : PlayerInventory) //현재 인벤토리를 쭉 돌면서 넣으려는 아이템을 찾아야함. 갯수가 필요함
+					{
+						if(Inven.Itemid == ItemRow->Itemid) //이미 인벤토리에 있는 아이템이면
+						{
+							if(Inven.Num > MaxStackSize) //이미 99개를 넘어선 상태면
+							{
+								int32 RegisteredSlotNum = Inven.Num / MaxStackSize; // 이미 차지하고 있던 칸 수
+								if(Inven.Num % MaxStackSize != 0) ++RegisteredSlotNum;
+
+								return CalculateInventory(Inven.Num, Amount, RegisteredSlotNum);
+								
+							}
+							else //99개 아래로 가지고 있으면
+							{
+								int RegisteredSlotNum = 1; //이미 차지하고 있던 칸 수는 99개 아래니까 무조건 1 
+
+								return CalculateInventory(Inven.Num, Amount, RegisteredSlotNum);
+							}
+						}
+						else //인벤토리에 없는 아이템이면
+						{
+							if(Amount > MaxStackSize) //인벤토리에 새로 넣어야하는데 최대 스택사이즈를 넘으면
+							{
+								int32 RemainSlot = TotalSlotNum - CurrentSlotNum; //남는 인벤토리 칸 수 2
+								int32 NeedToSlot = Amount % MaxStackSize;
+								if(Inven.Num % MaxStackSize != 0) ++NeedToSlot; 
+								if(NeedToSlot > RemainSlot)
+								{
+									return false;
+								}
+								else
+								{
+									CurrentSlotNum += NeedToSlot;
+									return true;
+								}
+							}
+							else //넘지 않으면
+							{
+								++CurrentSlotNum;
+								return true;
+							}
+						}
+					}
 				}
-				else //빈 슬롯이 있음
+				else //겹쳐지지 않는 아이템이면
 				{
-					Slots[EmptySlotIdx] = FInventorySlot(Item, Amount);
-					return true;
-				}
-			}
-			else //이미 슬롯에 있어서 쌓을 수 있음
-			{
-				int32 CanStackSize = MaxStackSize - Slots[CanStackThisItem(Item)].Amount; //쌓을 수 있는 양
-				if(Amount <= CanStackSize) //쌓으면 됨
-				{
-					Slots[CanStackThisItem(Item)].Amount += Amount;
-					return true;
-				}
-				else //가능한만큼 쌓고, 남는 양은 나머지 슬롯에 쌓아야 함
-				{
-					int32 LeftAmount = Amount - CanStackSize; //쌓고 남는 양
-					Slots[CanStackThisItem(Item)].Amount += CanStackSize; //가능한 양만 쌓음
-					if(GetEmptySlot() == -1) //빈슬롯이 없음
+					int32 RemainSlot = TotalSlotNum - CurrentSlotNum;
+					if(Amount > RemainSlot)
 					{
 						return false;
 					}
 					else
 					{
-						Slots[GetEmptySlot()] = FInventorySlot(Item, LeftAmount);
+						++CurrentSlotNum;
 						return true;
 					}
 				}
 			}
-		}
-		else //아이템이 스택이 안되는 아이템이면, 새로운 슬롯을 찾아야 함
-		{
-			int32 EmptySlotIdx = GetEmptySlot();
-			if(EmptySlotIdx == -1) //빈 슬롯이 없음
+			else //인벤 공간 없음
 			{
 				return false;
-			}
-			else //빈 슬롯이 있음
-			{
-				for(int i = 0; i < Amount; ++i)
-				{
-					EmptySlotIdx = GetEmptySlot();
-					if(EmptySlotIdx == -1) return false;
-					Slots[EmptySlotIdx] = FInventorySlot(Item, 1);
-				}
-				return true;
 			}
 		}
 	}
 	return false;
 }
 
-int32 UInventoryComponent::GetAmountInSlot(int32 Index)
+bool UInventoryComponent::CalculateInventory(int32 ItemNum, int32 Amount, int32 RegisteredSlotNum)
 {
-	int32 Amount = 0;
-	if(Slots.IsValidIndex(Index))
+	int32 AddedNumber = ItemNum + Amount; //합쳐질 총 갯수
+	int32 RemainSlot = TotalSlotNum - CurrentSlotNum; //남는 칸 수
+
+	int32 NeedToSlot = AddedNumber % MaxStackSize; //필요한 칸 수
+	if(ItemNum % MaxStackSize != 0) ++NeedToSlot; 
+
+	NeedToSlot -= RegisteredSlotNum; //필요한 칸수에서 이미 차지하고 있던 칸수는 뺌
+	if(NeedToSlot > NeedToSlot) //남는 칸보다 필요한 칸이 많으면
 	{
-		Amount = Slots[Index].Amount;
+		return false; //실패
 	}
-	return Amount;
+	else
+	{
+		CurrentSlotNum += NeedToSlot;
+		return true;
+	}
 }
 
 void UInventoryComponent::AddGold()
 {
 	
 }
+
+void UInventoryComponent::InitInventory(TArray<FPlayerInventory> Inventory)
+{
+	PlayerInventory = Inventory;
+	/*
+	무기를 가져왔을 때 얘는 액터인데 그걸 어떻게 가져와야할까?
+	isactor가 true면 ActorDataTable에서 블프를 가져오는? 이거는 나중에 인벤창 만들고,
+	인벤 가져와서 무기를 골라서 장착하는 기능을 만들면 그때 필요.
+	Equiped DB가 있어야함
+	*/
+	if(!PlayerInventory.IsEmpty())
+	{
+		FString ItemInfoTablePath = FString(TEXT("/Game/CombatSystem/DataTable/ItemInfo"));
+		UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
+		if(ItemInfoTableObject)
+		{
+			FItemInfoTable* ItemRow = nullptr;
+			for(auto Inven : PlayerInventory)
+			{
+				ItemRow = ItemInfoTableObject->FindRow<FItemInfoTable>(FName(FString::FromInt(Inven.Itemid)), TEXT(""));
+				if(ItemRow)
+				{
+					if(ItemRow->Canstack == 0) //겹쳐지는게 아니면
+					{
+						CurrentSlotNum += Inven.Num;
+					}
+					else //겹쳐지는거면
+					{
+						if(Inven.Num > MaxStackSize) //최대 겹치는걸 넘어가면
+						{
+							int32 NeedToSlot = Inven.Num / MaxStackSize;
+							CurrentSlotNum += NeedToSlot;
+							NeedToSlot = Inven.Num % MaxStackSize;
+							if(NeedToSlot != 0) ++CurrentSlotNum;
+						}
+						else
+						{
+							++CurrentSlotNum;
+						}
+					}
+					// if(ItemRow->Isactor == 1) //액터면.. 원래 이렇게 할게 아니고, 여기는 Init이라 위에까지가 끝. Equip DB가 필요함.
+					// {
+					// 	FString EquimentTablePath = FString(TEXT("/Game/CombatSystem/DataTable/EquipmentTable"));
+					// 	UDataTable* EquimentTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *EquimentTablePath));
+					// 	if(EquimentTableObject)
+					// 	{
+					// 		FEquipmentTable* EquipmentRow = nullptr;
+					// 		EquipmentRow = ItemInfoTableObject->FindRow<FEquipmentTable>(FName(FString::FromInt(Inven.Itemid)), TEXT(""));
+					// 		if(EquipmentRow)
+					// 		{
+					// 			//액터 블루프린트를 얻어온다. 장착할게 아니고 모든 블루프린트를 얻어올텐데.
+					// 		}
+					// 	}
+					// }
+				}
+			}
+		}
+	}
+}	

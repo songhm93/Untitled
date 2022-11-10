@@ -30,3 +30,14 @@ void AMeleeGameMode::PostLogin(APlayerController* NewPlayer)
 
 }
 
+void AMeleeGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	AMeleePlayerController* MPC = Cast<AMeleePlayerController>(Exiting);
+	if(MPC)
+	{
+		MPC->SaveData();
+	}
+}
+

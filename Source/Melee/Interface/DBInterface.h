@@ -37,6 +37,8 @@ struct FPlayerInfo
 	float Atk = 0.f;
 	UPROPERTY()
 	float Def = 0.f;
+	UPROPERTY()
+	int32 Gold = 0.f;
 };
 
 USTRUCT(BlueprintType)
@@ -63,6 +65,22 @@ struct FMonsterInfo
 	float Exp = 0.f;
 	UPROPERTY()
 	int32 Gold = 0;
+	
+};
+
+USTRUCT(BlueprintType)
+struct FPlayerInventory
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	int32 Inventorynum = 0;
+	UPROPERTY()
+	int32 Pid = 0;
+	UPROPERTY()
+	int32 Itemid = 0;
+	UPROPERTY()
+	int32 Num = 0;
+	
 	
 };
 

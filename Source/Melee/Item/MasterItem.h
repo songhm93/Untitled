@@ -11,6 +11,9 @@ struct FItemInfo
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+    FString ItemId;
+    
+    UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
     FString Name;
     
     UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
@@ -20,16 +23,19 @@ struct FItemInfo
     UTexture2D* Icon;
 
     UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-    FString UseText = TEXT("Use");
+    FString Usetext = TEXT("Use");
 
     UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-    bool bCanbeUsed = true;
+    bool Canuse = true;
 
     UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-    bool bCanbeStacked;
+    bool Canstack;
 
     UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
     EItemCategory Category;
+
+    UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+    bool Isactor = false;
 };
 
 UCLASS()

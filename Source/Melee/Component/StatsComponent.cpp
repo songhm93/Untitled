@@ -24,6 +24,7 @@ void UStatsComponent::BeginPlay()
 	InitStats();
 	InitDBInfo();
 
+
 	if (GetOwner())
 	{
 		UStateManagerComponent* StateManagerComp = Cast<UStateManagerComponent>(GetOwner()->GetComponentByClass(UStateManagerComponent::StaticClass()));
@@ -99,15 +100,16 @@ float UStatsComponent::GetCurrentStatValue(EStats Stat)
 
 void UStatsComponent::InitStats()
 {
-	SetCurrentStatValue(EStats::HP, 9999.f);
-	SetCurrentStatValue(EStats::STAMINA, 9999.f);
-	SetCurrentStatValue(EStats::ATK, 9999.f);
-	SetCurrentStatValue(EStats::DEF, 9999.f);
+	SetCurrentStatValue(EStats::HP, 0.f);
+	SetCurrentStatValue(EStats::STAMINA, 0.f);
+	SetCurrentStatValue(EStats::ATK, 0.f);
+	SetCurrentStatValue(EStats::DEF, 0.f);
 
-	SetMaxStatValue(EStats::HP, 9999.f);
-	SetMaxStatValue(EStats::STAMINA, 9999.f);
-	SetMaxStatValue(EStats::ATK, 9999.f);
-	SetMaxStatValue(EStats::DEF, 9999.f);
+	SetMaxStatValue(EStats::HP, 0.f);
+	SetMaxStatValue(EStats::STAMINA, 0.f);
+	SetMaxStatValue(EStats::ATK, 0.f);
+	SetMaxStatValue(EStats::DEF, 0.f);
+
 		
 }
 
@@ -152,6 +154,8 @@ void UStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpRes
 		SetMaxStatValue(EStats::ATK, PlayerInfo.Atk);
 		SetMaxStatValue(EStats::DEF, PlayerInfo.Def);
 	
+		PlusCurrentStatValue(EStats::HP, 0.00000001f);
+		PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);
 	}
 }
 

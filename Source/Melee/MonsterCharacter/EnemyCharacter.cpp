@@ -215,10 +215,12 @@ void AEnemyCharacter::Dead()
 	{
 		//나를 죽인 플레이어에게 아이템 지급.
 		//인터페이스로 해보자.
-		//Cast<IInventoryInterface>(Target)->AddItem();
+		//Cast<IInventoryInterface>(Target)->AddItem(ItemId[0]); //ItemId 0~2사이에 아무거나
+		//AddItem 경우 무조건 호출이 아니고 확률로. 골드도.
+		//Cast<IInventoryInterface>(Target)->AddGold(얘가 들고있는 골드양에서 +- 어느정도)
 		//여기서 Delegate로 플레이어에게 내가 이 몬스터를 죽여서 아이템을 얻었다 라고 알림.
-		//인벤을 열때마다 DB에서 가져와서 동기화하겠지만, 인벤을 연 상태에서
-		//몬스터를 죽였을 때 비동기처럼 업데이트 되는것을 보이기 위해.
+		//인벤을 연 상태에서
+		//몬스터를 죽였을 때 비동기처럼 업데이트 되는것을 보이기 위해.? 보류
 	}
 	AgroCancel();
 	EnableRagdoll();

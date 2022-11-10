@@ -2,6 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../Interface/ItemInterface.h"
+#include "../Interface/DBInterface.h"
+#include "../Interface/InventoryInterface.h"
 #include "InventoryComponent.generated.h"
 
 class AMasterItem;
@@ -28,21 +31,26 @@ struct FInventorySlot
 };	
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MELEE_API UInventoryComponent : public UActorComponent
+class MELEE_API UInventoryComponent : public UActorComponent, public IInventoryInterface
 {
 	GENERATED_BODY()
 
 public:	
 	UInventoryComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	bool AddItem(AMasterItem* Item, int32 Amount);
-	void AddGold();
+	virtual bool AddItem(int32 ItemId, int32 Amount) override;
+	virtual void AddGold(int32 GoldAmount) override;
 protected:
 	virtual void BeginPlay() override;
 	
 private:	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	int32 AmountOfSlot; //인벤토리 슬롯 갯수
+	int32 TotalSlotNum; //인벤토리 슬롯 갯수
+
+	int CurrentSlotNum;
+
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TArray<FPlayerInventory> PlayerInventory;
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 MaxStackSize; //쌓이는 아이템, 얼마나 쌓이는 지.
@@ -51,23 +59,23 @@ private:
 	ACharacter* OwnerCharacter;
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TArray<FInventorySlot> Slots;
-
-	bool IsSlotEmpty(int32 Index);
-
-	FInventorySlot GetSlotItem(int32 Index);
-
-	int32 GetEmptySlot();
-
-	int32 CanStackThisItem(AMasterItem* Item);
+	TArray<FInventorySlot> Slots;//삭제할듯
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ADualWeapon> BaseWeapon; // 기본적으로 넣을 무기.
 
-	int32 GetAmountInSlot(int32 Index);
+	bool CalculateInventory(int32 ItemNum, int32 Amount, int32 RegisteredSlotNum);
 
-	int32 Gold;
+
+	//인벤토리 DB에서 게임 시작할 때 가지고 있는 아이템 가져오고,
+	//배열로 가져옴.
+
+public:
+	
 
 public:
 	FORCEINLINE TArray<FInventorySlot> GetInventorySlot() const { return Slots; }
+
+public:
+	void InitInventory(TArray<FPlayerInventory> Inventory);
 };

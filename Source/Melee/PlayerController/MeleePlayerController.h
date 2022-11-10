@@ -27,11 +27,14 @@ public:
 	FOnLightAttack OnLightAttack;
 	FOnChargedAttack OnChargedAttack;
 	void RequestEntry();
+	void SaveData();
 protected:
 	virtual void SetupInputComponent() override;
 	FHttpModule* Http;
-	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
+	void OnPlayerInfoRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
+	void OnInventoryRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
 	FPlayerInfo ConvertToPlayerInfo(const FString& ResponseString);
+	TArray<FPlayerInventory> ConvertToPlayerInventory(const FString& ResponseString);
 private:
 	void AttackButtonPressed();
 
@@ -40,6 +43,8 @@ private:
 	void TrackingChargedAttack(float DeltaTime);
 
 	void TrackingSprint();
+
+	
 
 	UPROPERTY()
 	ABaseCharacter* BaseCharacter;
