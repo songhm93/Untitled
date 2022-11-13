@@ -197,7 +197,8 @@ public: //set
 public:
 	FORCEINLINE void IncrementAttackCount() { ++AttackCount; }
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }
-	void OnEquipped(ABaseEquippable* Equipment);
+	void OnEquipWeapon(ABaseWeapon* Equipment);
+	void OnEquipArmor(ABaseArmor* Equipment);
 	void AttachActor(EEquipmentType Type, FName SocketName);
 	void AttachWeapon();
 	void AttachSecondWeapon(FName SocketName);

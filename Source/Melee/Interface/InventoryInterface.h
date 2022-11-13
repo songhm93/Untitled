@@ -2,9 +2,41 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "../Type/ItemCategory.h"
 #include "InventoryInterface.generated.h"
 
-class AMasterItem;
+class UTexture2D;
+
+USTRUCT()
+struct FItemInfoInSlot
+{
+	GENERATED_BODY()
+	FItemInfoInSlot(){}
+	FItemInfoInSlot(int32 _ItemId, int32 _Amount, FString _ItemName, FString _Desc, UTexture2D* _Icon, FString _UseText, bool _CanUse, bool _CanStack, EItemCategory _Category, bool _IsActor)
+	{
+		ItemId = _ItemId;
+		Amount = _Amount;
+		ItemName = _ItemName;
+		Desc = _Desc;
+		Icon = _Icon;
+		UseText = _UseText;
+		CanUse = _CanUse;
+		CanStack = _CanStack;
+		Category = _Category;
+		IsActor = _IsActor;
+	}
+
+	int32 ItemId;
+	int32 Amount;
+	FString ItemName;
+	FString Desc;
+	UTexture2D* Icon;
+	FString UseText;
+	bool CanUse;
+	bool CanStack;
+	EItemCategory Category;
+	bool IsActor;
+};	
 
 UINTERFACE(MinimalAPI)
 class UInventoryInterface : public UInterface

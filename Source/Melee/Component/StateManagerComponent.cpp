@@ -10,6 +10,10 @@ UStateManagerComponent::UStateManagerComponent()
 	CurrentState = ECurrentState::NOTHING;
 	CurrentAction = ECurrentAction::NOTHING;
 	CurrentCombatState = ECurrentCombatState::NONE_COMBAT_STATE;
+	IsHPPotionCooldown = false;
+	IsStaminaPotionCooldown = false;
+	HPPotionCooldownTime = 7.f;
+	StaminaPotionCooldownTime = 7.f;
 
 }
 
@@ -106,4 +110,32 @@ void UStateManagerComponent::SetCurrentCombatState(ECurrentCombatState CombatSta
 ECurrentCombatState UStateManagerComponent::GetCurrentCombatState()
 {
 	return CurrentCombatState;
+}
+
+void UStateManagerComponent::SetPotionCooldown(bool IsHPPotion)
+{
+	if(IsHPPotion)
+	{
+		IsHPPotionCooldown = true;
+		PotionCooldownDelegate.BindUFunction(this, FName("PotionCooldownComplete"), IsHPPotion);
+		GetWorld()->GetTimerManager().SetTimer(HPPotionTimerHandle, PotionCooldownDelegate, HPPotionCooldownTime, false);
+	}
+	else
+	{
+		IsStaminaPotionCooldown = true;
+		PotionCooldownDelegate.BindUFunction(this, FName("PotionCooldownComplete"), IsHPPotion);
+		GetWorld()->GetTimerManager().SetTimer(HPPotionTimerHandle, PotionCooldownDelegate, IsStaminaPotionCooldown, false);
+	}
+}
+
+void UStateManagerComponent::PotionCooldownComplete(bool IsHPPotion)
+{
+	if(IsHPPotion)
+	{
+		IsHPPotionCooldown = false;
+	}
+	else
+	{
+		IsStaminaPotionCooldown = false;
+	}
 }

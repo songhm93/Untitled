@@ -3,13 +3,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-#include "../Item/MasterItem.h"
 #include "../Interface/Interactable.h"
 #include "../Type/Types.h"
 #include "BaseEquippable.generated.h"
 
 UCLASS()
-class MELEE_API ABaseEquippable : public AMasterItem, public IInteractable
+class MELEE_API ABaseEquippable : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 	

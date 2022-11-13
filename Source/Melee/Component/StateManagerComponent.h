@@ -36,12 +36,30 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	ECurrentCombatState CurrentCombatState;
+
+	bool IsHPPotionCooldown;
+
+	bool IsStaminaPotionCooldown;
+
+	FTimerHandle HPPotionTimerHandle;
+
+	FTimerHandle StaminaPotionTimerHandle;
+
+	float HPPotionCooldownTime;
+
+	float StaminaPotionCooldownTime;
+
+	FTimerDelegate PotionCooldownDelegate;
+
+	UFUNCTION()
+	void PotionCooldownComplete(bool IsHPPotion);
 	
 public:	//get
 	FORCEINLINE ECurrentState GetCurrentState() const { return CurrentState; }
 	FORCEINLINE ECurrentAction GetCurrentAction() const { return CurrentAction; }
 	FORCEINLINE EMovementType GetMovementType() const { return CurrentMovementType; }
-
+	FORCEINLINE bool GetIsHPPotionCooldown() const { return IsHPPotionCooldown; }
+	FORCEINLINE bool GetIsStaminaPotionCooldown() const { return IsStaminaPotionCooldown; }
 public:
 	void SetCurrentState(ECurrentState State);
 	void SetCurrentAction(ECurrentAction Action);
@@ -52,5 +70,6 @@ public:
 	void SetMovementType(EMovementType Type);
 	void SetCurrentCombatState(ECurrentCombatState CombatState);
 	ECurrentCombatState GetCurrentCombatState();
+	void SetPotionCooldown(bool IsHPPotion);
 		
 };

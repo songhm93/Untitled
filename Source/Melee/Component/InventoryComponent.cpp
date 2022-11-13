@@ -1,25 +1,24 @@
 #include "InventoryComponent.h"
 
-#include "../Item/MasterItem.h"
+#include "../Item/Consumeable.h"
 #include "../Equipment/DualWeapon.h"
 
 UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	TotalSlotNum = 20;
+	TotalSlotNum = 50;
 	MaxStackSize = 99;
 	CurrentSlotNum = 0;
+	bIsVisible = false;
 }
 
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	Slots.Reserve(TotalSlotNum);
-	if(BaseWeapon)
-	{
-		Slots.Add(FInventorySlot(Cast<AMasterItem>(BaseWeapon.GetDefaultObject()), 1));
-	}
+
+	InventorySlots.Reserve(TotalSlotNum);
+	
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -28,11 +27,10 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 }
 
-
-
 //AddItem을 몬스터 잡았을 때, 상점에서 샀을 때 필요,
 //하나의 아이템의 총 갯수를 갖고 있음. 그래서 그걸 토대로 스택사이즈를 넘어서면 해당하는 자리만큼 차지하게 해서
 //인벤토리 현 칸수를 알고 있음.
+//이걸 호출했을 때 InventoryWidget에 GenerateSlotWidgets함수를 다시 호출해야할듯
 bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount) //성공시 true 반환, 가득차서 못넣는 경우 false.
 {
 	FString ItemInfoTablePath = FString(TEXT("/Game/CombatSystem/DataTable/ItemInfo"));
@@ -43,7 +41,7 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount) //성공시 true �
 		ItemRow = ItemInfoTableObject->FindRow<FItemInfoTable>(FName(FString::FromInt(ItemId)), TEXT(""));
 		if(ItemRow)
 		{
-			if(CurrentSlotNum < TotalSlotNum) //인벤 공간 있음
+			if(TotalSlotNum > CurrentSlotNum) //인벤 공간 있음
 			{
 				if(ItemRow->Canstack == 1) //겹쳐지는 아이템이면
 				{
@@ -70,8 +68,8 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount) //성공시 true �
 						{
 							if(Amount > MaxStackSize) //인벤토리에 새로 넣어야하는데 최대 스택사이즈를 넘으면
 							{
-								int32 RemainSlot = TotalSlotNum - CurrentSlotNum; //남는 인벤토리 칸 수 2
-								int32 NeedToSlot = Amount % MaxStackSize;
+								int32 RemainSlot = TotalSlotNum - CurrentSlotNum; //남는 인벤토리 칸 수
+								int32 NeedToSlot = Amount / MaxStackSize;
 								if(Inven.Num % MaxStackSize != 0) ++NeedToSlot; 
 								if(NeedToSlot > RemainSlot)
 								{
@@ -134,7 +132,7 @@ bool UInventoryComponent::CalculateInventory(int32 ItemNum, int32 Amount, int32 
 	}
 }
 
-void UInventoryComponent::AddGold()
+void UInventoryComponent::AddGold(int32 GoldAmount)
 {
 	
 }
@@ -142,12 +140,7 @@ void UInventoryComponent::AddGold()
 void UInventoryComponent::InitInventory(TArray<FPlayerInventory> Inventory)
 {
 	PlayerInventory = Inventory;
-	/*
-	무기를 가져왔을 때 얘는 액터인데 그걸 어떻게 가져와야할까?
-	isactor가 true면 ActorDataTable에서 블프를 가져오는? 이거는 나중에 인벤창 만들고,
-	인벤 가져와서 무기를 골라서 장착하는 기능을 만들면 그때 필요.
-	Equiped DB가 있어야함
-	*/
+	
 	if(!PlayerInventory.IsEmpty())
 	{
 		FString ItemInfoTablePath = FString(TEXT("/Game/CombatSystem/DataTable/ItemInfo"));
@@ -163,6 +156,10 @@ void UInventoryComponent::InitInventory(TArray<FPlayerInventory> Inventory)
 					if(ItemRow->Canstack == 0) //겹쳐지는게 아니면
 					{
 						CurrentSlotNum += Inven.Num;
+						for(int i = 0; i < Inven.Num; ++i)
+						{
+							InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, 1, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor)); //슬롯에 1개씩, 갯수만큼 넣음.
+						}
 					}
 					else //겹쳐지는거면
 					{
@@ -170,30 +167,135 @@ void UInventoryComponent::InitInventory(TArray<FPlayerInventory> Inventory)
 						{
 							int32 NeedToSlot = Inven.Num / MaxStackSize;
 							CurrentSlotNum += NeedToSlot;
-							NeedToSlot = Inven.Num % MaxStackSize;
-							if(NeedToSlot != 0) ++CurrentSlotNum;
+							if(Inven.Num % MaxStackSize != 0)
+							{
+								++CurrentSlotNum;
+								++NeedToSlot;
+							} 
+							int32 RemainNum = Inven.Num;
+
+							for(int i = 0; i < NeedToSlot; ++i)
+							{
+								if(RemainNum > MaxStackSize)
+								{
+									InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, MaxStackSize, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor));
+								}
+								else
+								{
+									InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, RemainNum, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor));
+								}
+								RemainNum -= MaxStackSize;
+							}
 						}
 						else
 						{
 							++CurrentSlotNum;
+							InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, Inven.Num, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor));
 						}
 					}
-					// if(ItemRow->Isactor == 1) //액터면.. 원래 이렇게 할게 아니고, 여기는 Init이라 위에까지가 끝. Equip DB가 필요함.
-					// {
-					// 	FString EquimentTablePath = FString(TEXT("/Game/CombatSystem/DataTable/EquipmentTable"));
-					// 	UDataTable* EquimentTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *EquimentTablePath));
-					// 	if(EquimentTableObject)
-					// 	{
-					// 		FEquipmentTable* EquipmentRow = nullptr;
-					// 		EquipmentRow = ItemInfoTableObject->FindRow<FEquipmentTable>(FName(FString::FromInt(Inven.Itemid)), TEXT(""));
-					// 		if(EquipmentRow)
-					// 		{
-					// 			//액터 블루프린트를 얻어온다. 장착할게 아니고 모든 블루프린트를 얻어올텐데.
-					// 		}
-					// 	}
-					// }
 				}
 			}
+			OnGenerateSlotWidget.ExecuteIfBound();
 		}
 	}
 }	
+
+void UInventoryComponent::VisibleInventory(bool Visible)
+{
+	OnVisibleInventory.ExecuteIfBound(Visible);
+	bIsVisible = Visible;
+}
+
+bool UInventoryComponent::RemoveItemAtSlot(int32 SlotIndex, int32 Amount)
+{
+	if(!InventorySlots.IsValidIndex(SlotIndex) || Amount == 0) return false;
+	if(Amount > InventorySlots[SlotIndex].Amount)
+	{
+		return false;
+	} 
+	else if(Amount == InventorySlots[SlotIndex].Amount)
+	{
+		InventorySlots.RemoveAt(SlotIndex);
+		OnGenerateSlotWidget.ExecuteIfBound();
+	}
+	else
+	{
+		InventorySlots[SlotIndex].Amount -= Amount;
+		OnGenerateSlotWidget.ExecuteIfBound();
+	}
+	return true;
+}
+
+bool UInventoryComponent::SwapSlot(int32 Index1, int32 Index2)
+{
+	if(!InventorySlots.IsValidIndex(Index1) || !InventorySlots.IsValidIndex(Index2)) return false;
+	FItemInfoInSlot Temp = InventorySlots[Index1];
+	InventorySlots[Index1] = InventorySlots[Index2];
+	InventorySlots[Index2] = Temp;
+	OnGenerateSlotWidget.ExecuteIfBound();
+	return true;
+}
+
+bool UInventoryComponent::DevideStack(int32 DividedSlotIndex, int32 DevideAmount)
+{
+	if(!InventorySlots.IsValidIndex(DividedSlotIndex)) return false;
+	if(InventorySlots[DividedSlotIndex].CanStack == false || DevideAmount > InventorySlots[DividedSlotIndex].Amount) return false;
+	int32 EmptySlotIndex = FindEmptySlotIndex();
+	if(EmptySlotIndex == -1) return false;
+	InventorySlots.Insert(InventorySlots[DividedSlotIndex], EmptySlotIndex); //빈 슬롯 인덱스에 같은 정보 넣고
+	InventorySlots[EmptySlotIndex].Amount = DevideAmount; //갯수만 나눌 갯수로 바꿔줌
+	InventorySlots[DividedSlotIndex].Amount -= DevideAmount; //나눠진 슬롯의 갯수는 나눈 걸 뺀 갯수로 변경.
+	OnGenerateSlotWidget.ExecuteIfBound();
+	return true;
+}
+
+int32 UInventoryComponent::FindEmptySlotIndex() //빈 슬롯이 없으면 -1 리턴
+{
+	for(int i = 0; i < TotalSlotNum; ++i)
+	{
+		if(!InventorySlots.IsValidIndex(i)) return i;
+	}
+	return -1;
+}
+
+void UInventoryComponent::UseItemAtIndex(int32 SlotIndex)
+{
+	if(!InventorySlots.IsValidIndex(SlotIndex)) return;
+
+	//사용가능한 아이템인가? YES -> 장비인가? -> Yes -> 무기인지 방어구인지 보고 스폰
+	//사용가능한 아이템인가? YES -> 장비인가? -> No -> 무슨 아이템인지 보고 효과 실행
+	//사용가능한 아이템인가? No  -> 사용 안됨.(퀘스트템 같은거)(갖다줬을 때 사용되는거)
+	if(InventorySlots[SlotIndex].CanUse)
+	{
+		
+		if(InventorySlots[SlotIndex].Category == EItemCategory::EQUIPMENT) //무기 방어구
+		{
+			OnEquipWeapon.ExecuteIfBound(InventorySlots[SlotIndex].ItemId);
+		}
+		else if(InventorySlots[SlotIndex].Category == EItemCategory::CONSUMEABLE)//소모품 효과 실행
+		{
+			FActorSpawnParameters Params; 
+			Params.Owner = GetOwner();
+			AConsumeable* Item = GetWorld()->SpawnActor<AConsumeable>(AConsumeable::StaticClass(), FTransform(), Params);
+			if(Item)
+			{
+				Item->UseSuccess.BindUObject(this, &ThisClass::DecreaseItemAcount);
+				Item->UseItem(InventorySlots[SlotIndex].ItemId, SlotIndex);
+			}
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
+void UInventoryComponent::DecreaseItemAcount(bool Success, int32 SlotIndex) //true면 1개 감소, false면 감소X
+{
+	if(!InventorySlots.IsValidIndex(SlotIndex)) return;
+	if(Success)
+	{
+		--InventorySlots[SlotIndex].Amount;
+		OnGenerateSlotWidget.ExecuteIfBound();
+	}
+}

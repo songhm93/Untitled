@@ -1,6 +1,5 @@
 #include "MeleePlayerController.h"
 #include "JsonObjectConverter.h"
-#include "Blueprint/UserWidget.h"
 
 #include "../PlayerCharacter/BaseCharacter.h"
 #include "../Type/Types.h."
@@ -10,6 +9,7 @@
 #include "../Component/StateManagerComponent.h"
 #include "../Component/InventoryComponent.h"
 #include "../MeleeGameMode.h"
+
 
 AMeleePlayerController::AMeleePlayerController()
 {
@@ -25,7 +25,6 @@ void AMeleePlayerController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
     BaseCharacter = Cast<ABaseCharacter>(InPawn);
-    UE_LOG(LogTemp, Warning, TEXT("빙의!"));
 }
 
 void AMeleePlayerController::Tick(float DeltaTime)
@@ -38,14 +37,8 @@ void AMeleePlayerController::BeginPlay()
 {
     Super::BeginPlay();
     
-    if(MainHUDClass)
-    {
-        MainHUDWidget = CreateWidget<UUserWidget>(this, MainHUDClass);
-        if(MainHUDWidget)
-        {
-            MainHUDWidget->AddToViewport();
-        }
-    }
+
+    
 }
 
 void AMeleePlayerController::SetupInputComponent()

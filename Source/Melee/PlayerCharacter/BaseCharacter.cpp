@@ -16,9 +16,11 @@
 
 #include "../AttackDamageType.h"
 #include "../Interface/Interactable.h"
+#include "../Interface/ItemInterface.h"
 #include "../Type/Stats.h"
 #include "../Type/Types.h"
 #include "../Equipment/DualWeapon.h"
+#include "../Equipment/BaseArmor.h"
 #include "../Component/CombatComponent.h"
 #include "../Component/StateManagerComponent.h"
 #include "../Component/StatsComponent.h"
@@ -26,6 +28,8 @@
 #include "../Component/InventoryComponent.h"
 #include "../Item/MasterItem.h"
 #include "../SkillActor/Rock.h"
+#include "../Widget/InventoryWidget.h"
+#include "../Widget/MainHUDWidget.h"
 
 
 ABaseCharacter::ABaseCharacter()
@@ -57,10 +61,12 @@ ABaseCharacter::ABaseCharacter()
 	StateManagerComp = CreateDefaultSubobject<UStateManagerComponent>(TEXT("StateManagerComp"));
 	StatComp = CreateDefaultSubobject<UStatsComponent>(TEXT("StatComp"));
 	TargetingComp = CreateDefaultSubobject<UTargetingComponent>(TEXT("TargetingComp"));
-	LockOnWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
+	LockOnWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
 	InventoryComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
-
-	LockOnWidget->SetupAttachment(GetMesh());
+	
+	bLeftClicked = false;
+	
+	LockOnWidgetComp->SetupAttachment(GetMesh());
 	PelvisBoneName = TEXT("pelvis");
 	DestroyDeadTime = 4.f;
 
@@ -78,6 +84,7 @@ ABaseCharacter::ABaseCharacter()
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	ResetCombat();
 	OnTakeAnyDamage.AddDynamic(this, &ABaseCharacter::ReceiveDamage);
 	if(StateManagerComp)
@@ -90,28 +97,37 @@ void ABaseCharacter::BeginPlay()
 		StatComp->InitStats();
 	}
 
-	if(LockOnWidget)
+	if(LockOnWidgetComp)
 	{
-		LockOnWidget->SetVisibility(false);
-		LockOnWidget->SetWidgetSpace(EWidgetSpace::Screen);
-		LockOnWidget->SetDrawSize(FVector2D(14.f, 14.f));
+		LockOnWidgetComp->SetVisibility(false);
+		LockOnWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
+		LockOnWidgetComp->SetDrawSize(FVector2D(14.f, 14.f));
+	}
+
+	if(MainHUDClass)
+    {
+        MainHUDWidget = CreateWidget<UMainHUDWidget>(GetWorld(), MainHUDClass);
+        
+		if(MainHUDWidget)
+        {
+            MainHUDWidget->AddToViewport();
+        }
+    }
+
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if(PC)
+	{
+		PC->bShowMouseCursor = true;
+		PC->bEnableClickEvents = true; 
+		PC->bEnableMouseOverEvents = true;
 	}
 
 	if(InventoryComp)
 	{
-		for(auto SlotItem : InventoryComp->GetInventorySlot())
-		{
-			if(SlotItem.Item->GetItemInfo().Name == TEXT("듀얼 소드"))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("장착!"));
-				Equip(Cast<ABaseEquippable>(SlotItem.Item));
-			}
-		}
+		InventoryComp->OnEquipWeapon.BindUObject(this, &ThisClass::Equip);
 	}
 	
 }
-
-
 
 void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -124,13 +140,15 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("ToggleWalk", IE_Pressed, this, &ThisClass::ToggleWalk);
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ThisClass::SprintButtonPressed);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::SprintButtonReleased);
-	PlayerInputComponent->BindAction("HeavyAttack", IE_Pressed, this, &ThisClass::HeavyAttack);
+	PlayerInputComponent->BindAction("HeavyAttack", IE_Pressed, this, &ThisClass::HeavyAttack); //삭제예정
 	PlayerInputComponent->BindAction("ToggleLockOn", IE_Pressed, this, &ThisClass::ToggleLockOn);
 	PlayerInputComponent->BindAction("Skill1", IE_Pressed, this, &ThisClass::Skill1ButtonPressed);
 	PlayerInputComponent->BindAction("Skill2", IE_Pressed, this, &ThisClass::Skill2ButtonPressed);
 	PlayerInputComponent->BindAction("Skill3", IE_Pressed, this, &ThisClass::Skill3ButtonPressed);
 	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ThisClass::SkillUltimateButtonPressed);
-	
+	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &ThisClass::LeftClickPressed);
+	PlayerInputComponent->BindAction("LeftClick", IE_Released, this, &ThisClass::LeftClickReleased);
+	PlayerInputComponent->BindAction("Inventory", IE_Released, this, &ThisClass::ToggleInventory);
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 
@@ -140,18 +158,19 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &ABaseCharacter::LookUp);
 	PlayerInputComponent->BindAxis("CameraZoomInOut", this, &ABaseCharacter::CameraZoomInOut);
 	
-	
 }
 
 
 void ABaseCharacter::TurnRight(float Rate)
 {
-	AddControllerYawInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
+	if(bLeftClicked)
+		AddControllerYawInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
 void ABaseCharacter::LookUp(float Rate)
 {
-	AddControllerPitchInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
+	if(bLeftClicked)
+		AddControllerPitchInput(Rate * MouseSensitivity * GetWorld()->GetDeltaSeconds());
 }
 
 void ABaseCharacter::Jump()
@@ -282,7 +301,7 @@ void ABaseCharacter::InteractButtonPressed()
 	}
 }
 
-void ABaseCharacter::HeavyAttack()
+void ABaseCharacter::HeavyAttack() //삭제예정
 {
 	if(CombatCompo)
 		CombatCompo->HeavyAttack();
@@ -425,6 +444,11 @@ void ABaseCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
 void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
+	if(InventoryComp)
+	{
+		//InventoryComp->UseItemAtIndex(1);
+		InventoryComp->SwapSlot(0, 1);
+	}
 	
 
 }
@@ -526,18 +550,44 @@ void ABaseCharacter::SetMovementType(EMovementType Type)
 		TargetingComp->UpdateRotationMode();
 }
 
-void ABaseCharacter::Equip(ABaseEquippable* Equippable)
+void ABaseCharacter::Equip(int32 ItemId)
 {
 	FActorSpawnParameters Params; 
 	Params.Owner = this;
 	Params.Instigator = Cast<APawn>(this);
 	
-	ABaseEquippable* Equipment = GetWorld()->SpawnActor<ABaseEquippable>(Equippable->GetClass(), GetActorTransform(), Params);
-
-	if(CombatCompo && Equipment)
+	//장착하는 종류가 장신구같이 여러개가 더 늘어나면 인자로 해당 종류를 받아야할듯함
+	//일단 장착하는 종류, 무기 방어구 종류가 적어서 이 방식으로.
+	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/WeaponClass"));
+	UDataTable* WeaponClassTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+	if(WeaponClassTableObject)
 	{
-		CombatCompo->OnEquipped(Equipment);
+		FWeaponClassTable* WeaponClassRow = nullptr;
+		WeaponClassRow = WeaponClassTableObject->FindRow<FWeaponClassTable>(FName(FString::FromInt(ItemId)), TEXT(""));
+		if(WeaponClassRow) //무기면
+		{
+			ABaseWeapon* Equipment = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClassRow->Weapon, GetActorTransform(), Params);
+
+			if(CombatCompo && Equipment)
+				CombatCompo->OnEquipWeapon(Equipment);
+		}
+		else //방어구
+		{
+			TablePath = FString(TEXT("/Game/CombatSystem/DataTable/ArmorInfo"));
+			UDataTable* ArmorInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+			if(ArmorInfoTableObject)
+			{
+				FArmorInfoTable* ArmorInfoRow = nullptr;
+				ArmorInfoRow = ArmorInfoTableObject->FindRow<FArmorInfoTable>(FName(FString::FromInt(ItemId)), TEXT(""));
+				if(ArmorInfoRow && CombatCompo)
+				{
+						ABaseArmor Armor = ABaseArmor(ArmorInfoRow->DEF, ArmorInfoRow->ArmorType);
+						CombatCompo->OnEquipArmor(&Armor);
+				}
+			}
+		}
 	}
+	
 }
 
 void ABaseCharacter::ToggleLockOn()
@@ -559,9 +609,9 @@ bool ABaseCharacter::CanBeTargeted()
 
 void ABaseCharacter::OnTargeted(bool IsTargeted)
 {
-	if(LockOnWidget)
+	if(LockOnWidgetComp)
 	{
-		LockOnWidget->SetVisibility(IsTargeted);
+		LockOnWidgetComp->SetVisibility(IsTargeted);
 	}
 }
 
@@ -680,12 +730,47 @@ EPhysicalSurface ABaseCharacter::GetPhysicsSurface()
 	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
 }
 
-bool ABaseCharacter::AddItem(AMasterItem* Item, int32 Amount)
+bool ABaseCharacter::AddItem(int32 ItemId, int32 Amount)
 {
+	//몬스터나, 상점에서 호출할 함수.
+	// if(InventoryCompo)
+	// {
+	// 	InventoryCompo->AddItem(ItemId, Amount);
+	// }
+
 	return false;
 }
 
-void ABaseCharacter::AddGold()
+void ABaseCharacter::AddGold(int32 GoldAmount)
 {
+	//몬스터나, 상점에서 호출할 함수.
+	// if(InventoryCompo)
+	// {
+	// 	InventoryCompo->AddGold(Amount);
+	// }
+}
 
+void ABaseCharacter::LeftClickPressed()
+{
+	bLeftClicked = true;
+}
+
+void ABaseCharacter::LeftClickReleased()
+{
+	bLeftClicked = false;
+}
+
+void ABaseCharacter::ToggleInventory()
+{
+	if(InventoryComp)
+	{
+		if(InventoryComp->GetIsVisible())
+		{
+			InventoryComp->VisibleInventory(false);
+		}
+		else
+		{
+			InventoryComp->VisibleInventory(true);
+		}
+	}
 }

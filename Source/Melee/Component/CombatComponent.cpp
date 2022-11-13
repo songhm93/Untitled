@@ -95,7 +95,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 }
 
-void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
+void UCombatComponent::OnEquipWeapon(ABaseWeapon* Equipment)
 {
 	if(Equipment)
 	{
@@ -121,8 +121,16 @@ void UCombatComponent::OnEquipped(ABaseEquippable* Equipment)
 			{
 				ArmorBaseSetting(Armor);
 			}
-			AttachActor(EEquipmentType::ARMOR, TEXT(""));
+			
 		}
+	}
+}
+
+void UCombatComponent::OnEquipArmor(ABaseArmor* Equipment)
+{
+	if(Equipment)
+	{
+		ArmorBaseSetting(Equipment);
 	}
 }
 

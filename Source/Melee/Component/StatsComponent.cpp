@@ -4,6 +4,7 @@
 #include "../Type/Stats.h"
 #include "StateManagerComponent.h"
 #include "CombatComponent.h"
+#include "../Item/Consumeable.h"
 
 UStatsComponent::UStatsComponent()
 {

@@ -220,6 +220,16 @@
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\DBInterface.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\DBInterface.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\EquipmentInterface.cpp",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
@@ -240,6 +250,26 @@
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\InventoryInterface.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\InventoryInterface.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\ItemInterface.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\ItemInterface.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Interface\\TargetingInterface.cpp",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
@@ -250,12 +280,12 @@
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
-		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Item\\HealthPotion.cpp",
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Item\\Consumeable.cpp",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
 	{
-		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Item\\HealthPotion.h",
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Item\\Consumeable.h",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},
@@ -496,6 +526,36 @@
 	},
 	{
 		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Widget\\FadeWidget.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Widget\\InventorySlotWidget.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Widget\\InventorySlotWidget.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Widget\\InventoryWidget.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Widget\\InventoryWidget.h",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Widget\\MainHUDWidget.cpp",
+		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Unreal\\Project\\Melee\\Source\\Melee\\Widget\\MainHUDWidget.h",
 		"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe\" @F:\\Unreal\\Project\\Melee\\.vscode\\compileCommands_Default\\Melee.222.rsp",
 		"directory": "C:\\Program Files\\Epic Games\\UE_5.0\\Engine\\Source"
 	},

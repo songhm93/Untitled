@@ -11,7 +11,7 @@ DECLARE_DELEGATE(FOnLightAttack);
 DECLARE_DELEGATE(FOnChargedAttack);
 
 class ABaseCharacter;
-class UUserWidget;
+
 
 
 
@@ -44,16 +44,10 @@ private:
 
 	void TrackingSprint();
 
-	
-
 	UPROPERTY()
 	ABaseCharacter* BaseCharacter;
 
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UUserWidget> MainHUDClass;
-
-	UPROPERTY()
-	UUserWidget* MainHUDWidget;
+	
 
 	bool bLeftClickIsPressed;
 

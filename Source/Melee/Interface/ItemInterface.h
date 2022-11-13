@@ -4,6 +4,7 @@
 #include "UObject/Interface.h"
 #include "Engine/DataTable.h"
 #include "../Type/ItemCategory.h"
+#include "../Type/Types.h"
 #include "ItemInterface.generated.h"
 
 
@@ -36,13 +37,31 @@ struct FItemInfoTable : public FTableRowBase
 };
 
 USTRUCT(BlueprintType)
-struct FEquipmentTable : public FTableRowBase
+struct FWeaponClassTable : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ABaseWeapon> Weapon;
 	
+};
+
+USTRUCT(BlueprintType)
+struct FArmorInfoTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 ItemId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 DEF;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EArmorType ArmorType;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Name;
 };
 
 UINTERFACE(MinimalAPI)

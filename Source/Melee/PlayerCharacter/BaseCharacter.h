@@ -24,6 +24,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class ADualWeapon;
 class UInventoryComponent;
+class UMainHUDWidget;
 
 UCLASS(config=Game)
 class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IInventoryInterface
@@ -41,8 +42,8 @@ public:
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
 	virtual void ApplyImpactEffect() override;
-	virtual bool AddItem(AMasterItem* Item, int32 Amount) override;
-	virtual void AddGold() override;
+	virtual bool AddItem(int32 ItemId, int32 Amount) override;
+	virtual void AddGold(int32 GoldAmount) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -82,7 +83,8 @@ protected:
 private:
 	void Test(); //테스트할 함수
 
-	void Equip(ABaseEquippable* Equippable);
+	UFUNCTION()
+	void Equip(int32 ItemId);
 
 	void TurnRight(float Rate);
 
@@ -111,6 +113,12 @@ private:
 	void Skill3ButtonPressed();
 
 	void SkillUltimateButtonPressed();
+
+	void LeftClickPressed();
+
+	void LeftClickReleased();
+
+	void ToggleInventory();
 
 	UFUNCTION(BlueprintCallable)
 	EPhysicalSurface GetPhysicsSurface();
@@ -166,7 +174,16 @@ private:
 	UTargetingComponent* TargetingComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent* LockOnWidget;
+	UWidgetComponent* LockOnWidgetComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* InventoryWidgetComp;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UMainHUDWidget> MainHUDClass;
+
+	UPROPERTY()
+	UMainHUDWidget* MainHUDWidget;
 
 	FName PelvisBoneName;
 
@@ -185,6 +202,8 @@ private:
 	bool bSprintKeyPressed;
 
 	bool bHitFront; //맞았을 때 때린 캐릭터가 내 앞에서 때렸는지?
+
+	bool bLeftClicked;
 	
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -194,7 +213,7 @@ public: //get
 	FORCEINLINE float GetSprintStaminaCost() const { return SprintStaminaCost; }
 	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp; }
 	FORCEINLINE UInventoryComponent* GetInventoryComp() const { return InventoryComp; }
-
+	FORCEINLINE UMainHUDWidget* GetMainHUDWidget() const { return MainHUDWidget; }
 public:
 	void HeavyAttack();
 	void LightAttack();

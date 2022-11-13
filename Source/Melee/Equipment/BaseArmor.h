@@ -11,7 +11,8 @@ class MELEE_API ABaseArmor : public ABaseEquippable
 	GENERATED_BODY()
 
 public:
-	ABaseArmor();
+	ABaseArmor(){}
+	ABaseArmor(float _ArmorDef, EArmorType _ArmorType);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Stat")
