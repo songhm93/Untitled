@@ -34,6 +34,18 @@ enum class EEnemyActionType : uint8
     MAX UMETA(DisplayName="MAX")
 };
 
+USTRUCT()
+struct FMonsterGives
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TArray<int32> ItemId;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	int32 Gold;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	int32 Exp;
+};
 
 UCLASS()
 class MELEE_API AEnemyCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
@@ -86,8 +98,7 @@ protected:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 MId;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TArray<int32> ItemId;
-
+	FMonsterGives MonsterGives;
 private:
 	void EnableRagdoll();
 
@@ -99,6 +110,8 @@ private:
 
 	UFUNCTION()
 	void CharacterStateBegin(ECurrentState State);
+
+	void DropItem();
 	
 	UPROPERTY(EditAnywhere, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;

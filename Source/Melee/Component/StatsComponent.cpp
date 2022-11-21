@@ -118,7 +118,15 @@ void UStatsComponent::PlusCurrentStatValue(EStats Stat, float Value)
 {
 	if(Value != 0.f)
 	{
-		SetCurrentStatValue(Stat, FMath::Clamp(CurrentStats[Stat] + Value, 0.f, MaxStats[Stat]));
+		if(Stat == EStats::ATK || Stat == EStats::DEF)
+		{
+			SetCurrentStatValue(Stat, CurrentStats[Stat] + Value);
+		}
+		else
+		{
+			SetCurrentStatValue(Stat, FMath::Clamp(CurrentStats[Stat] + Value, 0.f, MaxStats[Stat]));
+		}
+		
 		OnPlusCurrentStatValue.Broadcast(Stat, CurrentStats[Stat]); // 위젯으로 Broadcast
 	}
 }
@@ -152,8 +160,6 @@ void UStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpRes
 
 		SetMaxStatValue(EStats::HP, PlayerInfo.Maxhp);
 		SetMaxStatValue(EStats::STAMINA, PlayerInfo.Maxstamina);
-		SetMaxStatValue(EStats::ATK, PlayerInfo.Atk);
-		SetMaxStatValue(EStats::DEF, PlayerInfo.Def);
 	
 		PlusCurrentStatValue(EStats::HP, 0.00000001f);
 		PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);

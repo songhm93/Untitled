@@ -3,19 +3,18 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "../Interface/InventoryInterface.h"
-#include "InventorySlotWidget.generated.h"
-
+#include "MerchantInventorySlotWidget.generated.h"
 
 class UTextBlock;
 class UImage;
 class UButton;
 class UInfoWidget;
 
+
 UCLASS()
-class MELEE_API UInventorySlotWidget : public UUserWidget
+class MELEE_API UMerchantInventorySlotWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
 public:
 	void Init(FItemInfoInSlot ItemInfoInSlot, int32 SlotIndex);
 	void UpdateSlot(bool IsValid);
@@ -50,5 +49,4 @@ private:
 
 	UPROPERTY()
 	UInfoWidget* InfoWidget;
-	
 };

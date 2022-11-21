@@ -48,6 +48,16 @@ void UTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 }
 
+void UTargetingComponent::SetTargeting(AActor* Target)
+{
+	if(Target)
+	{
+		TargetActor = Target;
+		SetIsTargeting(true);
+		UpdateRotationMode();
+	}
+}
+
 void UTargetingComponent::EnableLockOn()
 {
 	FHitResult HitResult;
@@ -117,6 +127,15 @@ bool UTargetingComponent::FindTarget(FHitResult& OutHit)
 		}
 	}
 
+	return false;
+}
+
+bool UTargetingComponent::IsMonster(AActor* Target)
+{
+	if(Target && Target->Implements<UTargetingInterface>())
+	{
+		return true;	
+	}
 	return false;
 }
 

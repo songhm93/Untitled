@@ -10,6 +10,7 @@
 
 class UTexture2D;
 class ABaseWeapon;
+class ABaseArmor;
 
 USTRUCT(BlueprintType)
 struct FItemInfoTable : public FTableRowBase
@@ -34,6 +35,10 @@ struct FItemInfoTable : public FTableRowBase
 	EItemCategory Category;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool Isactor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 BuyGold;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 SellGold;
 };
 
 USTRUCT(BlueprintType)
@@ -47,22 +52,15 @@ struct FWeaponClassTable : public FTableRowBase
 };
 
 USTRUCT(BlueprintType)
-struct FArmorInfoTable : public FTableRowBase
+struct FArmorClassTable : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 ItemId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 DEF;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EArmorType ArmorType;
+	TSubclassOf<ABaseArmor> Armor;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Name;
 };
+
 
 UINTERFACE(MinimalAPI)
 class UItemInterface : public UInterface

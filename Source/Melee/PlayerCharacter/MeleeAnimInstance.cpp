@@ -57,6 +57,17 @@ void UMeleeAnimInstance::AnimNotify_ResetCombat()
     }
 }
 
+void UMeleeAnimInstance::AnimNotify_DodgeComplete()
+{
+    if(Character && Character->GetStateManagerComp())
+    {
+        if(Character->GetStateManagerComp()->GetCurrentState() != ECurrentState::DEAD)
+            Character->ResetCombat();
+
+        Character->GetStateManagerComp()->SetDodgeCoolDown();
+    }
+}
+
 void UMeleeAnimInstance::AnimNotify_Impact()
 {
     OnImpact.ExecuteIfBound();

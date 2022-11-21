@@ -80,7 +80,8 @@ struct FPlayerInventory
 	int32 Itemid = 0;
 	UPROPERTY()
 	int32 Num = 0;
-	
+	UPROPERTY()
+	bool Equipped = false;
 	
 };
 

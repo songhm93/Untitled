@@ -14,6 +14,8 @@ UStateManagerComponent::UStateManagerComponent()
 	IsStaminaPotionCooldown = false;
 	HPPotionCooldownTime = 7.f;
 	StaminaPotionCooldownTime = 7.f;
+	IsDodgeCooldown = false;
+	DodgeCooldownTime = 5.f;
 
 }
 
@@ -138,4 +140,15 @@ void UStateManagerComponent::PotionCooldownComplete(bool IsHPPotion)
 	{
 		IsStaminaPotionCooldown = false;
 	}
+}
+
+void UStateManagerComponent::SetDodgeCoolDown()
+{
+	IsDodgeCooldown = true;
+	GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &ThisClass::DodgeCooldownComplete, DodgeCooldownTime);
+}
+
+void UStateManagerComponent::DodgeCooldownComplete()
+{
+	IsDodgeCooldown = false;
 }

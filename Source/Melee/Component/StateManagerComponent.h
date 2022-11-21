@@ -51,8 +51,16 @@ private:
 
 	FTimerDelegate PotionCooldownDelegate;
 
+	bool IsDodgeCooldown;
+
+	FTimerHandle DodgeTimerHandle;
+
+	float DodgeCooldownTime;
+
 	UFUNCTION()
 	void PotionCooldownComplete(bool IsHPPotion);
+
+	void DodgeCooldownComplete();
 	
 public:	//get
 	FORCEINLINE ECurrentState GetCurrentState() const { return CurrentState; }
@@ -60,6 +68,7 @@ public:	//get
 	FORCEINLINE EMovementType GetMovementType() const { return CurrentMovementType; }
 	FORCEINLINE bool GetIsHPPotionCooldown() const { return IsHPPotionCooldown; }
 	FORCEINLINE bool GetIsStaminaPotionCooldown() const { return IsStaminaPotionCooldown; }
+	FORCEINLINE bool GetIsDodgeCooldown() const { return IsDodgeCooldown; }
 public:
 	void SetCurrentState(ECurrentState State);
 	void SetCurrentAction(ECurrentAction Action);
@@ -71,5 +80,6 @@ public:
 	void SetCurrentCombatState(ECurrentCombatState CombatState);
 	ECurrentCombatState GetCurrentCombatState();
 	void SetPotionCooldown(bool IsHPPotion);
+	void SetDodgeCoolDown();
 		
 };

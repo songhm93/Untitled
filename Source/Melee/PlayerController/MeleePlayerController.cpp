@@ -9,6 +9,10 @@
 #include "../Component/StateManagerComponent.h"
 #include "../Component/InventoryComponent.h"
 #include "../MeleeGameMode.h"
+#include "../Widget/GetItemWidget.h"
+#include "Components/HorizontalBox.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 
 AMeleePlayerController::AMeleePlayerController()
@@ -17,6 +21,8 @@ AMeleePlayerController::AMeleePlayerController()
     LeftClickTime = 0.f;
     ChargedTime = 0.3f;
     bCharged = false;
+    ExistGetItemWidgetNum = 0;
+    WaitGetItemWidgetNum = 0;
 
     Http = &FHttpModule::Get();
 }
@@ -124,13 +130,14 @@ void AMeleePlayerController::OnPlayerInfoRequestComplete(FHttpRequestPtr Request
         if(PlayerInfo.Isvalid)
         {
             SpawnLocaton = FVector(PlayerInfo.Xcoord, PlayerInfo.Ycoord, PlayerInfo.Zcoord);
-            if(BaseCharacter && BaseCharacter->GetStatComp())
+            if(BaseCharacter && BaseCharacter->GetStatComp() && BaseCharacter->GetInventoryComp())
             {
                 BaseCharacter->GetStatComp()->InitStats();
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::HP, PlayerInfo.Currenthp);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::STAMINA, PlayerInfo.Currentstamina);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::ATK, PlayerInfo.Atk);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::DEF, PlayerInfo.Def);
+                BaseCharacter->GetInventoryComp()->InitGold(PlayerInfo.Gold);
             }
         }
 	}
@@ -163,7 +170,6 @@ void AMeleePlayerController::OnInventoryRequestComplete(FHttpRequestPtr Request,
 {
     if(Success)
     {
-        UE_LOG(LogTemp, Warning, TEXT("인벤토리 가져오기 성공!"));
         TArray<FPlayerInventory> PlayerInventory = ConvertToPlayerInventory(Response->GetContentAsString());
         if(!PlayerInventory.IsEmpty())
         {
@@ -205,7 +211,7 @@ void AMeleePlayerController::SaveData()
 {
     FPlayerInfo PlayerInfo;
     PlayerInfo.Pid = 9824;
-    if(BaseCharacter && BaseCharacter->GetStatComp())
+    if(BaseCharacter && BaseCharacter->GetStatComp() &&  BaseCharacter->GetInventoryComp())
     {
         PlayerInfo.Isvalid = true;
         PlayerInfo.Currenthp = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::HP);
@@ -218,8 +224,9 @@ void AMeleePlayerController::SaveData()
         PlayerInfo.Level = 1;
         PlayerInfo.Currentexp = 0.f;
         PlayerInfo.Maxexp = 100.f;
-        PlayerInfo.Atk = BaseCharacter->GetStatComp()->GetMaxValue(EStats::ATK);
-        PlayerInfo.Def = BaseCharacter->GetStatComp()->GetMaxValue(EStats::DEF);
+        PlayerInfo.Atk = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::ATK);
+        PlayerInfo.Def = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::DEF);
+        PlayerInfo.Gold = BaseCharacter->GetInventoryComp()->GetGold();
     }
 
     if(Http)
@@ -235,5 +242,64 @@ void AMeleePlayerController::SaveData()
         Request->SetContentAsString(JsonString);
 
         Request->ProcessRequest();
+    }
+}
+
+void AMeleePlayerController::GetItemWidgetVisible(FItemInfoInSlot AddItemInfo, int32 Amount)
+{
+    if(ExistGetItemWidgetNum == 4) //화면에 위젯이 4개 떠있으면 그 뒤에 떠야하는 정보를 저장 후 대기
+    {
+        GetItemWidgetQueue.Add(FGetItemQueue(AddItemInfo, Amount));
+        ++WaitGetItemWidgetNum;
+        return;
+    }
+	if(GetItemWidgetClass)
+	{
+		GetItemWidget = CreateWidget<UGetItemWidget>(GetWorld(), GetItemWidgetClass);
+		if(GetItemWidget)
+		{
+			++ExistGetItemWidgetNum;
+            GetItemWidget->AddToViewport();
+			GetItemWidget->SetVisibility(ESlateVisibility::Visible);
+			GetItemWidget->Init(AddItemInfo, Amount);
+
+            GetItemWidgetScrollUp();
+            if(BaseCharacter && BaseCharacter->GetInventoryComp())
+            {
+                BaseCharacter->GetInventoryComp()->OnGenerateSlotWidget.ExecuteIfBound();
+            }
+		}
+	}
+}
+
+void AMeleePlayerController::GetItemWidgetScrollUp()
+{
+    for(UGetItemWidget* WidgetLog : GetItemWidgetList)
+    {
+        if(WidgetLog)
+        {
+            UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(WidgetLog->GetItemWidgetBox);
+            if(CanvasSlot)
+            {
+                FVector2D Position = CanvasSlot->GetPosition();
+                FVector2D NewPosition(CanvasSlot->GetPosition().X, Position.Y - CanvasSlot->GetSize().Y);
+                CanvasSlot->SetPosition(NewPosition);
+            }
+        }
+    }
+    GetItemWidgetList.Add(GetItemWidget);
+}
+
+void AMeleePlayerController::RemoveGetItemWidget()
+{
+    GetItemWidget = *(GetItemWidgetList.begin());
+    GetItemWidget->RemoveFromParent();
+    GetItemWidgetList.RemoveAt(0);
+    --ExistGetItemWidgetNum;
+    if(WaitGetItemWidgetNum > 0) //화면에 떠있던 위젯들 지워질 때 떠야할 대기중인 위젯이 있으면
+    {
+        GetItemWidgetVisible(GetItemWidgetQueue[0].ItemInfo, GetItemWidgetQueue[0].Amount);
+        GetItemWidgetQueue.RemoveAt(0);
+        --WaitGetItemWidgetNum;
     }
 }

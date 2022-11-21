@@ -24,4 +24,8 @@ private:
 public:
 	FORCEINLINE EArmorType GetArmorType() const { return ArmorType; }
 	FORCEINLINE float GetArmorDEF() const { return ArmorDEF; }
+
+public:
+	FORCEINLINE void SetArmorType(EArmorType Type) { ArmorType = Type; }
+	FORCEINLINE void SetArmorDEF(float DEF) { ArmorDEF = DEF; }
 };

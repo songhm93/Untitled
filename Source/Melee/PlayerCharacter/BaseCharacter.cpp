@@ -77,6 +77,7 @@ ABaseCharacter::ABaseCharacter()
 	bSprintKeyPressed = false;
 	MouseSensitivity = 25.f;
 	bHitFront = false;
+	bAltPressed = false;
 
     ResetCombat();
 }
@@ -124,7 +125,10 @@ void ABaseCharacter::BeginPlay()
 
 	if(InventoryComp)
 	{
-		InventoryComp->OnEquipWeapon.BindUObject(this, &ThisClass::Equip);
+		InventoryComp->OnEquipWeapon.BindUObject(this, &ThisClass::EquipWeapon);
+		InventoryComp->OnEquipArmor.BindUObject(this, &ThisClass::EquipArmor);
+		InventoryComp->OnEquippedWeaponSpawn.BindUObject(this, &ThisClass::EquippedWeaponSpawn);
+		InventoryComp->OnEquippedArmorApply.BindUObject(this, &ThisClass::EquippedArmorApply);
 	}
 	
 }
@@ -149,6 +153,9 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &ThisClass::LeftClickPressed);
 	PlayerInputComponent->BindAction("LeftClick", IE_Released, this, &ThisClass::LeftClickReleased);
 	PlayerInputComponent->BindAction("Inventory", IE_Released, this, &ThisClass::ToggleInventory);
+	PlayerInputComponent->BindAction("Alt", IE_Pressed, this, &ThisClass::AltPressed);
+	PlayerInputComponent->BindAction("Alt", IE_Released, this, &ThisClass::AltReleased);
+	PlayerInputComponent->BindAction("RightClick", IE_Pressed, this, &ThisClass::RightClickPressed);
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 
@@ -309,7 +316,7 @@ void ABaseCharacter::HeavyAttack() //삭제예정
 
 void ABaseCharacter::Dodge()
 {
-	if(!CanDodge() || (CombatCompo && !CombatCompo->GetEquippedWeapon())) return;
+	if(!CanDodge()) return;
 	
 	CombatCompo->PerformDodge();
 }
@@ -330,7 +337,8 @@ bool ABaseCharacter::CanToggleCombat()
 
 bool ABaseCharacter::CanDodge()
 {
-	if(StatComp && CombatCompo && (StatComp->GetCurrentStatValue(EStats::STAMINA) < CombatCompo->GetDodgeStaminaCost())) return false;
+	if(StatComp && CombatCompo &&(StatComp->GetCurrentStatValue(EStats::STAMINA) < CombatCompo->GetDodgeStaminaCost())) return false;
+	
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::DODGING);
 	CharacterStates.Add(ECurrentState::DEAD);
@@ -338,7 +346,7 @@ bool ABaseCharacter::CanDodge()
 	CharacterStates.Add(ECurrentState::GENERAL_STATE);
 	bool ReturnValue = false;
 	if(StateManagerComp && GetCharacterMovement())
-		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates))  && (!GetCharacterMovement()->IsFalling());
+		ReturnValue = (!StateManagerComp->IsCurrentStateEqualToThis(CharacterStates))  && (!GetCharacterMovement()->IsFalling()) && (!StateManagerComp->GetIsDodgeCooldown());
 	return ReturnValue;
 }
 
@@ -550,44 +558,94 @@ void ABaseCharacter::SetMovementType(EMovementType Type)
 		TargetingComp->UpdateRotationMode();
 }
 
-void ABaseCharacter::Equip(int32 ItemId)
+void ABaseCharacter::EquipWeapon(int32 ItemId)
 {
 	FActorSpawnParameters Params; 
 	Params.Owner = this;
 	Params.Instigator = Cast<APawn>(this);
 	
-	//장착하는 종류가 장신구같이 여러개가 더 늘어나면 인자로 해당 종류를 받아야할듯함
-	//일단 장착하는 종류, 무기 방어구 종류가 적어서 이 방식으로.
 	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/WeaponClass"));
 	UDataTable* WeaponClassTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
 	if(WeaponClassTableObject)
 	{
 		FWeaponClassTable* WeaponClassRow = nullptr;
 		WeaponClassRow = WeaponClassTableObject->FindRow<FWeaponClassTable>(FName(FString::FromInt(ItemId)), TEXT(""));
-		if(WeaponClassRow) //무기면
+		if(WeaponClassRow)
 		{
 			ABaseWeapon* Equipment = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClassRow->Weapon, GetActorTransform(), Params);
 
 			if(CombatCompo && Equipment)
 				CombatCompo->OnEquipWeapon(Equipment);
 		}
-		else //방어구
+	}
+}
+
+void ABaseCharacter::EquipArmor(int32 ItemId)
+{
+	FActorSpawnParameters Params; 
+	Params.Owner = this;
+	Params.Instigator = Cast<APawn>(this);
+
+	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/ArmorClass"));
+	UDataTable* ArmorClassTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+	if(ArmorClassTableObject)
+	{
+		FArmorClassTable* ArmorClassRow = nullptr;
+		ArmorClassRow = ArmorClassTableObject->FindRow<FArmorClassTable>(FName(FString::FromInt(ItemId)), TEXT(""));
+		if(ArmorClassRow && CombatCompo)
 		{
-			TablePath = FString(TEXT("/Game/CombatSystem/DataTable/ArmorInfo"));
-			UDataTable* ArmorInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
-			if(ArmorInfoTableObject)
+			ABaseArmor* Armor = GetWorld()->SpawnActor<ABaseArmor>(ArmorClassRow->Armor, GetActorTransform(), Params);
+			if(Armor)
 			{
-				FArmorInfoTable* ArmorInfoRow = nullptr;
-				ArmorInfoRow = ArmorInfoTableObject->FindRow<FArmorInfoTable>(FName(FString::FromInt(ItemId)), TEXT(""));
-				if(ArmorInfoRow && CombatCompo)
-				{
-						ABaseArmor Armor = ABaseArmor(ArmorInfoRow->DEF, ArmorInfoRow->ArmorType);
-						CombatCompo->OnEquipArmor(&Armor);
-				}
+				CombatCompo->OnEquipArmor(Armor);
 			}
 		}
 	}
+}
+
+void ABaseCharacter::EquippedWeaponSpawn(int32 ItemId)
+{
+	FActorSpawnParameters Params; 
+	Params.Owner = this;
+	Params.Instigator = Cast<APawn>(this);
 	
+	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/WeaponClass"));
+	UDataTable* WeaponClassTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+	if(WeaponClassTableObject)
+	{
+		FWeaponClassTable* WeaponClassRow = nullptr;
+		WeaponClassRow = WeaponClassTableObject->FindRow<FWeaponClassTable>(FName(FString::FromInt(ItemId)), TEXT(""));
+		if(WeaponClassRow)
+		{
+			ABaseWeapon* Equipment = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClassRow->Weapon, GetActorTransform(), Params);
+
+			if(CombatCompo && Equipment)
+				CombatCompo->EquippedWeaponSpawn(Equipment);
+		}
+	}
+}
+
+void ABaseCharacter::EquippedArmorApply(int32 ItemId)
+{
+	FActorSpawnParameters Params; 
+	Params.Owner = this;
+	Params.Instigator = Cast<APawn>(this);
+	
+	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/ArmorClass"));
+	UDataTable* ArmorClassTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+	if(ArmorClassTableObject)
+	{
+		FArmorClassTable* ArmorClassRow = nullptr;
+		ArmorClassRow = ArmorClassTableObject->FindRow<FArmorClassTable>(FName(FString::FromInt(ItemId)), TEXT(""));
+		if(ArmorClassRow && CombatCompo)
+		{
+			ABaseArmor* Armor = GetWorld()->SpawnActor<ABaseArmor>(ArmorClassRow->Armor, GetActorTransform(), Params);
+			if(Armor)
+			{
+				CombatCompo->OnEquippedArmorApply(Armor);
+			}
+		}
+	}
 }
 
 void ABaseCharacter::ToggleLockOn()
@@ -730,24 +788,22 @@ EPhysicalSurface ABaseCharacter::GetPhysicsSurface()
 	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
 }
 
-bool ABaseCharacter::AddItem(int32 ItemId, int32 Amount)
+bool ABaseCharacter::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 {
-	//몬스터나, 상점에서 호출할 함수.
-	// if(InventoryCompo)
-	// {
-	// 	InventoryCompo->AddItem(ItemId, Amount);
-	// }
+	if(InventoryComp)
+	{
+		InventoryComp->AddItem(ItemId, Amount, bFromMonster);
+	}
 
 	return false;
 }
 
-void ABaseCharacter::AddGold(int32 GoldAmount)
+void ABaseCharacter::AddGold(int32 GoldAmount, bool bFromMonster)
 {
-	//몬스터나, 상점에서 호출할 함수.
-	// if(InventoryCompo)
-	// {
-	// 	InventoryCompo->AddGold(Amount);
-	// }
+	if(InventoryComp)
+	{
+		InventoryComp->AddGold(GoldAmount, bFromMonster);
+	}
 }
 
 void ABaseCharacter::LeftClickPressed()
@@ -771,6 +827,35 @@ void ABaseCharacter::ToggleInventory()
 		else
 		{
 			InventoryComp->VisibleInventory(true);
+		}
+	}
+}
+
+void ABaseCharacter::AltPressed()
+{
+	bAltPressed = true;
+}
+
+void ABaseCharacter::AltReleased()
+{
+	bAltPressed = false;
+}
+
+void ABaseCharacter::RightClickPressed()
+{
+	if(StateManagerComp && StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
+
+	FHitResult HitResult;
+	
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
+	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+	CollisionObjectType.Add(Pawn);
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHitResultUnderCursorForObjects(CollisionObjectType, false, HitResult);
+	if(HitResult.bBlockingHit)
+	{
+		if(TargetingComp && TargetingComp->IsMonster(HitResult.GetActor()))
+		{
+			TargetingComp->SetTargeting(HitResult.GetActor());
 		}
 	}
 }

@@ -12,6 +12,8 @@ class UInventorySlotWidget;
 class UWidgetComponent;
 class UUniformGridPanel;
 class UUserWidget;
+class UInventoryActionMenuWidget;
+class UScrollBox;
 
 UCLASS()
 class MELEE_API UInventoryWidget : public UUserWidget
@@ -28,10 +30,11 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	UButton* CloseButton;
 
+	UPROPERTY(Meta = (BindWidget))
+	UScrollBox* InventoryScrollBox;
+
 	UPROPERTY()
 	UInventoryComponent* InventoryComp;
-
-	int32 SlotIndex; //인벤 컴포넌트에 InventorySlots 인덱스가 곧 이 변수.
 
 	FItemInfoInSlot ItemInfoInSlot;
 
@@ -45,13 +48,20 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UInventorySlotWidget> InventorySlotWidgetClass;
 
+	UPROPERTY(Meta = (BindWidget))
+	UInventoryActionMenuWidget* InventoryActionMenuWidget;
+
 	UFUNCTION()
 	void VisibleWidget(bool Visible);
 
 	UFUNCTION()
 	void CloseInventory();
 
+	UFUNCTION(BlueprintCallable)
+	void SlotClicked(int32 SlotIndex);
+
+	void HideThrowWidget();
 public:
-	FORCEINLINE void SetInventorySlotWidget();
+	FORCEINLINE TArray<UUserWidget*> GetSlotWidgets() const { return SlotWidgets; }
 	
 };

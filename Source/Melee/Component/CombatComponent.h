@@ -199,6 +199,8 @@ public:
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }
 	void OnEquipWeapon(ABaseWeapon* Equipment);
 	void OnEquipArmor(ABaseArmor* Equipment);
+	void EquippedWeaponSpawn(ABaseWeapon* Equipment);
+	void OnEquippedArmorApply(ABaseArmor* Equipment);
 	void AttachActor(EEquipmentType Type, FName SocketName);
 	void AttachWeapon();
 	void AttachSecondWeapon(FName SocketName);

@@ -37,6 +37,9 @@ private:
 	void AnimNotify_ResetCombat();
 
 	UFUNCTION()
+	void AnimNotify_DodgeComplete();
+
+	UFUNCTION()
 	void AnimNotify_Impact();
 
 	UFUNCTION()

@@ -1,4 +1,4 @@
-#include "InventorySlotWidget.h"
+#include "MerchantInventorySlotWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
@@ -6,20 +6,20 @@
 #include "../Component/InventoryComponent.h"
 #include "InfoWidget.h"
 
-void UInventorySlotWidget::NativeConstruct()
+void UMerchantInventorySlotWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
     Index = -1;
 }
 
-void UInventorySlotWidget::Init(FItemInfoInSlot ItemInfoInSlot, int32 SlotIndex)
+void UMerchantInventorySlotWidget::Init(FItemInfoInSlot ItemInfoInSlot, int32 SlotIndex)
 {
     ItemInfo = ItemInfoInSlot;
     Index = SlotIndex;
 }
 
-void UInventorySlotWidget::UpdateSlot(bool IsValidItemInSlot)
+void UMerchantInventorySlotWidget::UpdateSlot(bool IsValidItemInSlot)
 {
     if(!IsValidItemInSlot)
     {

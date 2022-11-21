@@ -19,7 +19,8 @@ class MELEE_API UTargetingComponent : public UActorComponent
 public:	
 	UTargetingComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+	bool IsMonster(AActor* Target);
+	void SetTargeting(AActor* Target);
 protected:
 	virtual void BeginPlay() override;
 	
@@ -33,6 +34,8 @@ private:
 	bool CanKeepDist(AActor* Target); //타겟팅을 한 상태에서, 타겟팅이 유지될 거리인지.
 
 	void SetIsTargeting(bool Boolean);
+
+	
 
 	UPROPERTY()
 	UCameraComponent* FollowCamera;

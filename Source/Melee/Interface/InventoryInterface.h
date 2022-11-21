@@ -7,12 +7,12 @@
 
 class UTexture2D;
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FItemInfoInSlot
 {
 	GENERATED_BODY()
 	FItemInfoInSlot(){}
-	FItemInfoInSlot(int32 _ItemId, int32 _Amount, FString _ItemName, FString _Desc, UTexture2D* _Icon, FString _UseText, bool _CanUse, bool _CanStack, EItemCategory _Category, bool _IsActor)
+	FItemInfoInSlot(int32 _ItemId, int32 _Amount, FString _ItemName, FString _Desc, UTexture2D* _Icon, FString _UseText, bool _CanUse, bool _CanStack, EItemCategory _Category, bool _IsActor, bool _Equipped, int32 _BuyGold, int32 _SellGold)
 	{
 		ItemId = _ItemId;
 		Amount = _Amount;
@@ -24,18 +24,36 @@ struct FItemInfoInSlot
 		CanStack = _CanStack;
 		Category = _Category;
 		IsActor = _IsActor;
+		Equipped = _Equipped;
+		BuyGold = _BuyGold;
+		SellGold = _SellGold;
 	}
-
-	int32 ItemId;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 ItemId = -1;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 Amount;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString ItemName;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString Desc;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UTexture2D* Icon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString UseText;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool CanUse;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool CanStack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EItemCategory Category;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool IsActor;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool Equipped;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 BuyGold;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 SellGold;
 };	
 
 UINTERFACE(MinimalAPI)
@@ -50,6 +68,6 @@ class MELEE_API IInventoryInterface
 	GENERATED_BODY()
 
 public:
-	virtual bool AddItem(int32 ItemId, int32 Amount) = 0;
-	virtual void AddGold(int32 GoldAmount) = 0;
+	virtual bool AddItem(int32 ItemId, int32 Amount, bool bFromMonster) = 0;
+	virtual void AddGold(int32 GoldAmount, bool bFromMonster) = 0;
 };

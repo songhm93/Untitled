@@ -25,6 +25,7 @@ class UCameraComponent;
 class ADualWeapon;
 class UInventoryComponent;
 class UMainHUDWidget;
+class UGetItemWidget;
 
 UCLASS(config=Game)
 class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IInventoryInterface
@@ -42,8 +43,8 @@ public:
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
 	virtual void ApplyImpactEffect() override;
-	virtual bool AddItem(int32 ItemId, int32 Amount) override;
-	virtual void AddGold(int32 GoldAmount) override;
+	virtual bool AddItem(int32 ItemId, int32 Amount, bool bFromMonster) override;
+	virtual void AddGold(int32 GoldAmount, bool bFromMonster) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -84,7 +85,16 @@ private:
 	void Test(); //테스트할 함수
 
 	UFUNCTION()
-	void Equip(int32 ItemId);
+	void EquipWeapon(int32 ItemId);
+
+	UFUNCTION()
+	void EquipArmor(int32 ItemId);
+
+	UFUNCTION()
+	void EquippedWeaponSpawn(int32 ItemId);
+	
+	UFUNCTION()
+	void EquippedArmorApply(int32 ItemId);
 
 	void TurnRight(float Rate);
 
@@ -119,6 +129,12 @@ private:
 	void LeftClickReleased();
 
 	void ToggleInventory();
+
+	void AltPressed();
+
+	void AltReleased();
+
+	void RightClickPressed();
 
 	UFUNCTION(BlueprintCallable)
 	EPhysicalSurface GetPhysicsSurface();
@@ -182,8 +198,11 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UMainHUDWidget> MainHUDClass;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UMainHUDWidget* MainHUDWidget;
+
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	bool bAltPressed;
 
 	FName PelvisBoneName;
 
@@ -214,6 +233,7 @@ public: //get
 	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp; }
 	FORCEINLINE UInventoryComponent* GetInventoryComp() const { return InventoryComp; }
 	FORCEINLINE UMainHUDWidget* GetMainHUDWidget() const { return MainHUDWidget; }
+
 public:
 	void HeavyAttack();
 	void LightAttack();

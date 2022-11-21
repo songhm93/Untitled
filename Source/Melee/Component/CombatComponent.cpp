@@ -92,36 +92,43 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 			bUltimateSkillTimerRunning = false;
 		}
 	}
-
 }
 
 void UCombatComponent::OnEquipWeapon(ABaseWeapon* Equipment)
 {
 	if(Equipment)
 	{
-		if(Equipment->GetEquipmentType() == EEquipmentType::WEAPON)
+		if(EquippedWeapon)
 		{
-			if(EquippedWeapon)
-			{
-				OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, -EquippedWeapon->GetWeaponATK());
-				EquippedWeapon->Destroy();
-			}
-			EquippedWeapon = Cast<ABaseWeapon>(Equipment);
-
-			if(EquippedWeapon)
-			{
-				AttachWeapon();
-				WeaponBaseSetting();
-			}
+			OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, -EquippedWeapon->GetWeaponATK());
+			EquippedWeapon->Destroy();
 		}
-		else if(Equipment->GetEquipmentType() == EEquipmentType::ARMOR)
+		EquippedWeapon = Cast<ABaseWeapon>(Equipment);
+
+		if(EquippedWeapon)
 		{
-			ABaseArmor* Armor = Cast<ABaseArmor>(Equipment); 
-			if(Armor)
+			AttachWeapon();
+			WeaponBaseSetting();
+		}
+	}
+}
+
+void UCombatComponent::EquippedWeaponSpawn(ABaseWeapon* Equipment)
+{
+	if(Equipment)
+	{
+		EquippedWeapon = Cast<ABaseWeapon>(Equipment);
+
+		if(EquippedWeapon)
+		{
+			AttachWeapon();
+			OnUpdateWeaponType.ExecuteIfBound(EquippedWeapon->GetWeaponType());
+	
+			ADualWeapon* DualWeapon = Cast<ADualWeapon>(EquippedWeapon);
+			if(DualWeapon)
 			{
-				ArmorBaseSetting(Armor);
+				DualWeapon->SetSkillATK.BindUObject(this, &ThisClass::ApplySkillExplodeDamage);
 			}
-			
 		}
 	}
 }
@@ -133,6 +140,30 @@ void UCombatComponent::OnEquipArmor(ABaseArmor* Equipment)
 		ArmorBaseSetting(Equipment);
 	}
 }
+
+void UCombatComponent::OnEquippedArmorApply(ABaseArmor* Armor)
+{
+	if(Armor)
+	{
+		if(Armor->GetArmorType() == EArmorType::HELMET)
+		{
+			EquippedHelmet = Armor;
+		}	
+		else if(Armor->GetArmorType() == EArmorType::GAUNTLET)
+		{
+			EquippedGauntlet = Armor;
+		}
+		else if(Armor->GetArmorType() == EArmorType::CHEST)
+		{
+			EquippedChest = Armor;
+		}
+		else if(Armor->GetArmorType() == EArmorType::BOOT)
+		{
+			EquippedBoot = Armor;
+		}
+	}
+}
+
 
 void UCombatComponent::AttachActor(EEquipmentType Type, FName SocketName)
 {
@@ -213,7 +244,6 @@ void UCombatComponent::WeaponBaseSetting()
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	
 	OnUpdateWeaponType.ExecuteIfBound(EquippedWeapon->GetWeaponType());
-	
 
 	if(EquippedWeapon->GetWeaponType() == EWeaponType::DUAL_SWORD)
 	{
@@ -222,7 +252,6 @@ void UCombatComponent::WeaponBaseSetting()
 		{
 			DualWeapon->SetSkillATK.BindUObject(this, &ThisClass::ApplySkillExplodeDamage);
 		}
-
 	}
 	OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, EquippedWeapon->GetWeaponATK());
 }

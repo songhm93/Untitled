@@ -6,6 +6,8 @@
 
 class UWidgetComponent;
 class UInventoryWidget;
+class UItemThrowWidget;
+class UGetItemWidget;
 
 UCLASS()
 class MELEE_API UMainHUDWidget : public UUserWidget
@@ -16,10 +18,16 @@ protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 private:
-	//UPROPERTY(Meta = (BindWidget))
-	//UInventoryWidget* InventoryWidget;
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget), Meta = (AllowPrivateAccess = "true"))
+	UInventoryWidget* InventoryWidget;
+
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget), Meta = (AllowPrivateAccess = "true"))
+	UItemThrowWidget* ItemThrowWidget;
+
+	
 
 public:
-	//FORCEINLINE UInventoryWidget* GetInventoryWidget() const { return InventoryWidget; }
+	FORCEINLINE UItemThrowWidget* GetItemThrowWidget() const { return ItemThrowWidget; }
+	FORCEINLINE UInventoryWidget* GetInventoryWidget() const { return InventoryWidget; }
 
 };
