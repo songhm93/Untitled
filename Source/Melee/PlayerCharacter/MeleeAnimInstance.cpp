@@ -11,6 +11,7 @@ void UMeleeAnimInstance::NativeInitializeAnimation()
     Direction = 0.f;
     if (Character && Character->GetCombatComp())
         Character->GetCombatComp()->OnUpdateWeaponType.BindUObject(this, &ThisClass::SetWeaponType);
+    bIsDead = false;
 }
 
 void UMeleeAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -88,4 +89,9 @@ void UMeleeAnimInstance::AnimNotify_UltimateComplete()
 void UMeleeAnimInstance::AnimNotify_UltimateImpact()
 {
     OnUltimateImpact.ExecuteIfBound();
+}
+
+void UMeleeAnimInstance::AnimNotify_DeathAnimComplete()
+{
+    bIsDead = true;
 }

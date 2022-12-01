@@ -150,7 +150,7 @@ public: //set
 	FORCEINLINE void SetHandSocketName(FName SocketName) { HandSocketName = SocketName;}
 	FORCEINLINE void SetWeaponType(EWeaponType Type) { WeaponType = Type;}
 public:
-	void SimulateWeaponPhysics();
+	
 	
 	
 	

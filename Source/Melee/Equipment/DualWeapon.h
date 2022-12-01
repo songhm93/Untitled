@@ -137,9 +137,6 @@ private:
 
 	void Skill2Range();
 
-	UFUNCTION()
-	void ShowHideCharacter(bool Hide);
-
 	void BlinkMove();
 	
 	void BlinkDestroyShadow();
@@ -153,5 +150,7 @@ public: //get
 	FORCEINLINE bool GetbBlinkReturnTimerRunning() const { return bBlinkReturnTimerRunning; }
 	
 public:
-	
+	UFUNCTION()
+	void ShowHideCharacter(bool Hide);
+
 };

@@ -31,7 +31,9 @@
 #include "../SkillActor/Rock.h"
 #include "../Widget/InventoryWidget.h"
 #include "../Widget/MainHUDWidget.h"
+#include "../Widget/FadeWidget.h"
 #include "../Quest/BaseQuest.h"
+#include "../PlayerController/MeleePlayerController.h"
 
 
 ABaseCharacter::ABaseCharacter()
@@ -81,6 +83,7 @@ ABaseCharacter::ABaseCharacter()
 	MouseSensitivity = 25.f;
 	bHitFront = false;
 	bAltPressed = false;
+	RespawnTime = 5.f;
 
     ResetCombat();
 }
@@ -421,34 +424,78 @@ void ABaseCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 �
 
 void ABaseCharacter::Dead()
 {
-	EnableRagdoll();
-	ApplyHitReactionPhysicsVelocity(2000.f);
-	if(CombatCompo && CombatCompo->GetEquippedWeapon())
+	AMeleePlayerController* PC = Cast<AMeleePlayerController>(GetController());
+	if(PC)
 	{
-		CombatCompo->GetEquippedWeapon()->SimulateWeaponPhysics();
+		DeathWidget = CreateWidget<UFadeWidget>(GetWorld(), PC->GetDeathWidgetClass());
+		if(DeathWidget)
+		{
+			DeathWidget->AddToViewport();
+		}
 	}
+	
+	if(GetCharacterMovement())
+	{
+		GetCharacterMovement()->Deactivate();
+	}
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+	if(DeathMontage && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(DeathMontage);
+	}
+	
 	GetWorld()->GetTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ThisClass::Respawn, RespawnTime);
 }
 
-void ABaseCharacter::EnableRagdoll()
+void ABaseCharacter::DestroyDead()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	FAttachmentTransformRules Rules = FAttachmentTransformRules::KeepWorldTransform;
-	CameraBoom->AttachToComponent(GetMesh(), Rules, PelvisBoneName);
-	CameraBoom->bDoCollisionTest = false;
-	GetMesh()->SetCollisionProfileName(TEXT("ragdoll"));
-	GetMesh()->SetAllBodiesBelowSimulatePhysics(PelvisBoneName, true);
-	GetMesh()->SetAllBodiesBelowPhysicsBlendWeight(PelvisBoneName, 1.f);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	if(CombatCompo && Cast<ADualWeapon>(CombatCompo->GetEquippedWeapon()))
+	{
+		Cast<ADualWeapon>(CombatCompo->GetEquippedWeapon())->ShowHideCharacter(false);
+	}
 	
 }
 
-void ABaseCharacter::ApplyHitReactionPhysicsVelocity(float InitSpeed)
+void ABaseCharacter::Respawn()
 {
-	const FVector NewVel = GetActorForwardVector() * (InitSpeed * -1.f);
+	FVector Loc = FVector(-16455.0, -15790.0, 734.374246);
+	SetActorLocation(Loc);
+	if(StateManagerComp && TargetingComp && StatComp)
+	{
+		StateManagerComp->SetCurrentState(ECurrentState::NOTHING);
 	
-	GetMesh()->SetPhysicsLinearVelocity(NewVel, false, PelvisBoneName);
+		TargetingComp->DisableLockOn();
+		StatComp->SetCurrentStatValue(EStats::HP, StatComp->GetMaxValue(EStats::HP) * 0.3);
+		StatComp->SetCurrentStatValue(EStats::STAMINA, StatComp->GetMaxValue(EStats::STAMINA) * 0.3);
+	}
+	if(Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetIsDead(false);
+	}
+	
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
+	if(GetCharacterMovement())
+	{
+		GetCharacterMovement()->Activate();
+	}
+	if(CombatCompo && Cast<ADualWeapon>(CombatCompo->GetEquippedWeapon()))
+	{
+		Cast<ADualWeapon>(CombatCompo->GetEquippedWeapon())->ShowHideCharacter(true);
+	}
+	if(DeathWidget)
+	{
+		DeathWidget->RemoveFromParent();
+	}
+}
+
+float ABaseCharacter::GetRemainRespawnTime()
+{
+	if(StateManagerComp && (StateManagerComp->GetCurrentState() != ECurrentState::DEAD)) return 0.f;
+	
+	return GetWorld()->GetTimerManager().GetTimerRemaining(RespawnTimerHandle);
 }
 
 void ABaseCharacter::Test()
@@ -469,15 +516,6 @@ bool ABaseCharacter::CanRecieveDamage()
 		return true;
 	else 
 		return false;
-}
-
-void ABaseCharacter::DestroyDead()
-{
-	if(CombatCompo && CombatCompo->GetEquippedWeapon())
-	{
-		CombatCompo->GetEquippedWeapon()->Destroy();
-	}
-	Destroy();
 }
 
 void ABaseCharacter::CharacterStateBegin(ECurrentState State)

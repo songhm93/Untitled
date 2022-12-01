@@ -25,8 +25,8 @@ public:
 	FOnUltimateImpact OnUltimateImpact;
 	UPROPERTY(BlueprintAssignable, Category = "Delegate")
 	FOnDodge OnDodge;
-private:
 	
+private:
 	UFUNCTION()
 	void AnimNotify_Equip();
 
@@ -51,6 +51,9 @@ private:
 	UFUNCTION()
 	void AnimNotify_UltimateImpact();
 
+	UFUNCTION()
+	void AnimNotify_DeathAnimComplete();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Speed;
 
@@ -66,9 +69,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float Direction;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	bool bIsDead;
 public: //set
 	FORCEINLINE void SetCombatState(bool Boolean) { bCombatState = Boolean; }
-	
+	FORCEINLINE void SetIsDead(bool Boolean) { bIsDead = Boolean; }
 public:
 	UFUNCTION()
 	void SetWeaponType(EWeaponType Type);

@@ -27,6 +27,7 @@ class ADualWeapon;
 class UInventoryComponent;
 class UMainHUDWidget;
 class UGetItemWidget;
+class UFadeWidget;
 class UQuestLogComponent;
 
 UCLASS(config=Game)
@@ -106,10 +107,6 @@ private:
 
 	void Dead();
 
-	void EnableRagdoll();
-
-	void ApplyHitReactionPhysicsVelocity(float InitSpeed);
-
 	void DestroyDead();
 
 	void ToggleLockOn();
@@ -137,6 +134,11 @@ private:
 	void AltPressed();
 
 	void AltReleased();
+
+	void Respawn();
+
+	UFUNCTION(BlueprintPure)
+	float GetRemainRespawnTime();
 
 	UFUNCTION(BlueprintCallable)
 	bool CanExecuteSkill();
@@ -177,6 +179,9 @@ private:
 	UAnimMontage* HitReactBackMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DeathMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* KnockdownFrontMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
@@ -209,6 +214,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UQuestLogComponent* QuestLogComp;
 
+	UPROPERTY()
+	UFadeWidget* DeathWidget;
+
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	bool bAltPressed;
 
@@ -231,6 +239,10 @@ private:
 	bool bHitFront; //맞았을 때 때린 캐릭터가 내 앞에서 때렸는지?
 
 	bool bLeftClicked;
+
+	FTimerHandle RespawnTimerHandle;
+
+	float RespawnTime;
 	
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

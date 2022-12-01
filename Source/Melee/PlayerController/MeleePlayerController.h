@@ -15,6 +15,7 @@ class ABaseCharacter;
 class UGetItemWidget;
 class UMerchantWidget;
 class UStatsComponent;
+class UFadeWidget;
 
 USTRUCT()
 struct FGetItemQueue
@@ -86,6 +87,9 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UGetItemWidget> GetItemWidgetClass;
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UFadeWidget> DeathWidgetClass;
+
 	bool bLeftClickIsPressed;
 
 	float LeftClickTime;
@@ -108,6 +112,7 @@ private:
 
 public:
 	FORCEINLINE TSubclassOf<UMerchantWidget> GetMerchantWidgetClass() const { return MerchantWidgetClass; }
+	FORCEINLINE TSubclassOf<UFadeWidget> GetDeathWidgetClass() const { return DeathWidgetClass; }
 
 public:
 	FORCEINLINE void SetMerchantWidget(UMerchantWidget* Widget) { MerchantWidget = Widget; }
