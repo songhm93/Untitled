@@ -51,6 +51,8 @@ void UStateManagerComponent::SetCurrentState(ECurrentState State)
 		OnStateBegin.Broadcast(CurrentState);
 		if(CurrentState == ECurrentState::DEAD)
 			ShouldRegen.ExecuteIfBound(false);
+		else
+			ShouldRegen.ExecuteIfBound(true);
 	}
 }
 
@@ -126,8 +128,29 @@ void UStateManagerComponent::SetPotionCooldown(bool IsHPPotion)
 	{
 		IsStaminaPotionCooldown = true;
 		PotionCooldownDelegate.BindUFunction(this, FName("PotionCooldownComplete"), IsHPPotion);
-		GetWorld()->GetTimerManager().SetTimer(HPPotionTimerHandle, PotionCooldownDelegate, IsStaminaPotionCooldown, false);
+		GetWorld()->GetTimerManager().SetTimer(StaminaPotionTimerHandle, PotionCooldownDelegate, StaminaPotionCooldownTime, false);
 	}
+}
+
+float UStateManagerComponent::GetHPPotionCurrentCooldownTime()
+{
+	if(IsHPPotionCooldown)
+		return GetWorld()->GetTimerManager().GetTimerRemaining(HPPotionTimerHandle);
+	return 0.f;
+}
+
+float UStateManagerComponent::GetStaminaPotionCurrentCooldownTime()
+{
+	if(IsStaminaPotionCooldown)
+		return GetWorld()->GetTimerManager().GetTimerRemaining(StaminaPotionTimerHandle);
+	return 0.f;
+}
+
+float UStateManagerComponent::GetDodgeCurrentCooldownTime()
+{
+	if(IsDodgeCooldown)
+		return GetWorld()->GetTimerManager().GetTimerRemaining(DodgeTimerHandle);
+	return 0.f;
 }
 
 void UStateManagerComponent::PotionCooldownComplete(bool IsHPPotion)

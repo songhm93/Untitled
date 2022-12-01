@@ -8,6 +8,7 @@
 DECLARE_DELEGATE(FOnImpact);
 DECLARE_DELEGATE(FOnUltimateComplete);
 DECLARE_DELEGATE(FOnUltimateImpact);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDodge);
 
 class ABaseCharacter;
 
@@ -22,6 +23,8 @@ public:
 	FOnImpact OnImpact;
 	FOnUltimateComplete OnUltimateComplete;
 	FOnUltimateImpact OnUltimateImpact;
+	UPROPERTY(BlueprintAssignable, Category = "Delegate")
+	FOnDodge OnDodge;
 private:
 	
 	UFUNCTION()

@@ -14,7 +14,7 @@ APortal::APortal()
 	SM2->SetupAttachment(SM1);
 
 	FadeTime = 1.5f;
-
+	RemoveFadeWidgetTime = 1.f;
 }
 
 void APortal::BeginPlay()
@@ -48,11 +48,20 @@ void APortal::Interact(AActor* Caller)
 	}
 }
 
+void APortal::RemoveFadeWidget()
+{
+	if(FadeWidget)
+	{
+		FadeWidget->RemoveFromParent();
+	}
+}
+
 void APortal::SwitchingLocation(AActor* Caller, TArray<AActor*> OutActor)
 {
 	if(FadeWidget)
 	{
 		FadeWidget->Fade(true); //fade in
+		GetWorld()->GetTimerManager().SetTimer(RemoveFadeWidgetTimerHandle, this, &ThisClass::RemoveFadeWidget, RemoveFadeWidgetTime);
 	}
 	switch(Identify)
 	{

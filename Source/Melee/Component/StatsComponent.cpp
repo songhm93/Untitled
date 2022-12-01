@@ -152,7 +152,7 @@ void UStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpRes
 {
 	if(Success)
 	{
-        FPlayerInfo PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
+        FPlayerInfoDB PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
 		SetCurrentStatValue(EStats::HP, PlayerInfo.Currenthp);
 		SetCurrentStatValue(EStats::STAMINA, PlayerInfo.Currentstamina);
 		SetCurrentStatValue(EStats::ATK, PlayerInfo.Atk);
@@ -166,9 +166,9 @@ void UStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpRes
 	}
 }
 
-FPlayerInfo UStatsComponent::ConvertToPlayerInfo(const FString& ResponseString)
+FPlayerInfoDB UStatsComponent::ConvertToPlayerInfo(const FString& ResponseString)
 {
-	FPlayerInfo PlayerInfo;
+	FPlayerInfoDB PlayerInfo;
     if(!ResponseString.Contains("timestamp")) //테이블에 해당하는 PID가 있을 때
     {
         FJsonObjectConverter::JsonObjectStringToUStruct(*ResponseString, &PlayerInfo, 0, 0);
@@ -189,4 +189,80 @@ float UStatsComponent::GetMaxValue(EStats Stat)
 void UStatsComponent::ShouldRegen(bool ShouldRegen)
 {
 	bShouldRegen = ShouldRegen;	
+}
+
+void UStatsComponent::SetExpStatValue(EExpStats ExpStat, float Value)
+{
+	ExpStats.Add(ExpStat, Value);
+}
+
+void UStatsComponent::CalcMaxExp()
+{
+	int32 CurrentLevel = ExpStats[EExpStats::LEVEL];
+	int32 NextLevel = CurrentLevel + 1;
+	int32 MaxExp = (NextLevel - 1) * (NextLevel - 1) * (NextLevel * NextLevel - (13 * NextLevel) + 82);
+
+	
+	ExpStats.Add(EExpStats::MAX_EXP, MaxExp);
+}
+
+float UStatsComponent::GetExpStatValue(EExpStats Stat)
+{
+	return ExpStats[Stat];
+}
+
+void UStatsComponent::PlusExp(float Value)
+{
+	int32 CurrentExp = ExpStats[EExpStats::CURRENT_EXP];
+	int32 MaxExp = ExpStats[EExpStats::MAX_EXP];
+	
+	if(MaxExp > (CurrentExp + Value)) //레벨업 아님
+	{
+		ExpStats[EExpStats::CURRENT_EXP] += Value;
+	}
+	else //레벨업
+	{
+		int32 RemainExp = CurrentExp + Value - MaxExp;
+		ExpStats[EExpStats::CURRENT_EXP] = RemainExp;
+		ExpStats[EExpStats::LEVEL] += 1;
+		CalcMaxExp();
+		//체력증가? 성장체력? 보류
+		CurrentStats[EStats::SP] += 1;
+
+		OnSavePlayerData.ExecuteIfBound(); //db update
+	}
+}
+
+void UStatsComponent::UpdateSkillLevel(int32 SkillNum, int32 WeaponId)
+{
+	//db 업뎃
+	FPlayerSkillInfoDB PlayerSkillInfo;
+	PlayerSkillInfo.Pid = 9824;
+	PlayerSkillInfo.Skillnum = SkillNum;
+	PlayerSkillInfo.Weaponid = WeaponId;
+
+	if(Http)
+    {
+        TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+
+        Request->SetURL("http://localhost:8080/api/SkillInfo/SkillUp");
+        Request->SetVerb("PUT");
+        Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+        
+        FString JsonString;
+        FJsonObjectConverter::UStructToJsonObjectString(PlayerSkillInfo, JsonString);
+        Request->SetContentAsString(JsonString);
+
+        Request->ProcessRequest();
+
+
+		FUpdateSPDB UpdateSPDB;
+		UpdateSPDB.Pid = 9824;
+		Request->SetURL("http://localhost:8080/api/PlayerInfo/MinusSP");
+		FJsonObjectConverter::UStructToJsonObjectString(UpdateSPDB, JsonString);
+		Request->SetContentAsString(JsonString);
+
+        Request->ProcessRequest();
+    }
+	
 }

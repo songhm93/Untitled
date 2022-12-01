@@ -6,7 +6,7 @@
 
 
 USTRUCT(BlueprintType)
-struct FPlayerInfo
+struct FPlayerInfoDB
 {
 	GENERATED_BODY()
 	UPROPERTY()
@@ -39,10 +39,12 @@ struct FPlayerInfo
 	float Def = 0.f;
 	UPROPERTY()
 	int32 Gold = 0.f;
+	UPROPERTY()
+	int32 Sp = 0.f;
 };
 
 USTRUCT(BlueprintType)
-struct FMonsterInfo
+struct FMonsterInfoDB
 {
 	GENERATED_BODY()
 	UPROPERTY()
@@ -56,11 +58,11 @@ struct FMonsterInfo
 	UPROPERTY()
 	float Def = 0.f;
 	UPROPERTY()
-	FString Itemid = TEXT("");
+	int32 Itemid = 0;
 	UPROPERTY()
-	FString Itemid2 = TEXT("");
+	int32 Itemid2 = 0;
 	UPROPERTY()
-	FString Itemid3 = TEXT("");
+	int32 Itemid3 = 0;
 	UPROPERTY()
 	float Exp = 0.f;
 	UPROPERTY()
@@ -69,7 +71,7 @@ struct FMonsterInfo
 };
 
 USTRUCT(BlueprintType)
-struct FPlayerInventory
+struct FPlayerInventoryDB
 {
 	GENERATED_BODY()
 	UPROPERTY()
@@ -83,6 +85,26 @@ struct FPlayerInventory
 	UPROPERTY()
 	bool Equipped = false;
 	
+};
+
+USTRUCT(BlueprintType)
+struct FPlayerSkillInfoDB
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	int32 Pid = 0;
+	UPROPERTY()
+	int32 Skillnum = 0;
+	UPROPERTY()
+	int32 Weaponid = 0;
+};
+
+USTRUCT(BlueprintType)
+struct FUpdateSPDB
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	int32 Pid = 0;
 };
 
 UINTERFACE(MinimalAPI)

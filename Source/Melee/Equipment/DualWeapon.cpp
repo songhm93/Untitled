@@ -3,6 +3,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Blueprint/UserWidget.h"
 
+
 #include "../Type/Types.h"
 #include "../PlayerCharacter/BaseCharacter.h"
 #include "../PlayerCharacter/MeleeAnimInstance.h"
@@ -58,6 +59,8 @@ ADualWeapon::ADualWeapon()
 
     BlinkShowCharacterTime = 1.5f; //1.5초 후 캐릭터, 무기 보이게.
     BlinkMoveTime = 1.f; //1초 후 순간이동
+
+    Http = &FHttpModule::Get();
 }
 
 void ADualWeapon::Tick(float DeltaTime)
@@ -88,6 +91,7 @@ void ADualWeapon::BeginPlay()
     {
         Cast<UMeleeAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance())->OnUltimateComplete.BindUObject(this, &ThisClass::UltimateComplete);
     }
+    InitSkillInfo();
 }
 
 void ADualWeapon::Skill1()
@@ -370,4 +374,25 @@ void ADualWeapon::BlinkDestroyShadow()
     if(BlinkShadowBurstParticle)
         UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BlinkShadowBurstParticle, ShadowTransform);
     bBlinkReturnTimerRunning = false;
+}
+
+void ADualWeapon::InitSkillInfo()
+{
+    FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/WeaponSkillInfo"));
+	UDataTable* DualWeaponSkillInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+	if(DualWeaponSkillInfoTableObject)
+	{
+		FSkillInfoTable* SkillInfoRow = nullptr;
+        for(int i = 1; i < 5; ++i)
+        {
+            FString RowName = FString::Printf(TEXT("%d"), WeaponId);
+            RowName.Append(FString::FromInt(i));
+            SkillInfoRow = DualWeaponSkillInfoTableObject->FindRow<FSkillInfoTable>(FName(RowName), TEXT(""));
+            if(SkillInfoRow)
+            {
+                SkillInfo.Add(i, FSkillInfo(SkillInfoRow->SkillIcon, SkillInfoRow->SkillName));
+            }
+        }
+	}
+    Super::InitSkillInfo();
 }

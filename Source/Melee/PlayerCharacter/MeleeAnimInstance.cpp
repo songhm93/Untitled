@@ -65,6 +65,8 @@ void UMeleeAnimInstance::AnimNotify_DodgeComplete()
             Character->ResetCombat();
 
         Character->GetStateManagerComp()->SetDodgeCoolDown();
+        if(OnDodge.IsBound())
+			OnDodge.Broadcast();
     }
 }
 

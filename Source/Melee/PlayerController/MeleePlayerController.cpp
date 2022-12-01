@@ -43,7 +43,14 @@ void AMeleePlayerController::BeginPlay()
 {
     Super::BeginPlay();
     
-
+    if(BaseCharacter)
+    {
+        StatComp = BaseCharacter->GetStatComp();
+        if(StatComp)
+        {
+            StatComp->OnSavePlayerData.BindUObject(this, &ThisClass::SaveData);
+        }
+    }
     
 }
 
@@ -63,8 +70,7 @@ void AMeleePlayerController::AttackButtonPressed()
 void AMeleePlayerController::AttackButtonReleased() 
 {
     bLeftClickIsPressed = false; 
-    //if(BaseCharacter && !bCharged)
-        //BaseCharacter->LightAttack();
+
     if(!bCharged)
         OnLightAttack.ExecuteIfBound();
     bCharged = false;
@@ -126,7 +132,7 @@ void AMeleePlayerController::OnPlayerInfoRequestComplete(FHttpRequestPtr Request
 	FVector SpawnLocaton = FVector(1455.f, 1975.f, 400.f);
     if(Success) //요청 성공.
 	{
-        FPlayerInfo PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
+        FPlayerInfoDB PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
         if(PlayerInfo.Isvalid)
         {
             SpawnLocaton = FVector(PlayerInfo.Xcoord, PlayerInfo.Ycoord, PlayerInfo.Zcoord);
@@ -137,6 +143,10 @@ void AMeleePlayerController::OnPlayerInfoRequestComplete(FHttpRequestPtr Request
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::STAMINA, PlayerInfo.Currentstamina);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::ATK, PlayerInfo.Atk);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::DEF, PlayerInfo.Def);
+                BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::SP, PlayerInfo.Sp);
+                BaseCharacter->GetStatComp()->SetExpStatValue(EExpStats::LEVEL, PlayerInfo.Level);
+                BaseCharacter->GetStatComp()->SetExpStatValue(EExpStats::CURRENT_EXP, PlayerInfo.Currentexp);
+                BaseCharacter->GetStatComp()->CalcMaxExp();
                 BaseCharacter->GetInventoryComp()->InitGold(PlayerInfo.Gold);
             }
         }
@@ -170,7 +180,7 @@ void AMeleePlayerController::OnInventoryRequestComplete(FHttpRequestPtr Request,
 {
     if(Success)
     {
-        TArray<FPlayerInventory> PlayerInventory = ConvertToPlayerInventory(Response->GetContentAsString());
+        TArray<FPlayerInventoryDB> PlayerInventory = ConvertToPlayerInventory(Response->GetContentAsString());
         if(!PlayerInventory.IsEmpty())
         {
             if(BaseCharacter && BaseCharacter->GetInventoryComp())
@@ -185,9 +195,9 @@ void AMeleePlayerController::OnInventoryRequestComplete(FHttpRequestPtr Request,
     }
 }
 
-FPlayerInfo AMeleePlayerController::ConvertToPlayerInfo(const FString& ResponseString)
+FPlayerInfoDB AMeleePlayerController::ConvertToPlayerInfo(const FString& ResponseString)
 {
-    FPlayerInfo PlayerInfo;
+    FPlayerInfoDB PlayerInfo;
     if(!ResponseString.Contains("timestamp")) //테이블에 해당하는 PID가 있을 때
     {
         FJsonObjectConverter::JsonObjectStringToUStruct(*ResponseString, &PlayerInfo, 0, 0);
@@ -196,9 +206,9 @@ FPlayerInfo AMeleePlayerController::ConvertToPlayerInfo(const FString& ResponseS
     return PlayerInfo;
 }
 
-TArray<FPlayerInventory> AMeleePlayerController::ConvertToPlayerInventory(const FString& ResponseString)
+TArray<FPlayerInventoryDB> AMeleePlayerController::ConvertToPlayerInventory(const FString& ResponseString)
 {
-    TArray<FPlayerInventory> PlayerInventory;
+    TArray<FPlayerInventoryDB> PlayerInventory;
     if(!ResponseString.Contains("timestamp"))
     {
         FJsonObjectConverter::JsonArrayStringToUStruct(*ResponseString, &PlayerInventory, 0, 0);
@@ -209,7 +219,7 @@ TArray<FPlayerInventory> AMeleePlayerController::ConvertToPlayerInventory(const 
 
 void AMeleePlayerController::SaveData()
 {
-    FPlayerInfo PlayerInfo;
+    FPlayerInfoDB PlayerInfo;
     PlayerInfo.Pid = 9824;
     if(BaseCharacter && BaseCharacter->GetStatComp() &&  BaseCharacter->GetInventoryComp())
     {
@@ -221,12 +231,13 @@ void AMeleePlayerController::SaveData()
         PlayerInfo.Xcoord = BaseCharacter->GetActorLocation().X;
         PlayerInfo.Ycoord = BaseCharacter->GetActorLocation().Y;
         PlayerInfo.Zcoord = BaseCharacter->GetActorLocation().Z;
-        PlayerInfo.Level = 1;
-        PlayerInfo.Currentexp = 0.f;
-        PlayerInfo.Maxexp = 100.f;
+        PlayerInfo.Level = BaseCharacter->GetStatComp()->GetExpStatValue(EExpStats::LEVEL);
+        PlayerInfo.Currentexp = BaseCharacter->GetStatComp()->GetExpStatValue(EExpStats::CURRENT_EXP);
+        PlayerInfo.Maxexp = BaseCharacter->GetStatComp()->GetExpStatValue(EExpStats::MAX_EXP);
         PlayerInfo.Atk = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::ATK);
         PlayerInfo.Def = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::DEF);
         PlayerInfo.Gold = BaseCharacter->GetInventoryComp()->GetGold();
+        PlayerInfo.Sp = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::SP);
     }
 
     if(Http)

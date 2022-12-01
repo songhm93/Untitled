@@ -31,7 +31,7 @@ void APreemptiveMonster::AgroSphereBeginOverlap(
 {
 	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 
-	if(GetStateManagerComp()->GetCurrentCombatState() == ECurrentCombatState::COMBAT_STATE) return;
+	if((GetStateManagerComp()->GetCurrentCombatState() == ECurrentCombatState::COMBAT_STATE) || (GetStateManagerComp()->GetCurrentState() == ECurrentState::DEAD)) return;
 	
 	if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)) && AIController)
 	{
@@ -52,6 +52,8 @@ void APreemptiveMonster::AgroSphereEndOverlap(
 		if(AIController)
 		{
 			GetWorldTimerManager().SetTimer(AgroCancelTimerHandle, this, &ThisClass::AgroCancel, AgroCancelTime);
+			
+			GetWorldTimerManager().SetTimer(AgroCancelTimerHandle, this, &ThisClass::AreaAgroCancel, AreaAgroCancelTime);
 		}
 	}
 }

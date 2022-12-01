@@ -3,7 +3,7 @@
 ABaseQuest::ABaseQuest()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
+	QuestStatus = EQuestStatus::AVAILABLE;
 }
 
 void ABaseQuest::BeginPlay()
@@ -17,4 +17,3 @@ void ABaseQuest::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-

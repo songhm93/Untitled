@@ -3,13 +3,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Http.h"
-
 #include "../Type/Stats.h"
 #include "../Interface/DBInterface.h"
 #include "StatsComponent.generated.h"
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlusCurrentStatValue, EStats, Stat, float, Value);
+DECLARE_DELEGATE(FOnSavePlayerData);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UStatsComponent : public UActorComponent
@@ -21,6 +21,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UPROPERTY(BlueprintAssignable, Category = "Delegate")
 	FOnPlusCurrentStatValue OnPlusCurrentStatValue;
+	FOnSavePlayerData OnSavePlayerData;
 	virtual void InitStats();
 	virtual void InitDBInfo();
 
@@ -31,7 +32,7 @@ protected:
 	bool CurrentCompareMax(EStats Stat); //current 값과 max값을 비교해서 current가 max면 채울 필요없게. 아예 트래킹 차단.
 	UFUNCTION()
 	void ShouldRegen(bool ShouldRegen);
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TMap<EStats, float> CurrentStats;
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TMap<EStats, float> MaxStats; 
@@ -41,11 +42,13 @@ protected:
 	float StaminaRegenRate;
 	float HPRegenRate;
 	FHttpModule* Http;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	TMap<EExpStats, float> ExpStats;
+	
 private:
 	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
-	FPlayerInfo ConvertToPlayerInfo(const FString& ResponseString);
-
+	FPlayerInfoDB ConvertToPlayerInfo(const FString& ResponseString);
+	
 public: //get	
 
 public: //set
@@ -60,6 +63,10 @@ public:
 	float GetMaxValue(EStats Stat);
 	UFUNCTION()
 	void PlusCurrentStatValue(EStats Stat, float Value);
-	
-		
+	void SetExpStatValue(EExpStats ExpStat, float Value);
+	void CalcMaxExp();
+	float GetExpStatValue(EExpStats Stat);
+	void PlusExp(float Value);
+	UFUNCTION(BlueprintCallable)
+	void UpdateSkillLevel(int32 SkillNum, int32 WeaponId);
 };

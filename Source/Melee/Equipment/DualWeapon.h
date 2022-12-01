@@ -4,7 +4,6 @@
 #include "BaseWeapon.h"
 #include "DualWeapon.generated.h"
 
-
 DECLARE_DELEGATE_RetVal(bool, FGetSkillTimerRunning);
 DECLARE_DELEGATE_TwoParams(FSetSkillATK, float, FHitResult);
 
@@ -13,6 +12,13 @@ class UParticleSystem;
 class UParticleSystemComponent;
 class AFlameSkill;
 class UUserWidget;
+class UTexture2D;
+
+
+
+
+
+
 
 UCLASS()
 class MELEE_API ADualWeapon : public ABaseWeapon
@@ -29,6 +35,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	FGetSkillTimerRunning GetSkillTimerRunning;
 	FSetSkillATK SetSkillATK;
+
+protected:
+	virtual void InitSkillInfo();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
@@ -136,6 +145,7 @@ private:
 	void BlinkDestroyShadow();
 
 	
+
 public: //get
 	FORCEINLINE UStaticMeshComponent* GetDualSwordStaticMeshComp() const { return DualSwordStaticMeshComp;}
 	FORCEINLINE FName GetSecondWeaponHandSocket() const { return SecondWeaponHandSocket; }
@@ -143,4 +153,5 @@ public: //get
 	FORCEINLINE bool GetbBlinkReturnTimerRunning() const { return bBlinkReturnTimerRunning; }
 	
 public:
+	
 };

@@ -41,7 +41,7 @@ void AFlameSkill::Tick(float DeltaTime)
 			{
 				for(auto DamagedActor : DamageActor)
 				{
-					UGameplayStatics::ApplyDamage(DamagedActor, 3.5f, Cast<APawn>(GetOwner())->GetController(), this, UDamageType::StaticClass());
+					UGameplayStatics::ApplyDamage(DamagedActor, 3.5f, Cast<APawn>(GetOwner())->GetController(), GetOwner(), UDamageType::StaticClass());
 				}
 				
 			}

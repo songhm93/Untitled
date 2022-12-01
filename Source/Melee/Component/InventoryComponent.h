@@ -59,7 +59,7 @@ private:
 	int32 TotalSlotNum; //인벤토리 슬롯 갯수
 
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TArray<FPlayerInventory> PlayerInventory; //PlayerInventory PID로 가져온 DB 배열
+	TArray<FPlayerInventoryDB> PlayerInventory; //PlayerInventory PID로 가져온 DB 배열
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 MaxStackSize; //쌓이는 아이템, 얼마나 쌓이는 지.
@@ -95,13 +95,13 @@ public:
 	FORCEINLINE bool GetIsVisible() const { return bIsVisible; }
 	FORCEINLINE int32 GetMaxStackSize() const { return MaxStackSize; }
 	FORCEINLINE int32 GetGold() const { return Gold; }
-
+	
 public:
 	FORCEINLINE void SetIsVisible(bool Boolean) { bIsVisible = Boolean; }
 	FORCEINLINE void InitGold(int32 Value) { Gold = Value; }
 
 public:
-	void InitInventory(TArray<FPlayerInventory> Inventory);
+	void InitInventory(TArray<FPlayerInventoryDB> Inventory);
 	void VisibleInventory(bool Visible);
 	UFUNCTION(BlueprintCallable)
 	void UseItemAtIndex(int32 SlotIndex);

@@ -60,6 +60,12 @@ private:
 
 	UFUNCTION()
 	void SwitchingLocation(AActor* Caller, TArray<AActor*> OutActor);
+
+	FTimerHandle RemoveFadeWidgetTimerHandle;
+
+	float RemoveFadeWidgetTime;
+
+	void RemoveFadeWidget();
 public:
 	FORCEINLINE EPortalIdentify GetIdentify() const { return Identify; }
 

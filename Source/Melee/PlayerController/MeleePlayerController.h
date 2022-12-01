@@ -14,6 +14,7 @@ DECLARE_DELEGATE(FOnChargedAttack);
 class ABaseCharacter;
 class UGetItemWidget;
 class UMerchantWidget;
+class UStatsComponent;
 
 USTRUCT()
 struct FGetItemQueue
@@ -56,8 +57,8 @@ protected:
 	FHttpModule* Http;
 	void OnPlayerInfoRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
 	void OnInventoryRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
-	FPlayerInfo ConvertToPlayerInfo(const FString& ResponseString);
-	TArray<FPlayerInventory> ConvertToPlayerInventory(const FString& ResponseString);
+	FPlayerInfoDB ConvertToPlayerInfo(const FString& ResponseString);
+	TArray<FPlayerInventoryDB> ConvertToPlayerInventory(const FString& ResponseString);
 
 private:
 	void AttackButtonPressed();
@@ -69,6 +70,9 @@ private:
 	void TrackingSprint();
 
 	void GetItemWidgetScrollUp();
+
+	UPROPERTY()
+	UStatsComponent* StatComp;
 
 	UPROPERTY()
 	TArray<UGetItemWidget*> GetItemWidgetList;

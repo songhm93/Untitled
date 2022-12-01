@@ -26,10 +26,12 @@
 #include "../Component/StatsComponent.h"
 #include "../Component/TargetingComponent.h"
 #include "../Component/InventoryComponent.h"
+#include "../Component/QuestLogComponent.h"
 #include "../Item/MasterItem.h"
 #include "../SkillActor/Rock.h"
 #include "../Widget/InventoryWidget.h"
 #include "../Widget/MainHUDWidget.h"
+#include "../Quest/BaseQuest.h"
 
 
 ABaseCharacter::ABaseCharacter()
@@ -63,6 +65,7 @@ ABaseCharacter::ABaseCharacter()
 	TargetingComp = CreateDefaultSubobject<UTargetingComponent>(TEXT("TargetingComp"));
 	LockOnWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidget"));
 	InventoryComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
+	QuestLogComp = CreateDefaultSubobject<UQuestLogComponent>(TEXT("QuestLogComp"));
 	
 	bLeftClicked = false;
 	
@@ -146,16 +149,15 @@ void ABaseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::SprintButtonReleased);
 	PlayerInputComponent->BindAction("HeavyAttack", IE_Pressed, this, &ThisClass::HeavyAttack); //삭제예정
 	PlayerInputComponent->BindAction("ToggleLockOn", IE_Pressed, this, &ThisClass::ToggleLockOn);
-	PlayerInputComponent->BindAction("Skill1", IE_Pressed, this, &ThisClass::Skill1ButtonPressed);
-	PlayerInputComponent->BindAction("Skill2", IE_Pressed, this, &ThisClass::Skill2ButtonPressed);
-	PlayerInputComponent->BindAction("Skill3", IE_Pressed, this, &ThisClass::Skill3ButtonPressed);
-	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ThisClass::SkillUltimateButtonPressed);
+	PlayerInputComponent->BindAction("Skill1", IE_Pressed, this, &ThisClass::HotkeySlot1ButtonPressed);
+	PlayerInputComponent->BindAction("Skill2", IE_Pressed, this, &ThisClass::HotkeySlot2ButtonPressed);
+	PlayerInputComponent->BindAction("Skill3", IE_Pressed, this, &ThisClass::HotkeySlot3ButtonPressed);
+	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ThisClass::HotkeySlot4ButtonPressed);
 	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &ThisClass::LeftClickPressed);
 	PlayerInputComponent->BindAction("LeftClick", IE_Released, this, &ThisClass::LeftClickReleased);
-	PlayerInputComponent->BindAction("Inventory", IE_Released, this, &ThisClass::ToggleInventory);
+	PlayerInputComponent->BindAction("Inventory", IE_Pressed, this, &ThisClass::ToggleInventory);
 	PlayerInputComponent->BindAction("Alt", IE_Pressed, this, &ThisClass::AltPressed);
 	PlayerInputComponent->BindAction("Alt", IE_Released, this, &ThisClass::AltReleased);
-	PlayerInputComponent->BindAction("RightClick", IE_Pressed, this, &ThisClass::RightClickPressed);
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 
@@ -381,8 +383,8 @@ void ABaseCharacter::ReceiveDamage(
 	AController* InstigatedBy, 
 	AActor* DamageCauser)
 {
+	
 	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DODGING) return;
-		
 	
 	if(InstigatedBy)
 	{
@@ -620,7 +622,9 @@ void ABaseCharacter::EquippedWeaponSpawn(int32 ItemId)
 			ABaseWeapon* Equipment = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClassRow->Weapon, GetActorTransform(), Params);
 
 			if(CombatCompo && Equipment)
-				CombatCompo->EquippedWeaponSpawn(Equipment);
+			{
+				CombatCompo->EquippedWeaponSpawn(Equipment, ItemId);
+			}
 		}
 	}
 }
@@ -729,44 +733,51 @@ void ABaseCharacter::CameraZoomInOut(float Rate)
 	
 }
 
-void ABaseCharacter::Skill1ButtonPressed()
+bool ABaseCharacter::CanExecuteSkill()
 {
 	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
 		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
 		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
-	if(Condition) return;
-	if(CombatCompo)
-		CombatCompo->Skill1();
+
+	return !Condition;
 }
 
-void ABaseCharacter::Skill2ButtonPressed()
+void ABaseCharacter::HotkeySlot1ButtonPressed() //Q
 {
-	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
-		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
-		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
-	if(Condition) return;
-	if(CombatCompo)
-		CombatCompo->Skill2();
+	
+	// if(Condition) return;
+	// if(CombatCompo)
+	// 	CombatCompo->Skill1();
 }
 
-void ABaseCharacter::Skill3ButtonPressed()
+void ABaseCharacter::HotkeySlot2ButtonPressed() //E
 {
-	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
-		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
-		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
-	if(Condition) return;
-	if(CombatCompo)											
-		CombatCompo->Skill3();								
+	// bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
+	// 	(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
+	// 	(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
+	// if(Condition) return;
+	// if(CombatCompo)
+	// 	CombatCompo->Skill2();
 }
 
-void ABaseCharacter::SkillUltimateButtonPressed()
+void ABaseCharacter::HotkeySlot3ButtonPressed() //R
 {
-	bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
-		(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
-		(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
-	if(Condition) return;
-	if(CombatCompo)
-		CombatCompo->SkillUltimate();
+	// bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
+	// 	(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
+	// 	(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
+	// if(Condition) return;
+	// if(CombatCompo)											
+	// 	CombatCompo->Skill3();								
+}
+
+void ABaseCharacter::HotkeySlot4ButtonPressed() //T 에 뭐가 등록되어있는지를 알아야함
+{
+	// bool Condition = StateManagerComp && ( GetMovementComponent()->IsFalling() ||
+	// 	(StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) ||
+	// 	(StateManagerComp->GetCurrentState() == ECurrentState::ATTACKING));
+	// if(Condition) return;
+	// if(CombatCompo)
+	// 	CombatCompo->SkillUltimate();
 }
 
 EPhysicalSurface ABaseCharacter::GetPhysicsSurface()
@@ -841,21 +852,29 @@ void ABaseCharacter::AltReleased()
 	bAltPressed = false;
 }
 
-void ABaseCharacter::RightClickPressed()
+int32 ABaseCharacter::DeathMob(int32 MId)
 {
-	if(StateManagerComp && StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
-
-	FHitResult HitResult;
-	
-	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
-	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-	CollisionObjectType.Add(Pawn);
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHitResultUnderCursorForObjects(CollisionObjectType, false, HitResult);
-	if(HitResult.bBlockingHit)
+	int32 CollectQuest = 0;
+	if(QuestLogComp)
 	{
-		if(TargetingComp && TargetingComp->IsMonster(HitResult.GetActor()))
-		{
-			TargetingComp->SetTargeting(HitResult.GetActor());
-		}
+		CollectQuest = QuestLogComp->CheckCollectQuest(MId); //true면 퀘스트인거
+	}
+	return CollectQuest;
+}
+
+void ABaseCharacter::PlusCollectCurrentNum(int32 Amount)
+{
+	if(QuestLogComp)
+	{
+		QuestLogComp->PlusCurrentNum(Amount);
+	}
+}
+
+void ABaseCharacter::AddExp(int32 Exp)
+{
+	if(StatComp && MainHUDWidget)
+	{
+		StatComp->PlusExp(Exp);
+		MainHUDWidget->GetExp(Exp);
 	}
 }

@@ -60,6 +60,8 @@ void APMMob::HPBarOnOff(bool Show)
 	{
 		if(Show)
 		{
+			if(GetWorldTimerManager().IsTimerActive(HideHPBarTimerHandle))
+				GetWorldTimerManager().ClearTimer(HideHPBarTimerHandle);
 			HPBarWidget->SetVisibility(Show);
 		}
 		else
@@ -73,6 +75,6 @@ void APMMob::Dead()
 {
 	Super::Dead();
 
-    if(HPBarWidget)
+	if(HPBarWidget)
 		HPBarWidget->SetVisibility(false);
 }

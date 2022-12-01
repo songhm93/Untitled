@@ -27,6 +27,21 @@ struct FSpecialATK
 
 };
 
+USTRUCT()
+struct FMonsterGives
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TArray<int32> ItemId;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	int32 Gold;
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	int32 Exp;
+};
+
+
+
 UCLASS()
 class MELEE_API UMonsterStatsComponent : public UStatsComponent
 {
@@ -44,16 +59,19 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Special", Meta = (AllowPrivateAccess = "true"))
 	FSpecialATK SATK;
+	
 
 private:
 	void UpdateCombatState(bool CombatState);
 
 	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
 
-	FMonsterInfo ConvertToMonsterInfo(const FString& ResponseString);
+	FMonsterInfoDB ConvertToMonsterInfo(const FString& ResponseString);
 
+	FMonsterGives MonsterGives;
 public: //get
 	FORCEINLINE FSpecialATK GetSpecialATK() const { return SATK; }
+	FORCEINLINE FMonsterGives GetMonsterGives() const { return MonsterGives; }
 
 public: //set
 	void SetSpecialATK(FSpecialATK ATK) { SATK = ATK; }

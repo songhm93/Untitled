@@ -60,7 +60,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if(bFirstSkillTimerRunning)
 	{
 		float Skill1Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
-		if(Skill1Remaning <= 0)
+		if(Skill1Remaning <= 0.f)
 		{
 			bFirstSkillTimerRunning = false;
 		}
@@ -69,7 +69,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if(bSecondSkillTimerRunning)
 	{
 		float Skill2Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
-		if(Skill2Remaning <= 0)
+		if(Skill2Remaning <= 0.f)
 		{
 			bSecondSkillTimerRunning = false;
 		}
@@ -78,7 +78,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if(bThirdSkillTimerRunning)
 	{
 		float Skill3Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
-		if(Skill3Remaning <= 0)
+		if(Skill3Remaning <= 0.f)
 		{
 			bThirdSkillTimerRunning = false;
 		}
@@ -87,11 +87,58 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if(bUltimateSkillTimerRunning)
 	{
 		float SkillUltimateRemaning = GetWorld()->GetTimerManager().GetTimerRemaining(UltimateSkillTimerHandle);
-		if(SkillUltimateRemaning <= 0)
+		if(SkillUltimateRemaning <= 0.f)
 		{
 			bUltimateSkillTimerRunning = false;
 		}
 	}
+}
+
+float UCombatComponent::GetSkillCurrentCooldownTime(int32 SkillNum)
+{
+	switch (SkillNum)
+	{
+	case 1:
+		if(bFirstSkillTimerRunning)
+			return GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
+		else
+			return 0.f;
+	case 2:
+		if(bSecondSkillTimerRunning)
+			return GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
+		else
+			return 0.f;
+	case 3:
+		if(bThirdSkillTimerRunning)
+			return GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
+		else
+			return 0.f;
+	case 4:
+		if(bUltimateSkillTimerRunning)
+			return GetWorld()->GetTimerManager().GetTimerRemaining(UltimateSkillTimerHandle);
+		else
+			return 0.f;
+	}
+	return 0.f;
+}
+
+float UCombatComponent::GetWeaponSkillCooldownTime(int32 SkillNum)
+{
+	if(EquippedWeapon)
+	{
+		switch (SkillNum)
+		{
+		case 1:
+			return EquippedWeapon->GetSkill1Cooldown();
+		case 2:
+			return EquippedWeapon->GetSkill2Cooldown();
+		case 3:
+			return EquippedWeapon->GetSkill3Cooldown();
+		case 4:
+			return EquippedWeapon->GetSkillUltimateCooldown();
+		}
+	}
+	return 0.f;
 }
 
 void UCombatComponent::OnEquipWeapon(ABaseWeapon* Equipment)
@@ -113,7 +160,7 @@ void UCombatComponent::OnEquipWeapon(ABaseWeapon* Equipment)
 	}
 }
 
-void UCombatComponent::EquippedWeaponSpawn(ABaseWeapon* Equipment)
+void UCombatComponent::EquippedWeaponSpawn(ABaseWeapon* Equipment, int32 WeaponId)
 {
 	if(Equipment)
 	{
@@ -505,6 +552,7 @@ void UCombatComponent::PerformDodge()
 		Cast<ACharacter>(GetOwner())->PlayAnimMontage(DodgeMontage);
 		OnUpdateCurrentStatValue.ExecuteIfBound(EStats::STAMINA, -(DodgeStaminaCost));
 		
+		
 	}
 }
 
@@ -580,7 +628,7 @@ void UCombatComponent::Skill1()
 {
 	if(bFirstSkillTimerRunning)
 	{
-		float Skill1Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
+		//float Skill1Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
 		
 		return;
 	}
@@ -599,7 +647,7 @@ void UCombatComponent::Skill2()
 {
 	if(bSecondSkillTimerRunning)
 	{
-		float Skill2Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
+		//float Skill2Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
 		
 		return;
 	}
@@ -618,7 +666,7 @@ void UCombatComponent::Skill3()
 {
 	if(bThirdSkillTimerRunning)
 	{
-		float Skill3Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
+		//float Skill3Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
 		
 		if(!Cast<ADualWeapon>(EquippedWeapon)) return; //DualWeapon만 해당
 	}
@@ -644,7 +692,7 @@ void UCombatComponent::SkillUltimate()
 {
 	if(bUltimateSkillTimerRunning)
 	{
-		float SkillUltimateRemaning = GetWorld()->GetTimerManager().GetTimerRemaining(UltimateSkillTimerHandle);
+		//float SkillUltimateRemaning = GetWorld()->GetTimerManager().GetTimerRemaining(UltimateSkillTimerHandle);
 		
 		return;
 	}

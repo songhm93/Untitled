@@ -30,7 +30,7 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 }
 
-void UInventoryComponent::InitInventory(TArray<FPlayerInventory> Inventory)
+void UInventoryComponent::InitInventory(TArray<FPlayerInventoryDB> Inventory)
 {
 	PlayerInventory = Inventory;
 	
@@ -121,6 +121,7 @@ void UInventoryComponent::InitInventory(TArray<FPlayerInventory> Inventory)
 //PlayerInventory는 DB에 들어가 있는 형태의 배열. 같은 ItemId로 들어가 있어도 갯수가 다르다.
 bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster) //성공시 true 반환, 가득차서 못넣는 경우 false.
 {
+	if(Amount == 0) return false;
 	FString ItemInfoTablePath = FString(TEXT("/Game/CombatSystem/DataTable/ItemInfo"));
 	UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
 	bool ExistItem = false;
@@ -427,7 +428,7 @@ void UInventoryComponent::DecreaseItemAcount(bool Success, int32 SlotIndex) //tr
 
 void UInventoryComponent::RequestUseItemMinusAmount(int32 SlotIndex, int32 Amount) //Num -= 1
 {
-	FPlayerInventory Inventory;
+	FPlayerInventoryDB Inventory;
 	Inventory.Pid = 9824;
 	Inventory.Itemid = InventorySlots[SlotIndex].ItemId;
 	Inventory.Num = Amount; //원래 Num은 갯수지만 여기선 쿼리문 이용해서 뺄 갯수로 json 보냄.
@@ -450,7 +451,7 @@ void UInventoryComponent::RequestUseItemMinusAmount(int32 SlotIndex, int32 Amoun
 
 void UInventoryComponent::RequestUseItemDelete(int32 SlotIndex) //아이템 갯수가 0개 -> DB에서 삭제
 {
-	FPlayerInventory Inventory;
+	FPlayerInventoryDB Inventory;
 	Inventory.Pid = 9824;
 	Inventory.Itemid = InventorySlots[SlotIndex].ItemId;
 
@@ -472,7 +473,7 @@ void UInventoryComponent::RequestUseItemDelete(int32 SlotIndex) //아이템 갯�
 
 void UInventoryComponent::RequestAddItemUpdateNum(int32 ItemId, int32 Amount) //Amount를 Update
 {
-	FPlayerInventory Inventory;
+	FPlayerInventoryDB Inventory;
 	Inventory.Pid = 9824;
 	Inventory.Itemid = ItemId;
 	Inventory.Num = Amount;
@@ -495,7 +496,7 @@ void UInventoryComponent::RequestAddItemUpdateNum(int32 ItemId, int32 Amount) //
 
 void UInventoryComponent::RequestAddItemInsert(int32 ItemId, int32 Amount) // 인벤토리에 없는 새로운 아이템일 때 Insert
 {
-	FPlayerInventory Inventory;
+	FPlayerInventoryDB Inventory;
 	Inventory.Pid = 9824;
 	Inventory.Itemid = ItemId;
 	Inventory.Num = Amount;
@@ -518,7 +519,7 @@ void UInventoryComponent::RequestAddItemInsert(int32 ItemId, int32 Amount) // �
 
 void UInventoryComponent::RequestItemUpdateEquipped(int32 SlotIndex, bool Equipped) //장착/해제한 장비 값 변경.
 {
-	FPlayerInventory Inventory;
+	FPlayerInventoryDB Inventory;
 	Inventory.Pid = 9824;
 	Inventory.Itemid = InventorySlots[SlotIndex].ItemId;
 	Inventory.Equipped = Equipped;
@@ -567,7 +568,7 @@ void UInventoryComponent::AddGold(int32 GoldAmount, bool bFromMonster)
 
 void UInventoryComponent::AddPlayerInventory(int32 ItemId, int32 Amount)
 {
-	FPlayerInventory InsertInventory;
+	FPlayerInventoryDB InsertInventory;
 	InsertInventory.Inventorynum = 0;
 	InsertInventory.Pid = 9824;
 	InsertInventory.Itemid = ItemId;

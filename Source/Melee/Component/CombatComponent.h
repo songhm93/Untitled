@@ -16,6 +16,7 @@ DECLARE_DELEGATE_RetVal(ECurrentCombatState, FGetCurrentCombatState);
 DECLARE_DELEGATE_RetVal(ECurrentState, FGetCurrentState);
 DECLARE_DELEGATE_RetVal(EMovementType, FGetCurrentMovementType);
 
+
 class ABaseWeapon;
 class ABaseEquippable;
 class ABaseArmor;
@@ -188,7 +189,7 @@ public: //get
 	FORCEINLINE float GetDodgeStaminaCost() const { return DodgeStaminaCost; }
 	UFUNCTION()
 	FORCEINLINE bool GetThirdSkillTimerRunning() const { return bThirdSkillTimerRunning; }
-
+	
 public: //set
 	FORCEINLINE void SetIsAttackSaved(bool Boolean) { bIsAttackSaved = Boolean; }
 	FORCEINLINE void SetAttackCount(int32 Count) { AttackCount = Count; }
@@ -199,7 +200,7 @@ public:
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }
 	void OnEquipWeapon(ABaseWeapon* Equipment);
 	void OnEquipArmor(ABaseArmor* Equipment);
-	void EquippedWeaponSpawn(ABaseWeapon* Equipment);
+	void EquippedWeaponSpawn(ABaseWeapon* Equipment, int32 WeaponId);
 	void OnEquippedArmorApply(ABaseArmor* Equipment);
 	void AttachActor(EEquipmentType Type, FName SocketName);
 	void AttachWeapon();
@@ -208,10 +209,17 @@ public:
 	void PerformDodge();
 	void ContinueAttack();
 	void HeavyAttack();
+	UFUNCTION(BlueprintCallable)
 	void Skill1();
+	UFUNCTION(BlueprintCallable)
 	void Skill2();
+	UFUNCTION(BlueprintCallable)
 	void Skill3();
+	UFUNCTION(BlueprintCallable)
 	void SkillUltimate();
-	
+	UFUNCTION(BlueprintCallable)
+	float GetSkillCurrentCooldownTime(int32 SkillNum);
+	UFUNCTION(BlueprintCallable)
+	float GetWeaponSkillCooldownTime(int32 SkillNum);
 	
 };

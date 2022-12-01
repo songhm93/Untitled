@@ -45,8 +45,10 @@ private:
 
 	FTimerHandle StaminaPotionTimerHandle;
 
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float HPPotionCooldownTime;
 
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float StaminaPotionCooldownTime;
 
 	FTimerDelegate PotionCooldownDelegate;
@@ -55,6 +57,7 @@ private:
 
 	FTimerHandle DodgeTimerHandle;
 
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float DodgeCooldownTime;
 
 	UFUNCTION()
@@ -81,5 +84,11 @@ public:
 	ECurrentCombatState GetCurrentCombatState();
 	void SetPotionCooldown(bool IsHPPotion);
 	void SetDodgeCoolDown();
+	UFUNCTION(BlueprintCallable)
+	float GetHPPotionCurrentCooldownTime();
+	UFUNCTION(BlueprintCallable)
+	float GetStaminaPotionCurrentCooldownTime();
+	UFUNCTION(BlueprintCallable)
+	float GetDodgeCurrentCooldownTime();
 		
 };

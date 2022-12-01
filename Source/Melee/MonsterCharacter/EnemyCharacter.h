@@ -9,6 +9,7 @@
 #include "../Type/Elements.h"
 #include "EnemyCharacter.generated.h"
 
+
 class UParticleSystem;
 class UAnimMontage;
 class USoundCue;
@@ -34,18 +35,17 @@ enum class EEnemyActionType : uint8
     MAX UMETA(DisplayName="MAX")
 };
 
-USTRUCT()
-struct FMonsterGives
+UENUM(BlueprintType)
+enum class EMonsterType : uint8
 {
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	TArray<int32> ItemId;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	int32 Gold;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	int32 Exp;
+    NONE UMETA(DisplayName = "NONE"),
+    NORMAL_MOB UMETA(DisplayName = "NORMAL_MOB"),
+    BOSS UMETA(DisplayName = "BOSS"),
+
+    MAX UMETA(DisplayName="MAX")
 };
+
+
 
 UCLASS()
 class MELEE_API AEnemyCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface
@@ -63,6 +63,7 @@ public:
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
 	virtual void ApplyImpactEffect() override;
+	void Respawn();
 
 protected:
 	virtual void BeginPlay() override;
@@ -81,6 +82,8 @@ protected:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float AgroCancelTime;
 	FTimerHandle AgroCancelTimerHandle;
+	float AreaAgroCancelTime;
+	FTimerHandle AreaAgroCancelTimeHandle;
 	bool bTargetingState;
 	UPROPERTY()
 	AActor* Target;
@@ -93,17 +96,14 @@ protected:
 		AActor* DamageCauser);
 	virtual void Dead();
 	void EnterCombat(AActor* Player, bool First);
+	void ExitCombat(bool First);
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	FString AreaNum;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 MId;
-	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	FMonsterGives MonsterGives;
+	
+
 private:
-	void EnableRagdoll();
-
-	void ApplyHitReactionPhysicsVelocity(float InitSpeed);
-
 	void DestroyDead();
 
 	void LookAtPlayer(AActor* Player, float DeltaTime);
@@ -119,11 +119,17 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle;
 
+	UPROPERTY(EditAnywhere, Category = "Common", Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* RespawnParticle;
+
 	UPROPERTY(EditAnywhere, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HitReactFrontMontage;
 
 	UPROPERTY(EditAnywhere, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HitReactBackMontage;
+
+	UPROPERTY(EditAnywhere, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DeathMontage;
 
 	UPROPERTY(EditAnywhere, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* KnockdownFrontMontage;
@@ -164,6 +170,15 @@ private:
 
 	float DestroyDeadTime;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	EMonsterType MonsterType;
+
+	FTimerHandle RespawnTimerHandle;
+
+	float RespawnTime;
+
+
+	
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
@@ -174,5 +189,5 @@ public: //get
 	FORCEINLINE int32 GetMId() const { return MId; }
 public:
 	void AgroCancel();	
-	
+	void AreaAgroCancel();
 };

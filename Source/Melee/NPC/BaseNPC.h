@@ -3,13 +3,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Interface/Interactable.h"
+#include "../Type/NPCType.h"
 #include "BaseNPC.generated.h"
 
 class UWidgetComponent;
 class USphereComponent;
 
 UCLASS()
-class MELEE_API ABaseNPC : public AActor, public IInteractable
+class MELEE_API ABaseNPC : public APawn, public IInteractable
 {
 	GENERATED_BODY()
 	
@@ -38,7 +39,11 @@ private:
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 NPCId;
-public:
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	ENPCType NPCType;
 	
+public:
+	FORCEINLINE ENPCType GetNPCType() const { return NPCType; }
 };
 

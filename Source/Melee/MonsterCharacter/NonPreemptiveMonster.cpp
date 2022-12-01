@@ -79,6 +79,8 @@ void ANonPreemptiveMonster::AgroSphereEndOverlap(
 		if(AIController)
 		{
 			GetWorldTimerManager().SetTimer(AgroCancelTimerHandle, this, &ThisClass::AgroCancel, AgroCancelTime);
+
+			GetWorldTimerManager().SetTimer(AgroCancelTimerHandle, this, &ThisClass::AreaAgroCancel, AreaAgroCancelTime);
 		}
 	}
 }

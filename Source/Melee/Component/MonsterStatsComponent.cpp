@@ -108,7 +108,7 @@ void UMonsterStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, F
 {
 	if(Success)
 	{
-        FMonsterInfo MonsterInfo = ConvertToMonsterInfo(Response->GetContentAsString());
+        FMonsterInfoDB MonsterInfo = ConvertToMonsterInfo(Response->GetContentAsString());
 
 		SetCurrentStatValue(EStats::HP, MonsterInfo.Maxhp);
 		SetCurrentStatValue(EStats::ATK, MonsterInfo.Atk);
@@ -119,13 +119,22 @@ void UMonsterStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, F
 		SetMaxStatValue(EStats::DEF, MonsterInfo.Def);
 
 		
+		PlusCurrentStatValue(EStats::HP, 0.0000001f);
+		PlusCurrentStatValue(EStats::ATK, 0.0000001f);
+		PlusCurrentStatValue(EStats::DEF, 0.0000001f);
+
+		MonsterGives.ItemId.Add(MonsterInfo.Itemid);
+		MonsterGives.ItemId.Add(MonsterInfo.Itemid2);
+		MonsterGives.ItemId.Add(MonsterInfo.Itemid3);
+		MonsterGives.Exp = MonsterInfo.Exp;
+		MonsterGives.Gold = MonsterInfo.Gold;
         
 	}
 }
 
-FMonsterInfo UMonsterStatsComponent::ConvertToMonsterInfo(const FString& ResponseString)
+FMonsterInfoDB UMonsterStatsComponent::ConvertToMonsterInfo(const FString& ResponseString)
 {
-	FMonsterInfo MonsterInfo;
+	FMonsterInfoDB MonsterInfo;
     if(!ResponseString.Contains("timestamp")) //테이블에 해당하는 MID가 있을 때
     {
         FJsonObjectConverter::JsonObjectStringToUStruct(*ResponseString, &MonsterInfo, 0, 0);

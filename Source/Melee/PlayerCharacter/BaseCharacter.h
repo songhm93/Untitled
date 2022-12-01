@@ -5,6 +5,7 @@
 #include "../Interface/CombatInterface.h"
 #include "../Interface/TargetingInterface.h"
 #include "../Interface/InventoryInterface.h"
+#include "../Interface/QuestInterface.h"
 #include "../Type/Types.h"
 #include "../Type/DamageTypes.h"
 #include "BaseCharacter.generated.h"
@@ -26,9 +27,10 @@ class ADualWeapon;
 class UInventoryComponent;
 class UMainHUDWidget;
 class UGetItemWidget;
+class UQuestLogComponent;
 
 UCLASS(config=Game)
-class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IInventoryInterface
+class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IInventoryInterface, public IQuestInterface
 {
 	GENERATED_BODY()
 public:
@@ -45,6 +47,8 @@ public:
 	virtual void ApplyImpactEffect() override;
 	virtual bool AddItem(int32 ItemId, int32 Amount, bool bFromMonster) override;
 	virtual void AddGold(int32 GoldAmount, bool bFromMonster) override;
+	virtual int32 DeathMob(int32 MId) override;
+	virtual void PlusCollectCurrentNum(int32 Amount) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -116,13 +120,13 @@ private:
 
 	FName GetLightAttackSectionName(int32 AttackCount);
 
-	void Skill1ButtonPressed();
+	void HotkeySlot1ButtonPressed();
 
-	void Skill2ButtonPressed();
+	void HotkeySlot2ButtonPressed();
 
-	void Skill3ButtonPressed();
+	void HotkeySlot3ButtonPressed();
 
-	void SkillUltimateButtonPressed();
+	void HotkeySlot4ButtonPressed();
 
 	void LeftClickPressed();
 
@@ -134,7 +138,8 @@ private:
 
 	void AltReleased();
 
-	void RightClickPressed();
+	UFUNCTION(BlueprintCallable)
+	bool CanExecuteSkill();
 
 	UFUNCTION(BlueprintCallable)
 	EPhysicalSurface GetPhysicsSurface();
@@ -156,7 +161,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", Meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatCompo;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", Meta = (AllowPrivateAccess = "true"))
 	UStateManagerComponent* StateManagerComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", Meta = (AllowPrivateAccess = "true"))
@@ -201,6 +206,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UMainHUDWidget* MainHUDWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UQuestLogComponent* QuestLogComp;
+
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	bool bAltPressed;
 
@@ -233,12 +241,14 @@ public: //get
 	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp; }
 	FORCEINLINE UInventoryComponent* GetInventoryComp() const { return InventoryComp; }
 	FORCEINLINE UMainHUDWidget* GetMainHUDWidget() const { return MainHUDWidget; }
+	FORCEINLINE UQuestLogComponent* GetQuestLogComp() const { return QuestLogComp; }
 
 public:
 	void HeavyAttack();
 	void LightAttack();
 	void ChargedAttack();
 	void SetMovementType(EMovementType Type);
+	void AddExp(int32 Exp);
 	
 };
 

@@ -9,7 +9,19 @@ enum class EStats : uint8
     ATK UMETA(DisplayName = "ATK"), 
     DEF UMETA(DisplayName="DEF"),
     STAMINA UMETA(DisplayName="STAMINA"),
+    SP UMETA(DisplayName="SP"),
 
     MAX UMETA(DisplayName="MAX")
 };
 //스탯의 종류
+
+UENUM(BlueprintType)
+enum class EExpStats : uint8
+{
+    NONE UMETA(DisplayName = "NONE"),
+    LEVEL UMETA(DisplayName="LEVEL"),
+    CURRENT_EXP UMETA(DisplayName = "CURRENT_EXP"), 
+    MAX_EXP UMETA(DisplayName="MAX_EXP"),
+
+    MAX UMETA(DisplayName="MAX")
+};
