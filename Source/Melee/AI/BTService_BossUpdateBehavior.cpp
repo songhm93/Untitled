@@ -60,11 +60,12 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 		{								   
 			if(Dist > 550.f)      
 			{
-				int32 RandValue = FMath::RandRange(0, 1);
+				int32 RandValue = FMath::RandRange(0, 2);
 				if(RandValue == 0)
 					SetBossBehavior(EBossBehavior::SPECIAL1);
 				else if(RandValue == 1)
 					SetBossBehavior(EBossBehavior::SPECIAL2);
+				
 				BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);			
 			}
 			else if(Dist > 300.f)
@@ -129,8 +130,11 @@ void UBTService_BossUpdateBehavior::SetBossBehavior(EBossBehavior AIBehavior)
     case EBossBehavior::SPECIAL3:
 		EnumIdx = 6;
 		break;
-    case EBossBehavior::RETURN:
+	case EBossBehavior::SPECIAL4:
 		EnumIdx = 7;
+		break;
+    case EBossBehavior::RETURN:
+		EnumIdx = 8;
 		break;
 	}
 	BlackBoardComp->SetValueAsEnum(BossBehavior.SelectedKeyName, EnumIdx);
@@ -138,12 +142,14 @@ void UBTService_BossUpdateBehavior::SetBossBehavior(EBossBehavior AIBehavior)
 
 void UBTService_BossUpdateBehavior::SetRandSpecial()
 {
-	int32 RandValue = FMath::RandRange(0, 2);
+	int32 RandValue = FMath::RandRange(0, 3);
 	if(RandValue == 0)
 		SetBossBehavior(EBossBehavior::SPECIAL1);
 	else if(RandValue == 1)
 		SetBossBehavior(EBossBehavior::SPECIAL2);
-	else
+	else if(RandValue == 2)
 		SetBossBehavior(EBossBehavior::SPECIAL3);
+	else
+		SetBossBehavior(EBossBehavior::SPECIAL4);
 	BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);
 }

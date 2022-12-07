@@ -14,6 +14,7 @@ class UUniformGridPanel;
 class UUserWidget;
 class UInventoryActionMenuWidget;
 class UScrollBox;
+class UTextBlock;
 
 UCLASS()
 class MELEE_API UInventoryWidget : public UUserWidget
@@ -32,6 +33,9 @@ private:
 
 	UPROPERTY(Meta = (BindWidget))
 	UScrollBox* InventoryScrollBox;
+
+	UPROPERTY(Meta = (BindWidget))
+	UTextBlock* CurrentGold;
 
 	UPROPERTY()
 	UInventoryComponent* InventoryComp;

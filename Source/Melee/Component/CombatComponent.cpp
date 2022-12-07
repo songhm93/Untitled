@@ -188,6 +188,46 @@ void UCombatComponent::OnEquipArmor(ABaseArmor* Equipment)
 	}
 }
 
+void UCombatComponent::OnUnequipArmor(EItemCategory ArmorCategory)
+{
+	switch (ArmorCategory)
+	{
+	case EItemCategory::HELMET:
+		if(EquippedHelmet)
+		{
+			OnUpdateCurrentStatValue.ExecuteIfBound(EStats::DEF, -EquippedHelmet->GetArmorDEF());
+			EquippedHelmet->Destroy();
+		}
+		EquippedHelmet = nullptr;
+		break;
+	case EItemCategory::CHEST:
+		if(EquippedChest)
+		{
+			OnUpdateCurrentStatValue.ExecuteIfBound(EStats::DEF, -EquippedChest->GetArmorDEF());
+			EquippedChest->Destroy();
+		}
+		EquippedChest = nullptr;
+		break;
+	case EItemCategory::GAUNTLET:
+		if(EquippedGauntlet)
+		{
+			OnUpdateCurrentStatValue.ExecuteIfBound(EStats::DEF, -EquippedGauntlet->GetArmorDEF());
+			EquippedGauntlet->Destroy();
+		}
+		EquippedGauntlet = nullptr;
+		break;
+	case EItemCategory::BOOT:
+		if(EquippedBoot)
+		{
+			OnUpdateCurrentStatValue.ExecuteIfBound(EStats::DEF, -EquippedBoot->GetArmorDEF());
+			EquippedBoot->Destroy();
+		}
+		EquippedBoot = nullptr;
+		break;
+	
+	}
+}
+
 void UCombatComponent::OnEquippedArmorApply(ABaseArmor* Armor)
 {
 	if(Armor)
@@ -271,7 +311,7 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult) //내 총 공격력
 		{
 			HitFromDirection = GetOwner()->GetActorForwardVector();
 			
-			if(HitResult.GetActor()->Implements<UCombatInterface>() && Cast<ICombatInterface>(HitResult.GetActor())->CanRecieveDamage())
+			if(HitResult.GetActor()->Implements<UCombatInterface>() && Cast<ICombatInterface>(HitResult.GetActor())->CanReceiveDamage())
 			{
 				if (GetCurrentStatValue.IsBound())
 				{
@@ -582,7 +622,7 @@ void UCombatComponent::ImpactTrace()
 		CollisionObjectType,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
+		EDrawDebugTrace::None,
 		OutHitResult,
 		true,
 		FLinearColor::Red,
@@ -626,12 +666,8 @@ void UCombatComponent::ApplyImpact(AActor* HitActor)
 
 void UCombatComponent::Skill1()
 {
-	if(bFirstSkillTimerRunning)
-	{
-		//float Skill1Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(FirstSkillTimerHandle);
-		
-		return;
-	}
+	if(bFirstSkillTimerRunning) return;
+	
 
 	if(EquippedWeapon)
 	{
@@ -645,12 +681,8 @@ void UCombatComponent::Skill1()
 
 void UCombatComponent::Skill2()
 {
-	if(bSecondSkillTimerRunning)
-	{
-		//float Skill2Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(SecondSkillTimerHandle);
-		
-		return;
-	}
+	if(bSecondSkillTimerRunning) return;
+	
 
 	if(EquippedWeapon)
 	{
@@ -666,8 +698,6 @@ void UCombatComponent::Skill3()
 {
 	if(bThirdSkillTimerRunning)
 	{
-		//float Skill3Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(ThirdSkillTimerHandle);
-		
 		if(!Cast<ADualWeapon>(EquippedWeapon)) return; //DualWeapon만 해당
 	}
 
@@ -742,7 +772,7 @@ void UCombatComponent::UltimateImpact()
 		CollisionObjectType,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
+		EDrawDebugTrace::None,
 		OutHitResult,
 		true,
 		FLinearColor::Red,

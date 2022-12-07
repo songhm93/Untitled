@@ -8,6 +8,7 @@
 #include "../Interface/QuestInterface.h"
 #include "../Type/Types.h"
 #include "../Type/DamageTypes.h"
+#include "../Type/ItemCategory.h"
 #include "BaseCharacter.generated.h"
 
 class UCombatComponent;
@@ -39,7 +40,7 @@ public:
 	virtual void Jump() override;
 	UFUNCTION(BlueprintCallable)
 	virtual void ResetCombat() override;
-	virtual bool CanRecieveDamage() override;
+	virtual bool CanReceiveDamage() override;
 	virtual bool CanBeTargeted() override; //타겟이 될 수 있는지
 	virtual void OnTargeted(bool IsTargeted) override;
 	
@@ -50,6 +51,9 @@ public:
 	virtual void AddGold(int32 GoldAmount, bool bFromMonster) override;
 	virtual int32 DeathMob(int32 MId) override;
 	virtual void PlusCollectCurrentNum(int32 Amount) override;
+	virtual bool CalcCritical(float Percent) override;
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowDamageText(int32 Damage, bool IsCritical);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -94,6 +98,9 @@ private:
 
 	UFUNCTION()
 	void EquipArmor(int32 ItemId);
+
+	UFUNCTION()
+	void UnequipArmor(EItemCategory ArmorCategory);
 
 	UFUNCTION()
 	void EquippedWeaponSpawn(int32 ItemId);
@@ -260,6 +267,7 @@ public:
 	void LightAttack();
 	void ChargedAttack();
 	void SetMovementType(EMovementType Type);
+	UFUNCTION(BlueprintCallable)
 	void AddExp(int32 Exp);
 	
 };

@@ -1,4 +1,5 @@
 #include "QuestNPC.h"
+#include "Components/WidgetComponent.h"
 
 #include "../Quest/BaseQuest.h"
 #include "../Widget/QuestWidget.h"
@@ -60,4 +61,5 @@ void AQuestNPC::Interact(AActor* Caller)
             }
         }
     }
+    VisibleMent(true); //퀘스트가 없을 때
 }

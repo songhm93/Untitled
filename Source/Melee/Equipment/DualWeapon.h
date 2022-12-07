@@ -35,9 +35,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	FGetSkillTimerRunning GetSkillTimerRunning;
 	FSetSkillATK SetSkillATK;
-
+	virtual void InitSkillInfo() override;
+	virtual void InitSkillDT() override;
 protected:
-	virtual void InitSkillInfo();
+	
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta = (AllowPrivateAccess = "true"))
@@ -141,7 +142,7 @@ private:
 	
 	void BlinkDestroyShadow();
 
-	
+	int32 Skill1ATKCalc();
 
 public: //get
 	FORCEINLINE UStaticMeshComponent* GetDualSwordStaticMeshComp() const { return DualSwordStaticMeshComp;}

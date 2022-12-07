@@ -81,12 +81,18 @@ void ABaseWeapon::OnSkillInfoRequestComplete(FHttpRequestPtr Request, FHttpRespo
             {
                 SkillInfo[Info.Skillnum].CurrentLevel = Info.Skilllevel;
             }
+            InitSkillDT();
         }
     }
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("스킬 정보 가져오기 실패..."));
     }
+}
+
+void ABaseWeapon::InitSkillDT()
+{
+
 }
 
 TArray<FPlayerSkillInfo> ABaseWeapon::ConvertToPlayerSkillInfo(const FString& ResponseString)

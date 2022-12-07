@@ -89,7 +89,7 @@ void AEnemyCharacter::BeginPlay()
 	}
 }
 
-bool AEnemyCharacter::CanRecieveDamage()
+bool AEnemyCharacter::CanReceiveDamage()
 {
     if(StateManagerComp && StateManagerComp->GetCurrentState() != ECurrentState::DEAD)
 		return true;
@@ -152,21 +152,40 @@ void AEnemyCharacter::ReceiveDamage(
 	}
 }
 
+bool AEnemyCharacter::CalcCritical(float Percent)
+{
+	bool ReturnValue = false;
+	const float RandValue = FMath::RandRange(0.f, 999.f);
+	const float MaxRangeValue = Percent * 10.f;
+
+	if(MaxRangeValue >= RandValue)
+	{
+		ReturnValue = true;
+	}
+
+	return ReturnValue;
+}
+
 void AEnemyCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
 {
+	bool IsCritical = CalcCritical(10.f);
 	//대미지 계산
 	if(MonsterStatComp)
 	{
 		const float Def = MonsterStatComp->GetCurrentStatValue(EStats::DEF);
-		const float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		if(IsCritical) Result *= 2.f;
 		MonsterStatComp->PlusCurrentStatValue(EStats::HP, Result * -1); //HP 적용
 		if(MonsterStatComp->GetCurrentStatValue(EStats::HP) <= 0)
 		{
 			if(StateManagerComp)
 				StateManagerComp->SetCurrentState(ECurrentState::DEAD);
 		}
+		//Result로 대미지 위젯
+		ShowDamageText(Result, IsCritical);
 	}
 }
+
 
 void AEnemyCharacter::ApplyImpactEffect()
 {
@@ -218,6 +237,8 @@ void AEnemyCharacter::CharacterStateBegin(ECurrentState State)
 
 void AEnemyCharacter::Dead()
 {
+	CalcChance(5.f);
+	
 	if(Target && Target->Implements<UInventoryInterface>() && MonsterStatComp)
 	{
 		int32 IsCollectQuest = 0;
@@ -227,18 +248,36 @@ void AEnemyCharacter::Dead()
 			if(IsCollectQuest != 0) //수집 퀘스트이면
 			{
 				int32 Amount = FMath::RandRange(0, 1);
-				Cast<IInventoryInterface>(Target)->AddItem(IsCollectQuest, Amount, true);
-				
-				Cast<IQuestInterface>(Target)->PlusCollectCurrentNum(Amount);
+				if(CalcChance(60.f) && Amount == 1)
+				{
+					Cast<IInventoryInterface>(Target)->AddItem(IsCollectQuest, Amount, true);
+					Cast<IQuestInterface>(Target)->PlusCollectCurrentNum(Amount);
+				}
 			}
 			
 			for(auto GivesItem : MonsterStatComp->GetMonsterGives().ItemId)
 			{
-				Cast<IInventoryInterface>(Target)->AddItem(GivesItem, FMath::RandRange(0, 1), true);
+				int32 Amount = FMath::RandRange(0, 1);
+				if(CalcChance(40.f)  && Amount == 1)
+				{
+					Cast<IInventoryInterface>(Target)->AddItem(GivesItem, Amount, true);
+				}
 			}	
 		}
+		if(CalcChance(40.f))
+		{
+			int32 RandValue = FMath::RandRange(0, 10);
+			if(CalcChance(50.f))
+			{
+				Cast<IInventoryInterface>(Target)->AddGold(MonsterStatComp->GetMonsterGives().Gold + RandValue, true);
+			}
+			else
+			{
+				Cast<IInventoryInterface>(Target)->AddGold(MonsterStatComp->GetMonsterGives().Gold - RandValue, true);
+			}
+			
+		}
 		
-		Cast<IInventoryInterface>(Target)->AddGold(MonsterStatComp->GetMonsterGives().Gold, true);
 		if(Cast<ABaseCharacter>(Target))
 			Cast<ABaseCharacter>(Target)->AddExp(MonsterStatComp->GetMonsterGives().Exp);
 	}
@@ -252,6 +291,8 @@ void AEnemyCharacter::Dead()
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(DeathMontage);
 	}
+	if(AgroRangeSphere)
+		AgroRangeSphere->Deactivate();
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 	GetWorldTimerManager().SetTimer(DestroyDeadTimerHandle, this, &ThisClass::DestroyDead, DestroyDeadTime);
@@ -282,7 +323,7 @@ void AEnemyCharacter::Respawn()
 	if(!PatrolPoints.IsEmpty())
 	{
 		int32 RandNum = FMath::RandRange(0, PatrolPoints.Num() - 1);
-		SetActorLocation(PatrolPoints[RandNum]->GetActorLocation());
+		SetActorLocation(PatrolPoints[RandNum]->GetActorLocation() + FVector(0.f, 0.f, 50.f));
 	}
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
@@ -290,11 +331,27 @@ void AEnemyCharacter::Respawn()
 	{
 		GetCharacterMovement()->Activate();
 	}
+	if(AgroRangeSphere)
+		AgroRangeSphere->Activate();
 	GetMesh()->SetVisibility(true);
 	if(RespawnParticle)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RespawnParticle, GetActorLocation());
 	}	
+}
+
+bool AEnemyCharacter::CalcChance(float Percent)
+{
+	bool ReturnValue = false;
+	float RandValue = FMath::RandRange(0.f, 999.f);
+	float MaxRangeValue = Percent * 10.f;
+
+	if(MaxRangeValue >= RandValue)
+	{
+		ReturnValue = true;
+	}
+
+	return ReturnValue;
 }
 
 void AEnemyCharacter::AgroCancel()
@@ -309,6 +366,7 @@ void AEnemyCharacter::AgroCancel()
 		StateManagerComp->SetCurrentCombatState(ECurrentCombatState::NONE_COMBAT_STATE);
 		AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), false);
 		AIController->GetBBComp()->SetValueAsBool(TEXT("InAttackRange"), false);
+		AIController->GetBBComp()->SetValueAsBool(TEXT("SpecialComplete"), true);
 		OnTargeted(false);
 	} 
 }
@@ -338,15 +396,13 @@ void AEnemyCharacter::EnterCombat(AActor* Player, bool First)
 	
 	if(AIController && StateManagerComp)
 	{
+		if(StateManagerComp->GetCurrentState() == ECurrentState::DEAD) return;
+
 		AIController->GetBBComp()->SetValueAsObject(TEXT("Target"), Player);
 		bTargetingState = true;
 		Target = Player;
 		StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
 		AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), true);
-	}
-	if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
-	{
-		GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
 	}
 	if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
 	{
@@ -380,6 +436,15 @@ void AEnemyCharacter::ExitCombat(bool First)
 {
 	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 	
+	if(First)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("First ExitCombat"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Other ExitCombat"));
+	}
+		
 	
 	if(AIController && StateManagerComp)
 	{

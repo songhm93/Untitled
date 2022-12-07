@@ -74,15 +74,15 @@ USTRUCT(BlueprintType)
 struct FPlayerInventoryDB
 {
 	GENERATED_BODY()
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int32 Inventorynum = 0;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int32 Pid = 0;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int32 Itemid = 0;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int32 Num = 0;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	bool Equipped = false;
 	
 };

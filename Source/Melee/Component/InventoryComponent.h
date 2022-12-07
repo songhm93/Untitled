@@ -18,6 +18,8 @@ DECLARE_DELEGATE_OneParam(FOnEquipWeapon, int32);
 DECLARE_DELEGATE_OneParam(FOnEquippedWeaponSpawn, int32);
 DECLARE_DELEGATE_OneParam(FOnEquipArmor, int32);
 DECLARE_DELEGATE_OneParam(FOnEquippedArmorApply, int32);
+DECLARE_DELEGATE_OneParam(FUnequipArmor, EItemCategory);
+DECLARE_DELEGATE(FOnGenerateMerchantSlot);
 
 
 
@@ -37,14 +39,23 @@ public:
 	FOnVisibleInventory OnVisibleInventory;
 	FOnEquipWeapon OnEquipWeapon;
 	FOnEquipArmor OnEquipArmor;
+	FUnequipArmor UnequipArmor;
 	FOnEquippedWeaponSpawn OnEquippedWeaponSpawn;
 	FOnEquippedArmorApply OnEquippedArmorApply;
-	
+	UFUNCTION(BlueprintCallable)
+	void InventoryUpdate();
+	void OnInvenNumRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
+	void OnAddEquipmentInsertComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
+	FOnGenerateMerchantSlot OnGenerateMerchantSlot;
 protected:
 	virtual void BeginPlay() override;
 	FHttpModule* Http;
 
 private:	
+	void DecreasePlayerInventory(int32 SlotIndex, int32 Amount);
+
+	TArray<FPlayerInventoryDB> ConvertToPlayerInventory(const FString& ResponseString);
+
 	int32 FindEmptySlotIndex();
 
 	void ReverseRemoveSlotIndex(TArray<int32> Index);
@@ -68,7 +79,12 @@ private:
 
 	int32 CurrentSlotNum;
 
+	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TArray<FPlayerInventoryDB> GetInventoryNum; //무기 Insert 후 DB에서 가져온 InventoryNum이 포함된 배열
+
 	bool bIsVisible; //인벤토리 창 Visible
+
+	void RequestDeleteEquipment(int32 ItemId, int32 InventoryNum);
 
 	void RequestUseItemMinusAmount(int32 SlotIndex, int32 Amount); //아이템 사용 -> Num 업데이트
 
@@ -76,11 +92,17 @@ private:
 
 	void RequestAddItemInsert(int32 ItemId, int32 Amount);
 
+	void RequestAddEquipmentInsert(int32 ItemId, bool IsLast);
+
 	void RequestUseItemDelete(int32 SlotIndex);
 
 	void RequestItemUpdateEquipped(int32 SlotIndex, bool Equipped);
 
+	void RequestGetInventoryNum(int32 ItemId, int32 Amount);
+
 	void AddPlayerInventory(int32 ItemId, int32 Amount);
+
+	void AddEquipmentPlayerInventory(int32 ItemId, int32 Amount);
 
 	bool AddAmountExistSlot(FItemInfoTable* ItemRow, int32 Amount, int32 TotalAmount, int32 RegisteredSlotThisItem);
 
@@ -88,6 +110,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	int32 Gold;
+
+	int32 EquipmentAmount; //임시 저장해두는 변수들
+
+	int32 EquipmentId;
+
+	FItemInfoInSlot EquipmentInfo;
 public:
 	FORCEINLINE TArray<FItemInfoInSlot> GetInventorySlots() const { return InventorySlots; }
 	FORCEINLINE int32 GetTotalSlotNum() const { return TotalSlotNum; }

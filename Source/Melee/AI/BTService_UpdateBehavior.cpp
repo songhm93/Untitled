@@ -45,7 +45,7 @@ void UBTService_UpdateBehavior::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 							BlackBoardComp->SetValueAsBool(TEXT("InAttackRange"), false);
 							TArray<ATargetPoint*> PatrolPoint = MonsterCharacter->GetPatrolPoints();
 							const float CenterDist = MonsterCharacter->GetDistanceTo(Cast<AActor>(PatrolPoint[0]));
-							if(CenterDist > 540.f) 
+							if(CenterDist > 700.f) 
 							{					   
 								Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), true);
 								SetBasicBehavior(EAIBasicBehavior::RETURN);

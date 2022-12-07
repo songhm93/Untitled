@@ -42,12 +42,13 @@ void UInventoryWidget::NativeConstruct()
 
 void UInventoryWidget::GenerateSlotWidgets() //슬롯들 업데이트
 {
-    if (SlotPanel)
+    if (SlotPanel && CurrentGold)
     {
         SlotPanel->ClearChildren();
         SlotWidgets.Empty(50);
         if (InventoryComp && InventorySlotWidgetClass)
         {
+            CurrentGold->SetText(FText::FromString(FString::FromInt(InventoryComp->GetGold())));
             //슬롯 하나씩 생성
             //슬롯에 아이템 정보와 인덱스를 넘김
             for (int i = 0; i < InventoryComp->GetTotalSlotNum(); ++i)

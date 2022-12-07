@@ -34,10 +34,11 @@ struct FSkillInfo
 	GENERATED_BODY()
 
 	FSkillInfo(){}
-	FSkillInfo(UTexture2D* Texture, FText Skill)
+	FSkillInfo(UTexture2D* _Texture, FText _SkillName, int32 _NeedToLevel)
 	{
-		SkillIcon = Texture;
-		SkillName = Skill;
+		SkillIcon = _Texture;
+		SkillName = _SkillName;
+		NeedToLevel = _NeedToLevel;
 	}
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* SkillIcon;
@@ -47,6 +48,9 @@ struct FSkillInfo
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 CurrentLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 NeedToLevel;
 	
 };
 
@@ -60,6 +64,9 @@ struct FSkillInfoTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText SkillName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 NeedToLevel;
 	
 };
 
@@ -76,6 +83,7 @@ public:
 	virtual void SkillUltimate();
 	UFUNCTION(BlueprintCallable)
 	virtual void InitSkillInfo();
+	virtual void InitSkillDT();
 protected:
 	FHttpModule* Http;
 

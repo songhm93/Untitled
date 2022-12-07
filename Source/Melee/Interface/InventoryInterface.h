@@ -12,8 +12,9 @@ struct FItemInfoInSlot
 {
 	GENERATED_BODY()
 	FItemInfoInSlot(){}
-	FItemInfoInSlot(int32 _ItemId, int32 _Amount, FString _ItemName, FString _Desc, UTexture2D* _Icon, FString _UseText, bool _CanUse, bool _CanStack, EItemCategory _Category, bool _IsActor, bool _Equipped, int32 _BuyGold, int32 _SellGold)
+	FItemInfoInSlot(int32 _InventoryNum, int32 _ItemId, int32 _Amount, FString _ItemName, FString _Desc, UTexture2D* _Icon, FString _UseText, bool _CanUse, bool _CanStack, EItemCategory _Category, bool _IsActor, bool _Equipped, int32 _BuyGold, int32 _SellGold)
 	{
+		InventoryNum = _InventoryNum;
 		ItemId = _ItemId;
 		Amount = _Amount;
 		ItemName = _ItemName;
@@ -28,6 +29,8 @@ struct FItemInfoInSlot
 		BuyGold = _BuyGold;
 		SellGold = _SellGold;
 	}
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 InventoryNum;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 ItemId = -1;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

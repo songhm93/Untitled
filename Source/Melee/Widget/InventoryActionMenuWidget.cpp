@@ -48,11 +48,18 @@ void UInventoryActionMenuWidget::Update() //위젯을 띄우고 정보 업데이
     {
         if(ItemInfo.CanUse)
         {
-            if(ItemInfo.Equipped)
+            if(ItemInfo.Equipped && ItemInfo.IsActor)
             {
                 UseText->SetText(FText::FromString(TEXT("장착중")));
                 ThrowButton->SetVisibility(ESlateVisibility::Collapsed);
                 UseButton->SetIsEnabled(false);
+            }
+            else if(ItemInfo.Equipped && !ItemInfo.IsActor)
+            {
+                UseText->SetText(FText::FromString(TEXT("장착 해제")));
+                UseButton->SetIsEnabled(true);
+                ThrowButton->SetVisibility(ESlateVisibility::Collapsed);
+                UseButton->SetVisibility(ESlateVisibility::Visible);
             }
             else
             {
@@ -132,5 +139,4 @@ void UInventoryActionMenuWidget::ThrowButtonClicked()
             }
         }
     }
-    
 }

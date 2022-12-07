@@ -15,6 +15,8 @@ UInventoryComponent::UInventoryComponent()
 	bIsVisible = false;
 	Http = &FHttpModule::Get();
 	Gold = 0;
+	EquipmentAmount = 0;
+	EquipmentId = 0;
 }
 
 void UInventoryComponent::BeginPlay()
@@ -54,7 +56,7 @@ void UInventoryComponent::InitInventory(TArray<FPlayerInventoryDB> Inventory)
 						CurrentSlotNum += Inven.Num;
 						for(int i = 0; i < Inven.Num; ++i)
 						{
-							InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, 1, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold)); //슬롯에 1개씩, 갯수만큼 넣음.
+							InventorySlots.Add(FItemInfoInSlot(Inven.Inventorynum ,Inven.Itemid, 1, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold)); //슬롯에 1개씩, 갯수만큼 넣음.
 						}
 					}
 					else //겹쳐지는거면
@@ -74,11 +76,11 @@ void UInventoryComponent::InitInventory(TArray<FPlayerInventoryDB> Inventory)
 							{
 								if(RemainNum > MaxStackSize)
 								{
-									InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, MaxStackSize, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold));
+									InventorySlots.Add(FItemInfoInSlot(Inven.Inventorynum, Inven.Itemid, MaxStackSize, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold));
 								}
 								else
 								{
-									InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, RemainNum, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold));
+									InventorySlots.Add(FItemInfoInSlot(Inven.Inventorynum, Inven.Itemid, RemainNum, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold));
 								}
 								RemainNum -= MaxStackSize;
 							}
@@ -86,17 +88,17 @@ void UInventoryComponent::InitInventory(TArray<FPlayerInventoryDB> Inventory)
 						else
 						{
 							++CurrentSlotNum;
-							InventorySlots.Add(FItemInfoInSlot(Inven.Itemid, Inven.Num, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold));
+							InventorySlots.Add(FItemInfoInSlot(Inven.Inventorynum, Inven.Itemid, Inven.Num, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, Inven.Equipped, ItemRow->BuyGold, ItemRow->SellGold));
 						}
 					}
 					//Equipped 상태면 장착해야함
-					EItemCategory Category = InventorySlots[Index].Category;
+					EItemCategory Category = ItemRow->Category;
 					bool Condition = 
 					(ItemRow->Category == EItemCategory::HELMET) ||
 					(ItemRow->Category == EItemCategory::CHEST) ||
 					(ItemRow->Category == EItemCategory::GAUNTLET) ||
 					(ItemRow->Category == EItemCategory::BOOT);
-					if(InventorySlots[Index].Equipped)
+					if(Inven.Equipped)
 					{
 						if(Category == EItemCategory::WEAPON)
 						{
@@ -115,13 +117,76 @@ void UInventoryComponent::InitInventory(TArray<FPlayerInventoryDB> Inventory)
 	}
 }	
 
+void UInventoryComponent::RequestGetInventoryNum(int32 ItemId, int32 Amount)
+{
+	FString PID = "9824";
+    if(Http)
+    {
+        TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+
+        Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::OnInvenNumRequestComplete);
+        Request->SetURL("http://localhost:8080/api/PlayerInventory/" + PID + "/" + FString::FromInt(ItemId) + "/" + FString::FromInt(Amount) + "/");
+        Request->SetVerb("GET");
+        Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+        Request->ProcessRequest(); 
+    }
+}
+
+void UInventoryComponent::OnInvenNumRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
+{
+	//이 함수가 호출되는 경우는 무조건 무기나 방어구를 여러개 샀을 때
+	//Amount가 그래서 갯수다. LIMIT을 몇개 가져올지에 대한 갯수가 될 거임
+	//무기방어구 AddItem했을 때 Insert하고 나서 위 함수 호출해야함
+	if(Success)
+    {
+        TArray<FPlayerInventoryDB> PlayerInvenNum = ConvertToPlayerInventory(Response->GetContentAsString());
+        if(!PlayerInvenNum.IsEmpty())
+        {
+			GetInventoryNum = PlayerInvenNum;
+
+			for(int i = 0; i < GetInventoryNum.Num(); ++i)
+			{
+				FItemInfoInSlot ItemInfo = EquipmentInfo;
+				ItemInfo.InventoryNum = GetInventoryNum[i].Inventorynum;
+				
+				++CurrentSlotNum;
+				InventorySlots.Add(ItemInfo); //새로운 슬롯 InventorySlots Add. Amount만큼 늘어남
+			}
+			
+			AddEquipmentPlayerInventory(EquipmentId, GetInventoryNum.Num()); //DB와 똑같이 맞추기 위해 PlayerInventory도 Insert
+			OnGenerateSlotWidget.ExecuteIfBound();
+			OnGenerateMerchantSlot.ExecuteIfBound();
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("가져오기 실패..."));
+    }
+}
+
+TArray<FPlayerInventoryDB> UInventoryComponent::ConvertToPlayerInventory(const FString& ResponseString)
+{
+    TArray<FPlayerInventoryDB> GetPlayerInventory;
+    if(!ResponseString.Contains("timestamp"))
+    {
+        FJsonObjectConverter::JsonArrayStringToUStruct(*ResponseString, &GetPlayerInventory, 0, 0);
+    }
+
+    return GetPlayerInventory;
+}
+
+void UInventoryComponent::InventoryUpdate()
+{
+	OnGenerateSlotWidget.ExecuteIfBound();
+}
+
 //AddItem을 몬스터 잡았을 때, 상점에서 샀을 때 필요,
 //InventorySlots와 PlayerInventory는 별개. 
 //InventorySlots는 MaxStackSize만큼씩 나눠서 ItemInfo로 저장한 배열. 
 //PlayerInventory는 DB에 들어가 있는 형태의 배열. 같은 ItemId로 들어가 있어도 갯수가 다르다.
 bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster) //성공시 true 반환, 가득차서 못넣는 경우 false.
 {
-	if(Amount == 0) return false;
+	if(Amount == 0 || ItemId == 0) return false;
 	FString ItemInfoTablePath = FString(TEXT("/Game/CombatSystem/DataTable/ItemInfo"));
 	UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
 	bool ExistItem = false;
@@ -133,7 +198,7 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 		{
 			if(TotalSlotNum > CurrentSlotNum) //인벤 공간 있음
 			{
-				FItemInfoInSlot AddItemInfo = FItemInfoInSlot(ItemId, Amount, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold);
+				FItemInfoInSlot AddItemInfo = FItemInfoInSlot(0, ItemId, Amount, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold);
 				if(ItemRow->Canstack == 1) //겹쳐지는 아이템이면
 				{
 					int32 TotalAmount = 0;
@@ -154,6 +219,7 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 						bool Success = AddAmountExistSlot(ItemRow, Amount, TotalAmount, RegisteredSlotThisItem);
 						if(Success)
 						{
+							OnGenerateSlotWidget.ExecuteIfBound();
 							if(bFromMonster)
 							{
 								MPC = MPC == nullptr ? Cast<AMeleePlayerController>(Cast<APawn>(GetOwner())->GetController()) : MPC;
@@ -183,6 +249,7 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 						}
 						RequestAddItemInsert(ItemId, Amount); //DB Insert
 						AddPlayerInventory(ItemId, Amount); //할때 DB와 똑같이 맞추기 위해 PlayerInventory도 Insert
+						OnGenerateSlotWidget.ExecuteIfBound();
 						if(bFromMonster)
 						{
 							MPC = MPC == nullptr ? Cast<AMeleePlayerController>(Cast<APawn>(GetOwner())->GetController()) : MPC;
@@ -204,23 +271,26 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 					}
 					else
 					{
-						FItemInfoInSlot ItemInfo = FItemInfoInSlot(ItemId, 1, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold);
-						for(int i = 0; i < Amount; ++i)
+						bool Condition = ItemRow->Category == EItemCategory::WEAPON || 
+										ItemRow->Category == EItemCategory::HELMET ||
+										ItemRow->Category == EItemCategory::CHEST ||
+										ItemRow->Category == EItemCategory::GAUNTLET ||
+										ItemRow->Category == EItemCategory::BOOT;
+
+						if(Condition) //장비인 경우 DB inventory에도 한칸에 하나씩 들어가게.
 						{
-							++CurrentSlotNum;
-							InventorySlots.Add(ItemInfo); //새로운 슬롯 InventorySlots Add. Amount만큼 늘어남
-						}
-						if(ItemRow->Category == EItemCategory::WEAPON || 
-						ItemRow->Category == EItemCategory::HELMET ||
-						ItemRow->Category == EItemCategory::CHEST ||
-						ItemRow->Category == EItemCategory::GAUNTLET ||
-						ItemRow->Category == EItemCategory::BOOT) //장비인 경우 DB inventory에도 한칸에 하나씩 들어가게.
-						{
+							EquipmentAmount = Amount;
+							EquipmentId = ItemId;
+							EquipmentInfo = FItemInfoInSlot(0, ItemId, 1, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold);
+
 							for(int i = 0; i < Amount; ++i)
 							{
-								RequestAddItemInsert(ItemId, 1); //DB Insert
-								AddPlayerInventory(ItemId, 1); //DB와 똑같이 맞추기 위해 PlayerInventory도 Insert
+								if(i == Amount - 1)
+									RequestAddEquipmentInsert(ItemId, true); //여러개 중 마지막일 때
+								else
+									RequestAddEquipmentInsert(ItemId, false);
 							}
+							
 							if(bFromMonster)
 							{
 								MPC = MPC == nullptr ? Cast<AMeleePlayerController>(Cast<APawn>(GetOwner())->GetController()) : MPC;
@@ -230,10 +300,17 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 								}
 							}
 								
-							return  true;
+							return true;
 						}
 						else
 						{	
+							for(int i = 0; i < Amount; ++i)
+							{
+								FItemInfoInSlot ItemInfo = FItemInfoInSlot(0, ItemId, 1, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold);
+								++CurrentSlotNum;
+								InventorySlots.Add(ItemInfo); //새로운 슬롯 InventorySlots Add. Amount만큼 늘어남
+							}
+							
 							int i = 0;
 							for(auto Inven : PlayerInventory) //현재 인벤토리를 쭉 돌면서 이미 있는지 찾는다.
 							{
@@ -241,6 +318,7 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 								{
 									RequestAddItemUpdateNum(ItemId, PlayerInventory[i].Num + Amount); //DB Update
 									PlayerInventory[i].Num += Amount; //DB와 똑같이 맞추기 위해 PlayerInventory도 업데이트
+									OnGenerateSlotWidget.ExecuteIfBound();
 									if(bFromMonster)
 									{
 										MPC = MPC == nullptr ? Cast<AMeleePlayerController>(Cast<APawn>(GetOwner())->GetController()) : MPC;
@@ -256,6 +334,7 @@ bool UInventoryComponent::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 							}
 							RequestAddItemInsert(ItemId, Amount); //DB Insert
 							AddPlayerInventory(ItemId, Amount); //DB와 똑같이 맞추기 위해 PlayerInventory도 Insert
+							OnGenerateSlotWidget.ExecuteIfBound();
 							if(bFromMonster)
 							{
 								MPC = MPC == nullptr ? Cast<AMeleePlayerController>(Cast<APawn>(GetOwner())->GetController()) : MPC;
@@ -293,16 +372,46 @@ bool UInventoryComponent::RemoveItemAtSlot(int32 SlotIndex, int32 Amount)
 	{
 		return false;
 	} 
+
+	bool Condition = InventorySlots[SlotIndex].Category == EItemCategory::WEAPON || 
+					InventorySlots[SlotIndex].Category == EItemCategory::HELMET ||
+					InventorySlots[SlotIndex].Category == EItemCategory::CHEST ||
+					InventorySlots[SlotIndex].Category == EItemCategory::GAUNTLET ||
+					InventorySlots[SlotIndex].Category == EItemCategory::BOOT;
+	
+	if(Condition)
+	{
+		RequestDeleteEquipment(InventorySlots[SlotIndex].ItemId, InventorySlots[SlotIndex].InventoryNum);
+		DecreasePlayerInventory(SlotIndex, Amount);
+		InventorySlots.RemoveAt(SlotIndex);
+	}
 	else if(Amount == InventorySlots[SlotIndex].Amount)
 	{
 		RequestUseItemMinusAmount(SlotIndex, Amount);
+		DecreasePlayerInventory(SlotIndex, Amount);
 		InventorySlots.RemoveAt(SlotIndex);
 	}
 	else
 	{
 		RequestUseItemMinusAmount(SlotIndex, Amount);
 		InventorySlots[SlotIndex].Amount -= Amount;
+		DecreasePlayerInventory(SlotIndex, Amount);
 	}
+
+	
+	
+
+	OnGenerateSlotWidget.ExecuteIfBound();
+	return true;
+}
+
+void UInventoryComponent::DecreasePlayerInventory(int32 SlotIndex, int32 Amount)
+{
+	bool Condition = InventorySlots[SlotIndex].Category == EItemCategory::WEAPON || 
+					InventorySlots[SlotIndex].Category == EItemCategory::HELMET ||
+					InventorySlots[SlotIndex].Category == EItemCategory::CHEST ||
+					InventorySlots[SlotIndex].Category == EItemCategory::GAUNTLET ||
+					InventorySlots[SlotIndex].Category == EItemCategory::BOOT;
 	int32 i = 0;
 	for(auto Inven : PlayerInventory) //DB와 똑같이 맞추기 위해 PlayerInventory도 업데이트
 	{
@@ -311,16 +420,14 @@ bool UInventoryComponent::RemoveItemAtSlot(int32 SlotIndex, int32 Amount)
 			PlayerInventory[i].Num -= Amount;
 			if(PlayerInventory[i].Num == 0)
 			{
-				RequestUseItemDelete(SlotIndex);
+				if(!Condition)
+					RequestUseItemDelete(SlotIndex);
 			}
 			break;
 		}
 		++i;
 	}
-
-	OnGenerateSlotWidget.ExecuteIfBound();
-	return true;
-}
+}	
 
 bool UInventoryComponent::SwapSlot(int32 Index1, int32 Index2)
 {
@@ -379,7 +486,7 @@ void UInventoryComponent::UseItemAtIndex(int32 SlotIndex)
 			int i = 0;
 			for(auto Inven : InventorySlots) //장착되어있는 무기를 찾아야함
 			{
-				if(Inven.Category == Category) //찾음
+				if(Inven.Category == Category && Inven.Equipped) //찾음
 				{
 					InventorySlots[i].Equipped = 0;
 					RequestItemUpdateEquipped(i, InventorySlots[i].Equipped);
@@ -396,12 +503,41 @@ void UInventoryComponent::UseItemAtIndex(int32 SlotIndex)
 		else if(Condition) //방어구
 		{
 			//장착하려는 장비의 상태를 변경.
-			if(!InventorySlots[SlotIndex].Equipped)
+			if(!InventorySlots[SlotIndex].Equipped) //장착 버튼
+			{
+				int i = 0;
+				for(auto Inven : InventorySlots) //같은 부위 방어구 장착되어있는지
+				{
+					if(Inven.Category == Category && Inven.Equipped) //찾음
+					{
+						InventorySlots[i].Equipped = 0;
+						RequestItemUpdateEquipped(i, InventorySlots[i].Equipped);
+						UnequipArmor.ExecuteIfBound(InventorySlots[i].Category);
+						break;
+					}
+					++i;
+				}
 				OnEquipArmor.ExecuteIfBound(InventorySlots[SlotIndex].ItemId);
-		
-			InventorySlots[SlotIndex].Equipped = !InventorySlots[SlotIndex].Equipped;
-			RequestItemUpdateEquipped(SlotIndex, InventorySlots[SlotIndex].Equipped);
-			OnGenerateSlotWidget.ExecuteIfBound();
+				InventorySlots[SlotIndex].Equipped = 1;	
+				RequestItemUpdateEquipped(SlotIndex, InventorySlots[SlotIndex].Equipped);
+				OnGenerateSlotWidget.ExecuteIfBound();
+			}
+			else if(InventorySlots[SlotIndex].Equipped) //장착 해제 버튼
+			{
+				UnequipArmor.ExecuteIfBound(InventorySlots[SlotIndex].Category);
+				int i = 0;
+				for(auto Inven : InventorySlots) //장착되어있는 방어구를 찾아야함
+				{
+					if(Inven.Category == Category && Inven.Equipped) //찾음
+					{
+						InventorySlots[i].Equipped = 0;
+						RequestItemUpdateEquipped(i, InventorySlots[i].Equipped);
+						OnGenerateSlotWidget.ExecuteIfBound();
+						return;
+					}
+					++i;
+				}
+			}
 		}
 		else if(Category == EItemCategory::CONSUMEABLE) //소모품 효과 실행
 		{
@@ -424,6 +560,29 @@ void UInventoryComponent::DecreaseItemAcount(bool Success, int32 SlotIndex) //tr
 	{
 		RemoveItemAtSlot(SlotIndex, 1); //1개 제거
 	}
+}
+
+void UInventoryComponent::RequestDeleteEquipment(int32 ItemId, int32 InventoryNum)
+{
+	FPlayerInventoryDB Inventory;
+	Inventory.Pid = 9824;
+	Inventory.Itemid = ItemId;
+	Inventory.Inventorynum = InventoryNum;
+
+	if(Http)
+    {
+        TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+
+        Request->SetURL("http://localhost:8080/api/PlayerInventory/DeleteByInventoryNum/");
+        Request->SetVerb("PUT");
+        Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+        
+        FString JsonString;
+        FJsonObjectConverter::UStructToJsonObjectString(Inventory, JsonString);
+        Request->SetContentAsString(JsonString);
+
+        Request->ProcessRequest();
+    }
 }
 
 void UInventoryComponent::RequestUseItemMinusAmount(int32 SlotIndex, int32 Amount) //Num -= 1
@@ -494,6 +653,59 @@ void UInventoryComponent::RequestAddItemUpdateNum(int32 ItemId, int32 Amount) //
     }
 }
 
+void UInventoryComponent::RequestAddEquipmentInsert(int32 ItemId, bool IsLast)
+{
+	FPlayerInventoryDB Inventory;
+	Inventory.Pid = 9824;
+	Inventory.Itemid = ItemId;
+	Inventory.Num = 1;
+
+	if(!IsLast)
+	{
+		if(Http)
+		{
+			TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+
+			Request->SetURL("http://localhost:8080/api/PlayerInventory/Insert/");
+			Request->SetVerb("PUT");
+			Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+			
+			FString JsonString;
+			FJsonObjectConverter::UStructToJsonObjectString(Inventory, JsonString);
+			Request->SetContentAsString(JsonString);
+
+			Request->ProcessRequest();
+		}
+	}
+	else
+	{
+		if(Http)
+		{
+			TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+
+			Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::OnAddEquipmentInsertComplete);
+			Request->SetURL("http://localhost:8080/api/PlayerInventory/Insert/");
+			Request->SetVerb("PUT");
+			Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+			
+			FString JsonString;
+			FJsonObjectConverter::UStructToJsonObjectString(Inventory, JsonString);
+			Request->SetContentAsString(JsonString);
+
+			Request->ProcessRequest();
+		}
+	}
+	
+}
+
+void UInventoryComponent::OnAddEquipmentInsertComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
+{
+	if(Success)
+	{
+		RequestGetInventoryNum(EquipmentId, EquipmentAmount);
+	}
+}
+
 void UInventoryComponent::RequestAddItemInsert(int32 ItemId, int32 Amount) // 인벤토리에 없는 새로운 아이템일 때 Insert
 {
 	FPlayerInventoryDB Inventory;
@@ -523,6 +735,7 @@ void UInventoryComponent::RequestItemUpdateEquipped(int32 SlotIndex, bool Equipp
 	Inventory.Pid = 9824;
 	Inventory.Itemid = InventorySlots[SlotIndex].ItemId;
 	Inventory.Equipped = Equipped;
+	Inventory.Inventorynum = InventorySlots[SlotIndex].InventoryNum;
 
 	if(Http)
     {
@@ -544,6 +757,7 @@ void UInventoryComponent::AddGold(int32 GoldAmount, bool bFromMonster)
 {
 	Gold += GoldAmount;
 	
+	
 	FString ItemInfoTablePath = FString(TEXT("/Game/CombatSystem/DataTable/ItemInfo"));
 	UDataTable* ItemInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ItemInfoTablePath));
 	if(ItemInfoTableObject)
@@ -552,7 +766,7 @@ void UInventoryComponent::AddGold(int32 GoldAmount, bool bFromMonster)
 		ItemRow = ItemInfoTableObject->FindRow<FItemInfoTable>(FName(FString::FromInt(111111)), TEXT(""));
 		if(ItemRow)
 		{
-			FItemInfoInSlot AddItemInfo = FItemInfoInSlot(ItemRow->Itemid, GoldAmount, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold);
+			FItemInfoInSlot AddItemInfo = FItemInfoInSlot(0, ItemRow->Itemid, GoldAmount, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold);
 			if(bFromMonster)
 			{
 				MPC = MPC == nullptr ? Cast<AMeleePlayerController>(Cast<APawn>(GetOwner())->GetController()) : MPC;
@@ -564,6 +778,22 @@ void UInventoryComponent::AddGold(int32 GoldAmount, bool bFromMonster)
 		}
 	}
 	
+}
+
+void UInventoryComponent::AddEquipmentPlayerInventory(int32 ItemId, int32 Amount)
+{
+	FPlayerInventoryDB InsertInventory;
+	for(int i = 0; i < Amount; i++)
+	{
+		//InsertInventory.Inventorynum = GetInventoryNum[i].Inventorynum;
+		InsertInventory.Inventorynum = 0;
+		InsertInventory.Pid = 9824;
+		InsertInventory.Itemid = ItemId;
+		InsertInventory.Num = 1;
+		InsertInventory.Equipped = 0;
+		PlayerInventory.Add(InsertInventory);
+	}
+	//GetInventoryNum.Empty();
 }
 
 void UInventoryComponent::AddPlayerInventory(int32 ItemId, int32 Amount)
@@ -632,12 +862,12 @@ bool UInventoryComponent::AddAmountExistSlot(FItemInfoTable* ItemRow, int32 Amou
 			{
 				if(RemainAmount > MaxStackSize)
 				{
-					InventorySlots.Add(FItemInfoInSlot(ItemRow->Itemid, MaxStackSize, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
+					InventorySlots.Add(FItemInfoInSlot(0, ItemRow->Itemid, MaxStackSize, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
 					RemainAmount -= MaxStackSize;
 				}
 				else
 				{
-					InventorySlots.Add(FItemInfoInSlot(ItemRow->Itemid, RemainAmount, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
+					InventorySlots.Add(FItemInfoInSlot(0, ItemRow->Itemid, RemainAmount, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
 				}
 			}
 		}
@@ -675,11 +905,11 @@ bool UInventoryComponent::InsertItemNewSlot(FItemInfoTable* ItemRow, int32 Total
 		{
 			if(RemainNum > MaxStackSize)
 			{
-				InventorySlots.Add(FItemInfoInSlot(ItemRow->Itemid, MaxStackSize, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
+				InventorySlots.Add(FItemInfoInSlot(0, ItemRow->Itemid, MaxStackSize, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
 			}
 			else
 			{
-				InventorySlots.Add(FItemInfoInSlot(ItemRow->Itemid, RemainNum, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
+				InventorySlots.Add(FItemInfoInSlot(0, ItemRow->Itemid, RemainNum, ItemRow->Name, ItemRow->Desc, ItemRow->Icon, ItemRow->Usetext, ItemRow->Canuse, ItemRow->Canstack, ItemRow->Category, ItemRow->Isactor, 0, ItemRow->BuyGold, ItemRow->SellGold));
 			}
 			RemainNum -= MaxStackSize;
 		}

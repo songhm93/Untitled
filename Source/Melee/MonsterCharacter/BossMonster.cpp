@@ -78,6 +78,10 @@ void ABossMonster::Special3()
 {
 }
 
+void ABossMonster::Special4()
+{
+}
+
 void ABossMonster::OnTargeted(bool IsTargeted)
 {
     if(BossHPBarWidget)
@@ -110,7 +114,10 @@ void ABossMonster::HPBarOnOff(bool Show)
 	{
 		if(Show)
 		{
-			BossHPBarWidget->SetVisibility(ESlateVisibility::Visible);
+			if(GetWorldTimerManager().IsTimerActive(HideHPBarTimerHandle))
+				GetWorldTimerManager().ClearTimer(HideHPBarTimerHandle);
+            
+            BossHPBarWidget->SetVisibility(ESlateVisibility::Visible);
             Cast<UEnemyHPBarWidget>(BossHPBarWidget)->PlayOpacityAnim(true);
 		}
 		else

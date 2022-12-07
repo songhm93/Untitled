@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "../Type/Types.h"
 #include "../Type/Stats.h"
+#include "../Type/ItemCategory.h"
 #include "CombatComponent.generated.h"
 
 DECLARE_DELEGATE_TwoParams(FOnUpdateCurrentStatValue, EStats, float);
@@ -200,6 +201,7 @@ public:
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }
 	void OnEquipWeapon(ABaseWeapon* Equipment);
 	void OnEquipArmor(ABaseArmor* Equipment);
+	void OnUnequipArmor(EItemCategory ArmorCategory);
 	void EquippedWeaponSpawn(ABaseWeapon* Equipment, int32 WeaponId);
 	void OnEquippedArmorApply(ABaseArmor* Equipment);
 	void AttachActor(EEquipmentType Type, FName SocketName);

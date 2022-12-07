@@ -1,16 +1,17 @@
 #include "StatsComponent.h"
 #include "JsonObjectConverter.h"
 
-#include "../Type/Stats.h"
 #include "StateManagerComponent.h"
 #include "CombatComponent.h"
+#include "../Type/Stats.h"
 #include "../Item/Consumeable.h"
+#include "../Equipment/BaseWeapon.h"
 
 UStatsComponent::UStatsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	
-	HPRegenRate = 0.3f;
+	HPRegenRate = 8.f;
 	StaminaRegenRate = 1.0f;
 	bShouldRegen = true;
 
@@ -245,7 +246,9 @@ void UStatsComponent::UpdateSkillLevel(int32 SkillNum, int32 WeaponId)
     {
         TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
 
-        Request->SetURL("http://localhost:8080/api/SkillInfo/SkillUp");
+        
+		Request->OnProcessRequestComplete().BindUObject(this, &ThisClass::OnSkillUpComplete);
+		Request->SetURL("http://localhost:8080/api/SkillInfo/SkillUp");
         Request->SetVerb("PUT");
         Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
         
@@ -265,4 +268,16 @@ void UStatsComponent::UpdateSkillLevel(int32 SkillNum, int32 WeaponId)
         Request->ProcessRequest();
     }
 	
+}
+
+void UStatsComponent::OnSkillUpComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
+{
+	if(Success)
+	{
+		UCombatComponent* CombatComp = Cast<UCombatComponent>(GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
+		if (CombatComp && CombatComp->GetEquippedWeapon())
+		{
+			CombatComp->GetEquippedWeapon()->InitSkillInfo();
+		}
+	}
 }

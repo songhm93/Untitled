@@ -96,7 +96,6 @@ void ARampageMonster::Special3()
     {
         //SkillComplete
         ResumeS3Montage();
-
     }
 
     FActorSpawnParameters Params; 
@@ -113,6 +112,34 @@ void ARampageMonster::Special3()
         GetWorldTimerManager().SetTimer(SkillRangeDestroyTimerHandle, SkillRangeDestroyDeletage, SkillRangeDestroyTime, false);
         ++CurrentSkillCount;
     }
+}
+
+void ARampageMonster::Special4()
+{
+    FActorSpawnParameters Params; 
+	Params.Owner = this;
+    Params.Instigator = Cast<APawn>(this);
+
+    if(EnemyAnimInst && Special4Montage)
+    {
+        EnemyAnimInst->Montage_Play(Special4Montage);
+    }
+
+    if(Target && SkillRangeActor)
+    {
+        for(int i = 0; i < 10; ++i)
+        {
+            FVector SpawnLocation = FindRandomFloor();
+            FTransform SpawnTransform = FTransform(GetActorTransform().GetRotation(), SpawnLocation - FVector(0.f, 0.f, 2.f), Target->GetActorScale3D());
+            AActor* SpawnActor = GetWorld()->SpawnActor<AActor>(SkillRangeActor, SpawnTransform , Params);
+            
+        }
+    }
+}
+
+void ARampageMonster::Special4Explode()
+{
+
 }
 
 void ARampageMonster::DeattachRock()
@@ -152,10 +179,30 @@ FVector ARampageMonster::FindFloor()
     return FVector::ZeroVector;
 }
 
+FVector ARampageMonster::FindRandomFloor()
+{
+    if(Target)
+    {
+        float RandValueX = FMath::RandRange(-600.f, 600.f);
+        float RandValueY = FMath::RandRange(-600.f, 600.f);
+        FVector TargetLocation = GetActorLocation() + FVector(RandValueX, RandValueY, 0.f);
+
+        FHitResult HitResult;
+        GetWorld()->LineTraceSingleByChannel(HitResult, TargetLocation, TargetLocation + (GetActorUpVector() * -600.f), ECollisionChannel::ECC_Visibility);
+        if(HitResult.bBlockingHit)
+        {
+            return HitResult.ImpactPoint;
+        }
+        //DrawDebugLine(GetWorld(), FindLoc, FindLoc + (Target->GetActorUpVector() * -600.f), FColor::Cyan, true, -1, 0, 12.333);
+    }
+
+    return FVector::ZeroVector;
+}
+
 void ARampageMonster::SkillRangeDestroy(AActor* RangeActor)
 {
     //파괴하면서 대미지
-    UGameplayStatics::ApplyRadialDamage(this, 10.f, RangeActor->GetActorLocation(), 256.f, UDamageType::StaticClass(), TArray<AActor*>(), this, GetController());
+    UGameplayStatics::ApplyRadialDamage(this, 2000.f, RangeActor->GetActorLocation() + FVector(0.f, 0.f, 20.f), 256.f, UDamageType::StaticClass(), TArray<AActor*>(), this, GetController());
     RangeActor->Destroy();
 }
 
@@ -171,7 +218,7 @@ void ARampageMonster::PauseS3Montage()
 
 void ARampageMonster::ResumeS3Montage()
 {
-     if(EnemyAnimInst && Special3Montage)
+    if(EnemyAnimInst && Special3Montage)
     {
         EnemyAnimInst->Montage_Resume(Special3Montage);
         bPauseS3Montage = false;

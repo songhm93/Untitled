@@ -22,6 +22,18 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* DefaultMentWidgetComp;
+
+	UFUNCTION()
+	void VisibleMent(bool IsVisible);
+
+	float DefaultMentHideTime;
+
+	FTimerHandle DefaultMentHideTimerHandle;
+
+	FTimerDelegate DefaultMentHideDeletage;
+
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	USphereComponent* AreaSphereComp;

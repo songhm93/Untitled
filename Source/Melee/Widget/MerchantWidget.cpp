@@ -21,6 +21,12 @@ void UMerchantWidget::NativeConstruct()
     {
         ExitButton->OnClicked.AddDynamic(this, &ThisClass::ExitMerchant);
     }
+
+    InventoryComp = Cast<UInventoryComponent>(GetOwningPlayerPawn()->GetComponentByClass(UInventoryComponent::StaticClass()));
+    if(InventoryComp)
+    {
+        InventoryComp->OnGenerateMerchantSlot.BindUObject(this, &ThisClass::GenerateInventorySlots);
+    }
 }
 
 void UMerchantWidget::Init(TArray<FItemInfoInSlot> Info) //이걸 호출했을 때 상점의 물품 정보가 일로.

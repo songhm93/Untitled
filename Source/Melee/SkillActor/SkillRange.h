@@ -30,4 +30,7 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;
 
+	float Skill4DestoryTime;
+
+	FTimerHandle Skill4DestroyTimerHandle;
 };

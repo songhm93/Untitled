@@ -17,6 +17,7 @@ public:
 	virtual void Special1() override;
 	virtual void Special2() override;
 	virtual void Special3() override;
+	virtual void Special4() override;
 	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay() override;
@@ -38,6 +39,10 @@ private:
 	TSubclassOf<AActor> SkillRangeActor;
 
 	FVector FindFloor();
+
+	FVector FindRandomFloor();
+
+	void Special4Explode();
 
 	FTimerHandle SkillRangeDestroyTimerHandle;
 

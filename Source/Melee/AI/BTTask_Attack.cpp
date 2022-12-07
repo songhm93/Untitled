@@ -61,7 +61,7 @@ bool UBTTask_Attack::BossCase() //스페셜 실행
         bool SpecialComplete = Cast<AEnemyAIController>(OwnerController)->GetBBComp()->GetValueAsBool(TEXT("SpecialComplete"));
         UMonstersCombatComponent* MCC = Cast<UMonstersCombatComponent>(MonsterCharacter->GetComponentByClass(UMonstersCombatComponent::StaticClass()));
         APreemptiveMonster* BossCharacter = Cast<APreemptiveMonster>(MonsterCharacter);
-        UE_LOG(LogTemp, Warning, TEXT("BossBehavior : %d"), BossBehavior);
+
         if(Cast<IBossInterface>(BossCharacter))
         {
             switch (BossBehavior)
@@ -81,16 +81,12 @@ bool UBTTask_Attack::BossCase() //스페셜 실행
                 Cast<AEnemyAIController>(OwnerController)->GetBBComp()->SetValueAsEnum(TEXT("SpecialBehavior"), 3);
                 Cast<IBossInterface>(BossCharacter)->Special3();
                 break;
+            case 7:
+                Cast<AEnemyAIController>(OwnerController)->GetBBComp()->SetValueAsEnum(TEXT("SpecialBehavior"), 4);
+                Cast<IBossInterface>(BossCharacter)->Special4();
+                break;
             }
         }
     }
     return true;
 }
-    
-    //블랙보드에서 SpecialBehavior를 받아옴
-    //그에 따라 1번스킬,2번스킬,3번스킬 실행하고
-    //실행하고 나서 실행을 완료했다라는 신호가 필요
-    //거리에 따라 Behaior가 바로바로 바뀌지 않게 해야함.
-    //실행을 완료했다 라는 신호를 받았을 때 현재 거리가 어떤지 알아야함.
-    
-   

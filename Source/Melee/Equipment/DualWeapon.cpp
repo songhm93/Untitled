@@ -278,7 +278,7 @@ void ADualWeapon::Skill1Explode()
 		CollisionObjectType,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
+		EDrawDebugTrace::None,
 		OutHitResult,
 		true,
 		FLinearColor::Red,
@@ -295,7 +295,7 @@ void ADualWeapon::Skill1Explode()
 		}
 	}
     
-    SetSkillATK.ExecuteIfBound(Skill1ATK, LastHit);
+    SetSkillATK.ExecuteIfBound(Skill1ATK * Skill1ATKCalc(), LastHit); //대미지 적용
 
     if(Skill1ExplodeParticle && LastHit.GetActor())
     {
@@ -305,6 +305,15 @@ void ADualWeapon::Skill1Explode()
     {
         UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Skill1ExplodeParticle, GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 150.f);
     }
+}
+
+int32 ADualWeapon::Skill1ATKCalc()
+{
+    if(GetSkillInfo().Contains(1))
+    {
+        return GetSkillInfo()[1].CurrentLevel;
+    }
+    return 1.f;
 }
 
 void ADualWeapon::Skill2Range()
@@ -378,6 +387,17 @@ void ADualWeapon::BlinkDestroyShadow()
 
 void ADualWeapon::InitSkillInfo()
 {
+    for(int i = 1; i < 5; ++i)
+    {
+        SkillInfo.Add(i, FSkillInfo());
+    }
+    
+    Super::InitSkillInfo();
+
+}
+
+void ADualWeapon::InitSkillDT()
+{
     FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/WeaponSkillInfo"));
 	UDataTable* DualWeaponSkillInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
 	if(DualWeaponSkillInfoTableObject)
@@ -388,11 +408,14 @@ void ADualWeapon::InitSkillInfo()
             FString RowName = FString::Printf(TEXT("%d"), WeaponId);
             RowName.Append(FString::FromInt(i));
             SkillInfoRow = DualWeaponSkillInfoTableObject->FindRow<FSkillInfoTable>(FName(RowName), TEXT(""));
+
             if(SkillInfoRow)
             {
-                SkillInfo.Add(i, FSkillInfo(SkillInfoRow->SkillIcon, SkillInfoRow->SkillName));
+                int32 NeedToLevel = (SkillInfo[i].CurrentLevel - 1) * 4 + SkillInfoRow->NeedToLevel;
+                SkillInfo[i].NeedToLevel = NeedToLevel;
+                SkillInfo[i].SkillIcon = SkillInfoRow->SkillIcon;
+                SkillInfo[i].SkillName = SkillInfoRow->SkillName;
             }
         }
 	}
-    Super::InitSkillInfo();
 }

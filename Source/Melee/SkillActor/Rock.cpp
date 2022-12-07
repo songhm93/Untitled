@@ -22,7 +22,7 @@ ARock::ARock()
 	CapsuleComp->SetNotifyRigidBodyCollision(false);
 	MeshComp->SetupAttachment(RootComponent);
 
-	Damage = 21.f;
+	Damage = 2000.f;
 
 	
 	
@@ -62,7 +62,7 @@ void ARock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveCo
 				UGameplayStatics::ApplyRadialDamageWithFalloff(
 					this, 
 					Damage, 
-					10.f, //최소 데미지
+					1500.f, //최소 데미지
 					GetActorLocation(), //데미지 반경의 원점
 					200.f, //데미지 내부 반경
 					500.f, //데미지 외부 반경
@@ -75,7 +75,6 @@ void ARock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveCo
 			}
 		}
 		HitEffect();
-		Destroy();
 	}
 }
 
@@ -89,6 +88,7 @@ void ARock::HitEffect()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 	}
+	Destroy();
 }
 
 void ARock::Destroyed()

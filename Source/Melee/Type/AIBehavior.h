@@ -23,6 +23,7 @@ enum class EBossBehavior : uint8
     SPECIAL1 UMETA(DisplayName="SPECIAL1"),
     SPECIAL2 UMETA(DisplayName="SPECIAL2"),
     SPECIAL3 UMETA(DisplayName="SPECIAL3"),
+    SPECIAL4 UMETA(DisplayName="SPECIAL4"),
     RETURN UMETA(DisplayName="RETURN"),
 
     MAX UMETA(DisplayName="MAX")

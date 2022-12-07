@@ -20,4 +20,5 @@ public:
 	virtual void Special1() = 0;
 	virtual void Special2() = 0;
 	virtual void Special3() = 0;
+	virtual void Special4() = 0;
 };

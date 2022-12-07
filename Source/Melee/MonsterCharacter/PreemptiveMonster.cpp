@@ -45,8 +45,10 @@ void APreemptiveMonster::AgroSphereEndOverlap(
 	UPrimitiveComponent* OtherComp, 
 	int32 OtherBodyIndex)
 {
-	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
+	if(GetStateManagerComp()->GetCurrentState() == ECurrentState::DEAD) return;
 	
+	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
+
 	if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)) && AIController)
 	{
 		if(AIController)
@@ -57,3 +59,6 @@ void APreemptiveMonster::AgroSphereEndOverlap(
 		}
 	}
 }
+
+
+

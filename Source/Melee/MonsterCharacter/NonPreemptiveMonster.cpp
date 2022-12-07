@@ -72,6 +72,8 @@ void ANonPreemptiveMonster::AgroSphereEndOverlap(
 	UPrimitiveComponent* OtherComp, 
 	int32 OtherBodyIndex)
 {
+	if(GetStateManagerComp()->GetCurrentState() == ECurrentState::DEAD) return;
+	
 	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 	
 	if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)) && AIController)
@@ -112,6 +114,15 @@ void ANonPreemptiveMonster::HPBarOnOff(bool Show)
 	{
 		if(Show)
 		{
+			if(GetWorldTimerManager().IsTimerActive(HideHPBarTimerHandle))
+				GetWorldTimerManager().ClearTimer(HideHPBarTimerHandle);
+			
+			if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DEAD)
+			{
+				HPBarWidget->SetVisibility(false);
+				return;
+			}
+			
 			HPBarWidget->SetVisibility(Show);
 		}
 		else

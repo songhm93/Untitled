@@ -40,7 +40,7 @@ void AMerchantNPC::Interact(AActor* Caller)
                         ItemInfoRow = ItemInfoTableObject->FindRow<FItemInfoTable>(FName(FString::FromInt(ItemId)), TEXT(""));
                         if(ItemInfoRow)
                         {
-                            HaveItemsInfo.Add(FItemInfoInSlot(ItemId, 1, ItemInfoRow->Name, ItemInfoRow->Desc, ItemInfoRow->Icon, ItemInfoRow->Usetext, ItemInfoRow->Canuse, ItemInfoRow->Canstack, ItemInfoRow->Category, ItemInfoRow->Isactor, 0, ItemInfoRow->BuyGold, ItemInfoRow->SellGold));
+                            HaveItemsInfo.Add(FItemInfoInSlot(0, ItemId, 1, ItemInfoRow->Name, ItemInfoRow->Desc, ItemInfoRow->Icon, ItemInfoRow->Usetext, ItemInfoRow->Canuse, ItemInfoRow->Canstack, ItemInfoRow->Category, ItemInfoRow->Isactor, 0, ItemInfoRow->BuyGold, ItemInfoRow->SellGold));
                         }
                     }
                 }

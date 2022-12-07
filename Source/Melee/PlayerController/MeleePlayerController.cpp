@@ -258,7 +258,7 @@ void AMeleePlayerController::SaveData()
 
 void AMeleePlayerController::GetItemWidgetVisible(FItemInfoInSlot AddItemInfo, int32 Amount)
 {
-    if(ExistGetItemWidgetNum == 4) //화면에 위젯이 4개 떠있으면 그 뒤에 떠야하는 정보를 저장 후 대기
+    if(ExistGetItemWidgetNum == 5) //화면에 위젯이 5개 떠있으면 그 뒤에 떠야하는 정보를 저장 후 대기
     {
         GetItemWidgetQueue.Add(FGetItemQueue(AddItemInfo, Amount));
         ++WaitGetItemWidgetNum;
@@ -271,14 +271,12 @@ void AMeleePlayerController::GetItemWidgetVisible(FItemInfoInSlot AddItemInfo, i
 		{
 			++ExistGetItemWidgetNum;
             GetItemWidget->AddToViewport();
+            GetItemWidget->SetDesiredSizeInViewport(FVector2D(410, 60));
+            GetItemWidget->SetPositionInViewport(FVector2D(1100, 400));
 			GetItemWidget->SetVisibility(ESlateVisibility::Visible);
 			GetItemWidget->Init(AddItemInfo, Amount);
 
             GetItemWidgetScrollUp();
-            if(BaseCharacter && BaseCharacter->GetInventoryComp())
-            {
-                BaseCharacter->GetInventoryComp()->OnGenerateSlotWidget.ExecuteIfBound();
-            }
 		}
 	}
 }

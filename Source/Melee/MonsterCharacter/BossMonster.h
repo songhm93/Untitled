@@ -18,6 +18,7 @@ public:
 	virtual void Special1() override;
 	virtual void Special2() override;
 	virtual void Special3() override;
+	virtual void Special4() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnTargeted(bool IsTargeted) override;
 	virtual void Dead() override;
@@ -31,6 +32,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "SpecialMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Special3Montage;
+
+	UPROPERTY(EditAnywhere, Category = "SpecialMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Special4Montage;
 
 	UPROPERTY(EditAnywhere, Category = "SpecialMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* AgroMontage;

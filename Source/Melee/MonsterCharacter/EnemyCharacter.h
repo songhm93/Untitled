@@ -55,7 +55,7 @@ class MELEE_API AEnemyCharacter : public ACharacter, public ICombatInterface, pu
 public:
 	AEnemyCharacter();
 	virtual void Tick(float DeltaTime) override;
-	virtual bool CanRecieveDamage() override;
+	virtual bool CanReceiveDamage() override;
 	UFUNCTION(BlueprintCallable)
 	virtual void ResetCombat() override;
 	virtual bool CanBeTargeted() override;
@@ -63,30 +63,45 @@ public:
 	virtual void CalcReceiveDamage(float ATK) override;
 	virtual void ApplyHitReaction(EDamageType DamageType) override;
 	virtual void ApplyImpactEffect() override;
-	void Respawn();
-
+	virtual bool CalcCritical(float Percent) override;
+	virtual void Respawn();
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowDamageText(int32 Damage, bool IsCritical);
 protected:
 	virtual void BeginPlay() override;
+
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
 	UMonsterStatsComponent* MonsterStatComp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true") )
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true") )
 	USphereComponent* AgroRangeSphere;
+
 	UPROPERTY(EditAnywhere,  Meta = (AllowPrivateAccess = "true"))
 	float AgroRange;
+
 	UPROPERTY()
 	UEnemyAnimInstance* EnemyAnimInst;
+
 	UPROPERTY()
 	AEnemyAIController* AIController;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UStateManagerComponent* StateManagerComp;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float AgroCancelTime;
+
 	FTimerHandle AgroCancelTimerHandle;
+
 	float AreaAgroCancelTime;
+
 	FTimerHandle AreaAgroCancelTimeHandle;
+
 	bool bTargetingState;
+
 	UPROPERTY()
 	AActor* Target;
+
 	UFUNCTION()
 	virtual void ReceiveDamage(
 		AActor* DamagedActor, 
@@ -95,10 +110,16 @@ protected:
 		AController* InstigatedBy, 
 		AActor* DamageCauser);
 	virtual void Dead();
+
 	void EnterCombat(AActor* Player, bool First);
+
 	void ExitCombat(bool First);
+
+	bool CalcChance(float Percent);
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	FString AreaNum;
+
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 MId;
 	

@@ -133,6 +133,7 @@ void ABaseCharacter::BeginPlay()
 	{
 		InventoryComp->OnEquipWeapon.BindUObject(this, &ThisClass::EquipWeapon);
 		InventoryComp->OnEquipArmor.BindUObject(this, &ThisClass::EquipArmor);
+		InventoryComp->UnequipArmor.BindUObject(this, &ThisClass::UnequipArmor);
 		InventoryComp->OnEquippedWeaponSpawn.BindUObject(this, &ThisClass::EquippedWeaponSpawn);
 		InventoryComp->OnEquippedArmorApply.BindUObject(this, &ThisClass::EquippedArmorApply);
 	}
@@ -296,7 +297,7 @@ void ABaseCharacter::InteractButtonPressed()
 		ObjectTypesArray, 
 		false, 
 		IgnoredActors, 
-		EDrawDebugTrace::ForDuration, 
+		EDrawDebugTrace::None, 
 		OutHit, 
 		true,
 		FLinearColor::Red,
@@ -386,7 +387,6 @@ void ABaseCharacter::ReceiveDamage(
 	AController* InstigatedBy, 
 	AActor* DamageCauser)
 {
-	
 	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DODGING) return;
 	
 	if(InstigatedBy)
@@ -406,21 +406,41 @@ void ABaseCharacter::ReceiveDamage(
 	CalcReceiveDamage(EnemyATK);
 }
 
+bool ABaseCharacter::CalcCritical(float Percent)
+{
+	bool ReturnValue = false;
+	const float RandValue = FMath::RandRange(0.f, 999.f);
+	const float MaxRangeValue = Percent * 10.f;
+
+	if(MaxRangeValue >= RandValue)
+	{
+		ReturnValue = true;
+	}
+
+	return ReturnValue;
+}
+
 void ABaseCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
 {
+	bool IsCritical = CalcCritical(10.f);
 	//대미지 계산
 	if(StatComp)
 	{
 		const float Def = StatComp->GetCurrentStatValue(EStats::DEF);
-		const float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		if(IsCritical) Result *= 2.f;
 		StatComp->PlusCurrentStatValue(EStats::HP, Result * -1); //HP 적용
 		if(StatComp->GetCurrentStatValue(EStats::HP) <= 0)
 		{
 			if(StateManagerComp)
 				StateManagerComp->SetCurrentState(ECurrentState::DEAD);
 		}
+		//Result로 대미지 위젯
+		ShowDamageText(Result, IsCritical);
 	}
 }
+
+
 
 void ABaseCharacter::Dead()
 {
@@ -510,7 +530,7 @@ void ABaseCharacter::Test()
 
 }
 
-bool ABaseCharacter::CanRecieveDamage()
+bool ABaseCharacter::CanReceiveDamage()
 {
 	if(StateManagerComp && StateManagerComp->GetCurrentState() != ECurrentState::DEAD)
 		return true;
@@ -622,6 +642,7 @@ void ABaseCharacter::EquipWeapon(int32 ItemId)
 
 void ABaseCharacter::EquipArmor(int32 ItemId)
 {
+	UE_LOG(LogTemp, Warning, TEXT("ItemId11 : %d"), ItemId);
 	FActorSpawnParameters Params; 
 	Params.Owner = this;
 	Params.Instigator = Cast<APawn>(this);
@@ -640,6 +661,14 @@ void ABaseCharacter::EquipArmor(int32 ItemId)
 				CombatCompo->OnEquipArmor(Armor);
 			}
 		}
+	}
+}
+
+void ABaseCharacter::UnequipArmor(EItemCategory ArmorCategory)
+{
+	if(CombatCompo)
+	{
+		CombatCompo->OnUnequipArmor(ArmorCategory);
 	}
 }
 
@@ -839,6 +868,8 @@ EPhysicalSurface ABaseCharacter::GetPhysicsSurface()
 
 bool ABaseCharacter::AddItem(int32 ItemId, int32 Amount, bool bFromMonster)
 {
+	if(ItemId == 0 || Amount == 0) return false;
+	
 	if(InventoryComp)
 	{
 		InventoryComp->AddItem(ItemId, Amount, bFromMonster);

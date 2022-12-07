@@ -43,12 +43,12 @@ protected:
 	float HPRegenRate;
 	FHttpModule* Http;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	TMap<EExpStats, float> ExpStats;
+	TMap<EExpStats, float> ExpStats; //레벨, 경험치.
 	
 private:
 	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
 	FPlayerInfoDB ConvertToPlayerInfo(const FString& ResponseString);
-	
+	void OnSkillUpComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
 public: //get	
 
 public: //set

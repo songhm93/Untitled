@@ -83,12 +83,12 @@ FName UMonstersCombatComponent::GetLightAttackSectionName(int32 Count)
     }
     else if (RandomValue == 1)
     {
-        CloseAttackCorrectionValue = 2.f;
+        CloseAttackCorrectionValue = 1.5f;
         ReturnValue = TEXT("Second");
     }
     else if (RandomValue == 2)
     {
-        CloseAttackCorrectionValue = 3.f;
+        CloseAttackCorrectionValue = 2.f;
         ReturnValue = TEXT("Third");
     }
 	
@@ -120,7 +120,6 @@ void UMonstersCombatComponent::ImpactTrace()
 	TArray<AActor*> ActorsToIgnore;
 
 	ActorsToIgnore.Add(GetOwner());
-	EDrawDebugTrace::Type DebugTrace = EDrawDebugTrace::ForDuration;
 	TArray<FHitResult> OutHitResult;
 
 	UKismetSystemLibrary::BoxTraceMultiForObjects(
@@ -132,7 +131,7 @@ void UMonstersCombatComponent::ImpactTrace()
 		CollisionObjectType,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
+		EDrawDebugTrace::None,
 		OutHitResult,
 		true,
 		FLinearColor::Red,
