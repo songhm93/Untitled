@@ -32,6 +32,9 @@ private:
 	UFUNCTION()
 	void AnimNotify_Impact();
 
+	UFUNCTION()
+	void AnimNotify_DefaultCameraShake();
+
 	void UpdateCombatState(bool CombatState);
 
 	void UpdateSpecialReady();

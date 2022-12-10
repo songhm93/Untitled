@@ -31,6 +31,7 @@ class UGetItemWidget;
 class UFadeWidget;
 class UQuestLogComponent;
 
+
 UCLASS(config=Game)
 class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IInventoryInterface, public IQuestInterface
 {
@@ -250,6 +251,7 @@ private:
 	FTimerHandle RespawnTimerHandle;
 
 	float RespawnTime;
+	
 	
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

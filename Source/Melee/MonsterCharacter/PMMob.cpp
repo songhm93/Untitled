@@ -7,32 +7,12 @@
 
 APMMob::APMMob()
 {
-    HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBarWidget"));
-    HPBarWidget->SetupAttachment(GetMesh());
 
-    
-	HideHPBarTime = 3.f;
 }
 
 void APMMob::BeginPlay()
 {
     Super::BeginPlay();
-
-    if(StateManagerComp)
-	{
-        StateManagerComp->OnCombatState.AddUObject(this, &ThisClass::HPBarOnOff);
-    }
-	
-	if(HPBarWidget)
-	{
-		UUserWidget* EnemyHPBarWidget = CreateWidget<UEnemyHPBarWidget>(GetWorld(), HPBarWidget->GetWidgetClass());
-		if(EnemyHPBarWidget)
-		{
-			HPBarWidget->SetWidget(EnemyHPBarWidget);
-			HPBarWidget->SetVisibility(false);
-			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->Init(MonsterStatComp);
-		}
-	}
 }
 
 void APMMob::OnTargeted(bool IsTargeted)
@@ -43,38 +23,6 @@ void APMMob::OnTargeted(bool IsTargeted)
 	{
 		if(IsTargeted)
 			HPBarWidget->SetVisibility(IsTargeted);
-	}
-}
-
-void APMMob::HideHPBar()
-{
-	if(HPBarWidget)
-	{
-		HPBarWidget->SetVisibility(false);
-	}
-}
-
-void APMMob::HPBarOnOff(bool Show)
-{
-	if(HPBarWidget)
-	{
-		if(Show)
-		{
-			if(GetWorldTimerManager().IsTimerActive(HideHPBarTimerHandle))
-				GetWorldTimerManager().ClearTimer(HideHPBarTimerHandle);
-			
-			if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DEAD)
-			{
-				HPBarWidget->SetVisibility(false);
-				return;
-			}
-			
-			HPBarWidget->SetVisibility(Show);
-		}
-		else
-		{
-			GetWorldTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
-		}
 	}
 }
 

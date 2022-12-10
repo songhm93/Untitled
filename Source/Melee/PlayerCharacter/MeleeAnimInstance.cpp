@@ -73,7 +73,12 @@ void UMeleeAnimInstance::AnimNotify_DodgeComplete()
 
 void UMeleeAnimInstance::AnimNotify_Impact()
 {
-    OnImpact.ExecuteIfBound();
+    OnImpact.ExecuteIfBound(0);
+}
+
+void UMeleeAnimInstance::AnimNotify_Skill3Impact()
+{
+    OnImpact.ExecuteIfBound(3);
 }
 
 void UMeleeAnimInstance::SetWeaponType(EWeaponType Type)

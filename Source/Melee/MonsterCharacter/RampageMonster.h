@@ -5,7 +5,7 @@
 #include "RampageMonster.generated.h"
 
 class ARock;
-
+class UCurveFloat;
 
 UCLASS()
 class MELEE_API ARampageMonster : public ABossMonster
@@ -18,6 +18,7 @@ public:
 	virtual void Special2() override;
 	virtual void Special3() override;
 	virtual void Special4() override;
+	virtual void Special5() override;
 	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay() override;
@@ -42,8 +43,6 @@ private:
 
 	FVector FindRandomFloor();
 
-	void Special4Explode();
-
 	FTimerHandle SkillRangeDestroyTimerHandle;
 
 	FTimerDelegate SkillRangeDestroyDeletage;
@@ -67,6 +66,31 @@ private:
 
 	void ResumeS3Montage();
 
+	bool bPlayCurve;
+
+	FTimerHandle HeightCurveTimerHandle;
+
+	float CurveTime;
+
+	FVector CurrentLocation;
+
+	void SetHeight(float DeltaTime);
+
+	void FinishSetHeight();
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* MonsterHeightCurve;
+
+	float DistFromPlayer;
+
+	FTimerHandle FlightTimerHandle;
+
+	float FlightTime;
+
+	void MonsterFalling();
+
+	FVector JumpTargetLocation;
+	
 public:
 	
 };

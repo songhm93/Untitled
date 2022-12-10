@@ -30,7 +30,6 @@ void UBTService_BossUpdateBehavior::TickNode(UBehaviorTreeComponent& OwnerComp, 
 					if (TargetActor)
 					{								
 						const float Dist = MonsterCharacter->GetDistanceTo(TargetActor);
-						
 						BossCase(Dist, TargetActor);
 					}
 					else
@@ -58,19 +57,18 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 	{
 		if(SpecialReady && SpecialComplete) 
 		{								   
-			if(Dist > 550.f)      
+			if(Dist > 2000.f)
 			{
 				int32 RandValue = FMath::RandRange(0, 2);
 				if(RandValue == 0)
-					SetBossBehavior(EBossBehavior::SPECIAL1);
-				else if(RandValue == 1)
 					SetBossBehavior(EBossBehavior::SPECIAL2);
-				
-				BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);			
+				else if(RandValue == 1)
+					SetBossBehavior(EBossBehavior::SPECIAL3);
+				BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);
 			}
 			else if(Dist > 300.f)
 			{
-				SetRandSpecial();
+				SetRandDistSpecial();
 			}
 			else if(Dist > 150.f)
 			{
@@ -78,7 +76,7 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 			}
 			else
 			{
-				SetRandSpecial();
+				SetRandMeleeSpecial();
 			}
 		}
 		else if(!SpecialReady) //스페셜 공격 불가능일 때. 쿨다운일 때.
@@ -92,7 +90,8 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 				SetBossBehavior(EBossBehavior::CHASE);
 				TArray<ATargetPoint*> PatrolPoint = MonsterCharacter->GetPatrolPoints();
 				const float CenterDist = MonsterCharacter->GetDistanceTo(Cast<AActor>(PatrolPoint[0]));
-				if(CenterDist > 1540.f) 
+
+				if(CenterDist > 2600.f) 
 				{					   
 					Cast<AEnemyAIController>(MonsterController)->GetBBComp()->SetValueAsBool(TEXT("OriPosReturn"), true);
 					SetBossBehavior(EBossBehavior::RETURN);
@@ -133,14 +132,17 @@ void UBTService_BossUpdateBehavior::SetBossBehavior(EBossBehavior AIBehavior)
 	case EBossBehavior::SPECIAL4:
 		EnumIdx = 7;
 		break;
-    case EBossBehavior::RETURN:
+	case EBossBehavior::SPECIAL5:
 		EnumIdx = 8;
+		break;
+    case EBossBehavior::RETURN:
+		EnumIdx = 9;
 		break;
 	}
 	BlackBoardComp->SetValueAsEnum(BossBehavior.SelectedKeyName, EnumIdx);
 }
 
-void UBTService_BossUpdateBehavior::SetRandSpecial()
+void UBTService_BossUpdateBehavior::SetRandMeleeSpecial()
 {
 	int32 RandValue = FMath::RandRange(0, 3);
 	if(RandValue == 0)
@@ -149,7 +151,21 @@ void UBTService_BossUpdateBehavior::SetRandSpecial()
 		SetBossBehavior(EBossBehavior::SPECIAL2);
 	else if(RandValue == 2)
 		SetBossBehavior(EBossBehavior::SPECIAL3);
-	else
+	else if(RandValue == 3)
 		SetBossBehavior(EBossBehavior::SPECIAL4);
+
+	BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);
+}
+
+void UBTService_BossUpdateBehavior::SetRandDistSpecial()
+{
+	int32 RandValue = FMath::RandRange(0, 2);
+	if(RandValue == 0)
+		SetBossBehavior(EBossBehavior::SPECIAL2);
+	else if(RandValue == 1)
+		SetBossBehavior(EBossBehavior::SPECIAL3);
+	else if(RandValue == 2)
+		SetBossBehavior(EBossBehavior::SPECIAL5);
+
 	BlackBoardComp->SetValueAsBool(TEXT("SpecialComplete"), false);
 }

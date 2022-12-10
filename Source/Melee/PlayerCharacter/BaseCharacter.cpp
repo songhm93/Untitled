@@ -101,7 +101,7 @@ void ABaseCharacter::BeginPlay()
 	
 	if(StatComp)
 	{
-		StatComp->InitStats();
+		//StatComp->InitStats();
 	}
 
 	if(LockOnWidgetComp)
@@ -521,10 +521,9 @@ float ABaseCharacter::GetRemainRespawnTime()
 void ABaseCharacter::Test()
 {	
 	//테스트할 함수 넣기. Key Mapping : 5
-	if(InventoryComp)
+	if(StatComp)
 	{
-		//InventoryComp->UseItemAtIndex(1);
-		InventoryComp->SwapSlot(0, 1);
+		StatComp->DevLevelUp();
 	}
 	
 

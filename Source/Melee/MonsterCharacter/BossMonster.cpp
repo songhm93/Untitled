@@ -1,6 +1,7 @@
 #include "BossMonster.h"
 #include "Components/WidgetComponent.h"
 #include "Components/TextBlock.h"
+#include "Components/SphereComponent.h"
 
 #include "../Melee.h"
 #include "../Component/MonsterStatsComponent.h"
@@ -59,10 +60,11 @@ void ABossMonster::BeginPlay()
             BossHPBarWidget->AddToViewport();
             BossHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
             Cast<UEnemyHPBarWidget>(BossHPBarWidget)->Init(MonsterStatComp);
-            Cast<UEnemyHPBarWidget>(BossHPBarWidget)->GetBossNameText()->SetText(BossName);
+            Cast<UEnemyHPBarWidget>(BossHPBarWidget)->GetMonsterNameText()->SetText(BossName);
             
 		}
 	}
+    
 
 }
 
@@ -79,6 +81,10 @@ void ABossMonster::Special3()
 }
 
 void ABossMonster::Special4()
+{
+}
+
+void ABossMonster::Special5()
 {
 }
 

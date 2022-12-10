@@ -25,12 +25,13 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual FName GetLightAttackSectionName(int32 AttackCount) override;
-	virtual void ImpactTrace() override;
+	
 	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	void MonsterImpactTrace();
 
 	FName GetAttackSectionName();
 

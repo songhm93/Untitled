@@ -1,9 +1,9 @@
 #include "SkillRange.h"
-
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
 
+#include "../MonsterCharacter/EnemyCharacter.h"
 
 
 ASkillRange::ASkillRange()
@@ -35,6 +35,10 @@ void ASkillRange::Destroyed()
 		UGameplayStatics::ApplyRadialDamage(this, 2000.f, GetActorLocation() + FVector(0.f, 0.f, 20.f), 256.f, UDamageType::StaticClass(), TArray<AActor*>(), this, GetOwner()->GetInstigatorController());
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorTransform());
 		UGameplayStatics::SpawnSoundAtLocation(this, ImpactSound, GetActorLocation());
+	}
+	if(Cast<AEnemyCharacter>(GetOwner()))
+	{
+		Cast<AEnemyCharacter>(GetOwner())->PlayCameraShake(false);
 	}
 	Destroy();
 }

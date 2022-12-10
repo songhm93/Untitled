@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "StatsComponent.h"
-#include "../Interface/DBInterface.h"
+#include "../Interface/MonsterInfoInterface.h"
 #include "MonsterStatsComponent.generated.h"
 
 USTRUCT()
@@ -51,7 +51,7 @@ public:
 	UMonsterStatsComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void InitStats() override;
-	virtual void InitDBInfo() override;
+	virtual void InitInfo() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void TrackingRegen(float DeltaTime) override;
@@ -69,11 +69,16 @@ private:
 	FMonsterInfoDB ConvertToMonsterInfo(const FString& ResponseString);
 
 	FMonsterGives MonsterGives;
+
+	
 public: //get
 	FORCEINLINE FSpecialATK GetSpecialATK() const { return SATK; }
 	FORCEINLINE FMonsterGives GetMonsterGives() const { return MonsterGives; }
 
 public: //set
 	void SetSpecialATK(FSpecialATK ATK) { SATK = ATK; }
+
+public:
+	
 
 };

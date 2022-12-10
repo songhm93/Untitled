@@ -3,12 +3,12 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Blueprint/UserWidget.h"
 
-
 #include "../Type/Types.h"
 #include "../PlayerCharacter/BaseCharacter.h"
 #include "../PlayerCharacter/MeleeAnimInstance.h"
 #include "../Component/StateManagerComponent.h"
 #include "../SkillActor/FlameSkill.h"
+
 
 
 
@@ -35,7 +35,7 @@ ADualWeapon::ADualWeapon()
     if(Sword.Succeeded())
         GetItemStaticMeshComp()->SetStaticMesh(Sword.Object);
 
-    WeaponATK = 15.f;
+    WeaponATK = 0.f;
 
     Skill1Cooldown = 5.f;
     Skill2Cooldown = 6.f;
@@ -53,9 +53,10 @@ ADualWeapon::ADualWeapon()
 
     Skill1ExpodeTime = 1.3f;
 
-    Skill1ATK = 10.f;
-    Skill2ATK = 3.5f;
-    Skill3ATK = 0.f;
+    Skill1ATK = 1000.f;
+    Skill2ATK = 200.f;
+    Skill3ATK = 1000.f;
+    Skill4ATK = 3000.f;
 
     BlinkShowCharacterTime = 1.5f; //1.5초 후 캐릭터, 무기 보이게.
     BlinkMoveTime = 1.f; //1초 후 순간이동
@@ -98,11 +99,11 @@ void ADualWeapon::Skill1()
 {
     Super::Skill1();
 
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+    ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
     if(OwnerCharacter && OwnerCharacter->GetMesh())
     {
-        if(Cast<ABaseCharacter>(OwnerCharacter) && Cast<ABaseCharacter>(OwnerCharacter)->GetStateManagerComp())
-            Cast<ABaseCharacter>(OwnerCharacter)->GetStateManagerComp()->SetCurrentState(ECurrentState::ATTACKING);
+        if(OwnerCharacter->GetStateManagerComp())
+            OwnerCharacter->GetStateManagerComp()->SetCurrentState(ECurrentState::ATTACKING);
         
         UAnimInstance* AnimInst = OwnerCharacter->GetMesh()->GetAnimInstance();
         if(AnimInst && Skill1Montage)
@@ -117,11 +118,11 @@ void ADualWeapon::Skill2()
 {
     Super::Skill2();
     
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+    ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
     if(OwnerCharacter && OwnerCharacter->GetMesh())
     {
-        if(Cast<ABaseCharacter>(OwnerCharacter) && Cast<ABaseCharacter>(OwnerCharacter)->GetStateManagerComp())
-            Cast<ABaseCharacter>(OwnerCharacter)->GetStateManagerComp()->SetCurrentState(ECurrentState::ATTACKING);
+        if(OwnerCharacter->GetStateManagerComp())
+            OwnerCharacter->GetStateManagerComp()->SetCurrentState(ECurrentState::ATTACKING);
         
         UAnimInstance* AnimInst = OwnerCharacter->GetMesh()->GetAnimInstance();
         if(AnimInst && Skill2Montage)
@@ -294,8 +295,8 @@ void ADualWeapon::Skill1Explode()
 			LastHit = HitResult;
 		}
 	}
-    
-    SetSkillATK.ExecuteIfBound(Skill1ATK * Skill1ATKCalc(), LastHit); //대미지 적용
+
+    SetSkillATK.ExecuteIfBound(GetPlayerATK() + Skill1ATK * SkillATKCalc(1), LastHit); //대미지 적용
 
     if(Skill1ExplodeParticle && LastHit.GetActor())
     {
@@ -307,26 +308,21 @@ void ADualWeapon::Skill1Explode()
     }
 }
 
-int32 ADualWeapon::Skill1ATKCalc()
-{
-    if(GetSkillInfo().Contains(1))
-    {
-        return GetSkillInfo()[1].CurrentLevel;
-    }
-    return 1.f;
-}
-
 void ADualWeapon::Skill2Range()
 {
     //Spawn
-    const FVector SpawnLocation = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 300.f;
+    const FVector SpawnLocation = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 150.f;
     const FVector SpawnScale = FVector(30.f, 30.f, 30.f);
     FTransform SpawnTransform = FTransform(GetOwner()->GetActorRotation(), SpawnLocation, GetOwner()->GetActorScale3D());
     FActorSpawnParameters Params;
-    Params.Owner = GetOwner();
+    Params.Owner = this;
     Params.Instigator = Cast<APawn>(GetOwner());
 
-    GetWorld()->SpawnActor<AFlameSkill>(FlameActor, SpawnTransform, Params);
+    AFlameSkill* Flame = GetWorld()->SpawnActor<AFlameSkill>(FlameActor, SpawnTransform, Params);
+    if(Flame)
+    {
+        Flame->Init(GetPlayerATK() + Skill2ATK * SkillATKCalc(2));
+    }
 
     FHitResult HitResult;
     GetWorld()->LineTraceSingleByChannel(

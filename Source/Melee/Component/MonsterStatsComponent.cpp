@@ -1,5 +1,4 @@
 #include "MonsterStatsComponent.h"
-#include "JsonObjectConverter.h"
 
 #include "StateManagerComponent.h"
 #include "MonstersCombatComponent.h"
@@ -23,8 +22,8 @@ void UMonsterStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InitStats();
-	InitDBInfo();
+	//InitStats();
+	InitInfo();
 	
 
 	if (GetOwner())
@@ -81,66 +80,44 @@ void UMonsterStatsComponent::InitStats()
 }
 
 
-void UMonsterStatsComponent::InitDBInfo() //DB에서 꺼내온다.
+void UMonsterStatsComponent::InitInfo() 
 {
 	int32 MonsterId = 0;
 	if(Cast<AEnemyCharacter>(GetOwner()))
 	{
 		MonsterId = Cast<AEnemyCharacter>(GetOwner())->GetMId();
 	}
-	FString MID = FString::FormatAsNumber(MonsterId);
 	
-	if(Http)
+	FString TablePath = FString(TEXT("/Game/CombatSystem/DataTable/MonsterInfo"));
+	UDataTable* MonsterInfoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
+	if(MonsterInfoTableObject)
 	{
-		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+		FMonsterInfoTable* MonsterInfoRow = nullptr;
+		MonsterInfoRow = MonsterInfoTableObject->FindRow<FMonsterInfoTable>(FName(FString::FromInt(MonsterId)), TEXT(""));
+		if(MonsterInfoRow)
+		{
+			SetCurrentStatValue(EStats::HP, MonsterInfoRow->MaxHP);
+			SetCurrentStatValue(EStats::ATK, MonsterInfoRow->ATK);
+			SetCurrentStatValue(EStats::DEF, MonsterInfoRow->DEF);
 
-		Request->OnProcessRequestComplete().BindUObject(this, &UMonsterStatsComponent::OnProcessRequestComplete);
-		Request->SetURL("http://localhost:8080/api/MonsterInfo/" + MID);
-		Request->SetVerb("GET");
-		Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+			SetMaxStatValue(EStats::HP, MonsterInfoRow->MaxHP);
+			SetMaxStatValue(EStats::ATK, MonsterInfoRow->ATK);
+			SetMaxStatValue(EStats::DEF, MonsterInfoRow->DEF);
 
-		Request->ProcessRequest();
+			
+			PlusCurrentStatValue(EStats::HP, 0.0000001f);
+			PlusCurrentStatValue(EStats::ATK, 0.0000001f);
+			PlusCurrentStatValue(EStats::DEF, 0.0000001f);
+
+			MonsterGives.ItemId.Add(MonsterInfoRow->ItemId);
+			MonsterGives.ItemId.Add(MonsterInfoRow->ItemId2);
+			MonsterGives.ItemId.Add(MonsterInfoRow->ItemId3);
+			MonsterGives.Exp = MonsterInfoRow->Exp;
+			MonsterGives.Gold = MonsterInfoRow->Gold;
+
+			Cast<AEnemyCharacter>(GetOwner())->SetMonsterName(MonsterInfoRow->Name);
+		}
 	}
-
-}
-
-void UMonsterStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
-{
-	if(Success)
-	{
-        FMonsterInfoDB MonsterInfo = ConvertToMonsterInfo(Response->GetContentAsString());
-
-		SetCurrentStatValue(EStats::HP, MonsterInfo.Maxhp);
-		SetCurrentStatValue(EStats::ATK, MonsterInfo.Atk);
-		SetCurrentStatValue(EStats::DEF, MonsterInfo.Def);
-
-		SetMaxStatValue(EStats::HP, MonsterInfo.Maxhp);
-		SetMaxStatValue(EStats::ATK, MonsterInfo.Atk);
-		SetMaxStatValue(EStats::DEF, MonsterInfo.Def);
-
-		
-		PlusCurrentStatValue(EStats::HP, 0.0000001f);
-		PlusCurrentStatValue(EStats::ATK, 0.0000001f);
-		PlusCurrentStatValue(EStats::DEF, 0.0000001f);
-
-		MonsterGives.ItemId.Add(MonsterInfo.Itemid);
-		MonsterGives.ItemId.Add(MonsterInfo.Itemid2);
-		MonsterGives.ItemId.Add(MonsterInfo.Itemid3);
-		MonsterGives.Exp = MonsterInfo.Exp;
-		MonsterGives.Gold = MonsterInfo.Gold;
-        
-	}
-}
-
-FMonsterInfoDB UMonsterStatsComponent::ConvertToMonsterInfo(const FString& ResponseString)
-{
-	FMonsterInfoDB MonsterInfo;
-    if(!ResponseString.Contains("timestamp")) //테이블에 해당하는 MID가 있을 때
-    {
-        FJsonObjectConverter::JsonObjectStringToUStruct(*ResponseString, &MonsterInfo, 0, 0);
-    }
-
-    return MonsterInfo;
 }
 
 void UMonsterStatsComponent::Regen()
@@ -151,7 +128,7 @@ void UMonsterStatsComponent::Regen()
 void UMonsterStatsComponent::UpdateCombatState(bool CombatState)
 {
 	if(CombatState)
-		HPRegenRate = 0.3f;
+		HPRegenRate = GetMaxValue(EStats::HP) * 0.001f;
 	else
-		HPRegenRate = 11.f;
+		HPRegenRate = GetMaxValue(EStats::HP) * 0.1f;
 }

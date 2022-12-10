@@ -9,10 +9,11 @@ AFlameSkill::AFlameSkill()
 	PrimaryActorTick.bCanEverTick = true;
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	SphereComp->SetupAttachment(RootComponent);
-	SphereComp->SetSphereRadius(64.f);
+	SphereComp->SetSphereRadius(128.f);
 	bOvelapped = false;
 	DestroyFlameTime = 1.5f;
 	DamageTime = 0.f;
+	FinalDamage = 0.f;
 }
 
 void AFlameSkill::BeginPlay()
@@ -24,6 +25,11 @@ void AFlameSkill::BeginPlay()
 		SphereComp->OnComponentEndOverlap.AddDynamic(this, &ThisClass::RemoveOverlapped);
 	}
 	GetWorld()->GetTimerManager().SetTimer(DestoryFlameTimerHandle, this, &ThisClass::DestroyFlame, DestroyFlameTime);
+}
+
+void AFlameSkill::Init(float Damage)
+{
+	FinalDamage = Damage;
 }
 
 void AFlameSkill::Tick(float DeltaTime)
@@ -41,7 +47,7 @@ void AFlameSkill::Tick(float DeltaTime)
 			{
 				for(auto DamagedActor : DamageActor)
 				{
-					UGameplayStatics::ApplyDamage(DamagedActor, 3.5f, Cast<APawn>(GetOwner())->GetController(), GetOwner(), UDamageType::StaticClass());
+					UGameplayStatics::ApplyDamage(DamagedActor, FinalDamage, Cast<APawn>(GetOwner()->GetOwner())->GetController(), GetOwner(), UDamageType::StaticClass());
 				}
 				
 			}
@@ -56,7 +62,7 @@ void AFlameSkill::OverlappedApplyDamage(UPrimitiveComponent* OverlappedComponent
 	if(OtherActor && OtherActor->Implements<UCombatInterface>())
 	{
 		bOvelapped = true;
-		if(!DamageActor.Contains(OtherActor) && OtherActor != GetOwner())
+		if(!DamageActor.Contains(OtherActor) && OtherActor != GetOwner()->GetOwner())
 		{
 			DamageActor.Add(OtherActor);
 		}

@@ -10,38 +10,18 @@
 
 ANonPreemptiveMonster::ANonPreemptiveMonster()
 {
-	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBarWidget"));
-    HPBarWidget->SetupAttachment(GetMesh());
 
-	
-	HideHPBarTime = 3.f;
 }
 
 void ANonPreemptiveMonster::BeginPlay()
 {
     Super::BeginPlay();
 
-	if(StateManagerComp)
-	{
-        StateManagerComp->OnCombatState.AddUObject(this, &ThisClass::HPBarOnOff);
-    }
-
     if(AgroRangeSphere)
 	{
 		AgroRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::AgroSphereEndOverlap);
 	}
 
-	
-	if(HPBarWidget)
-	{
-		UUserWidget* EnemyHPBarWidget = CreateWidget<UEnemyHPBarWidget>(GetWorld(), HPBarWidget->GetWidgetClass());
-		if(EnemyHPBarWidget)
-		{
-			HPBarWidget->SetWidget(EnemyHPBarWidget);
-			HPBarWidget->SetVisibility(false);
-			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->Init(MonsterStatComp);
-		}
-	}
 }
 
 void ANonPreemptiveMonster::ReceiveDamage(
@@ -98,38 +78,6 @@ void ANonPreemptiveMonster::OnTargeted(bool IsTargeted)
 			HPBarWidget->SetVisibility(IsTargeted);
 	}
 
-}
-
-void ANonPreemptiveMonster::HideHPBar()
-{
-	if(HPBarWidget)
-	{
-		HPBarWidget->SetVisibility(false);
-	}
-}
-
-void ANonPreemptiveMonster::HPBarOnOff(bool Show)
-{
-	if(HPBarWidget)
-	{
-		if(Show)
-		{
-			if(GetWorldTimerManager().IsTimerActive(HideHPBarTimerHandle))
-				GetWorldTimerManager().ClearTimer(HideHPBarTimerHandle);
-			
-			if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DEAD)
-			{
-				HPBarWidget->SetVisibility(false);
-				return;
-			}
-			
-			HPBarWidget->SetVisibility(Show);
-		}
-		else
-		{
-			GetWorldTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
-		}
-	}
 }
 
 void ANonPreemptiveMonster::Dead()

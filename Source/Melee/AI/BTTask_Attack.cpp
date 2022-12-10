@@ -85,6 +85,10 @@ bool UBTTask_Attack::BossCase() //스페셜 실행
                 Cast<AEnemyAIController>(OwnerController)->GetBBComp()->SetValueAsEnum(TEXT("SpecialBehavior"), 4);
                 Cast<IBossInterface>(BossCharacter)->Special4();
                 break;
+            case 8:
+                Cast<AEnemyAIController>(OwnerController)->GetBBComp()->SetValueAsEnum(TEXT("SpecialBehavior"), 5);
+                Cast<IBossInterface>(BossCharacter)->Special5();
+                break;
             }
         }
     }

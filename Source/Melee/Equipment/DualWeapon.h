@@ -14,12 +14,6 @@ class AFlameSkill;
 class UUserWidget;
 class UTexture2D;
 
-
-
-
-
-
-
 UCLASS()
 class MELEE_API ADualWeapon : public ABaseWeapon
 {
@@ -142,7 +136,7 @@ private:
 	
 	void BlinkDestroyShadow();
 
-	int32 Skill1ATKCalc();
+	
 
 public: //get
 	FORCEINLINE UStaticMeshComponent* GetDualSwordStaticMeshComp() const { return DualSwordStaticMeshComp;}

@@ -28,14 +28,14 @@ private:
 	UFUNCTION()
 	void AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent* HPBarWidget;
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	// UWidgetComponent* HPBarWidget;
 
-	void HideHPBar();
+	//void HideHPBar();
 
-	void HPBarOnOff(bool Show);
+	//void HPBarOnOff(bool Show);
 
-	FTimerHandle HideHPBarTimerHandle;
+	// FTimerHandle HideHPBarTimerHandle;
 
-	float HideHPBarTime;
+	// float HideHPBarTime;
 };

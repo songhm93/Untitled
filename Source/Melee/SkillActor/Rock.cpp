@@ -5,10 +5,11 @@
 #include "Sound/SoundCue.h"
 
 #include "../PlayerCharacter/BaseCharacter.h"
+#include "../MonsterCharacter/EnemyCharacter.h"
 
 ARock::ARock()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -24,6 +25,7 @@ ARock::ARock()
 
 	Damage = 2000.f;
 
+	SpawnTime = 0.f;
 	
 	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> RockMesh(TEXT("/Game/Migrated/SM_Rock_To_Hold"));
@@ -38,12 +40,21 @@ void ARock::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CapsuleComp->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
+	if(CapsuleComp)
+	{
+		CapsuleComp->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
+	}
+	
 }
 
 void ARock::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	SpawnTime+= DeltaTime;
+
+	if(SpawnTime > 3.f)
+		HitEffect();
 
 }
 
@@ -51,6 +62,7 @@ void ARock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveCo
 {
 	//캐릭터면 대미지 입히고,
 	//바위는 파괴.
+
 	if(OtherActor)
 	{	
 		ABaseCharacter* PlayerCharacter = Cast<ABaseCharacter>(OtherActor);
@@ -93,6 +105,11 @@ void ARock::HitEffect()
 
 void ARock::Destroyed()
 {
+	if(Cast<AEnemyCharacter>(GetOwner()))
+	{
+		Cast<AEnemyCharacter>(GetOwner())->PlayCameraShake(false);
+	}
+	
 	if(ImpactParticle)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorTransform());

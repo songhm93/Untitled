@@ -123,6 +123,9 @@ protected:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	float Skill3ATK;
 
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	float Skill4ATK;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	int32 WeaponId;
 
@@ -134,6 +137,10 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TMap<int32, FSkillInfo> SkillInfo;
+
+	float GetPlayerATK();
+
+	
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Init", Meta = (AllowPrivateAccess = "true"))
 	FName HandSocketName;
@@ -158,8 +165,8 @@ public: //set
 	FORCEINLINE void SetHandSocketName(FName SocketName) { HandSocketName = SocketName;}
 	FORCEINLINE void SetWeaponType(EWeaponType Type) { WeaponType = Type;}
 public:
-	
-	
+	int32 GetWeaponSkillATK(int32 SkillNum);
+	int32 SkillATKCalc(int32 SkillNum);
 	
 	
 };	

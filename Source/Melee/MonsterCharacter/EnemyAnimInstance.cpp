@@ -48,7 +48,7 @@ void UEnemyAnimInstance::AnimNotify_SpecialComplete()
         AEnemyAIController* EnemyController = Cast<AEnemyAIController>(EnemyCharacter->GetController());
         if(EnemyController && EnemyController->GetBBComp())
         {
-            SpecialReadyTime = FMath::RandRange(5.f, 7.f);
+            SpecialReadyTime = FMath::RandRange(4.f, 5.f);
             EnemyController->GetBBComp()->SetValueAsBool(TEXT("SpecialComplete"), true);
             EnemyController->GetBBComp()->SetValueAsBool(TEXT("SpecialReady"), false);
             GetWorld()->GetTimerManager().SetTimer(SpecialReadyTimerHandle, this, &ThisClass::UpdateSpecialReady, SpecialReadyTime);
@@ -79,4 +79,12 @@ void UEnemyAnimInstance::AnimNotify_DeattachRock()
 void UEnemyAnimInstance::AnimNotify_Impact()
 {
     OnImpact.ExecuteIfBound();
+}
+
+void UEnemyAnimInstance::AnimNotify_DefaultCameraShake()
+{
+    if(EnemyCharacter)
+    {
+        EnemyCharacter->PlayCameraShake(true);
+    }
 }

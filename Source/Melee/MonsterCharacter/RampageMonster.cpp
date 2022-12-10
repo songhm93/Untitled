@@ -8,6 +8,7 @@
 #include "../Component/MonsterStatsComponent.h"
 #include "../SkillActor/Rock.h"
 #include "../Melee.h"
+#include "../BossArea.h"
 
 ARampageMonster::ARampageMonster()
 {
@@ -23,6 +24,13 @@ ARampageMonster::ARampageMonster()
 
     S3RandSkillCount = 0;
 
+    bPlayCurve = false;
+
+    CurveTime = 2.f;
+
+    FlightTime = 1.32f;
+
+    JumpTargetLocation = FVector::ZeroVector;
 }
 
 void ARampageMonster::Tick(float DeltaTime)
@@ -41,6 +49,11 @@ void ARampageMonster::Tick(float DeltaTime)
     {
         S3PlayTime = 0.f;
     }
+
+    if(bPlayCurve)
+    {
+        SetHeight(DeltaTime);
+    }
 }
 
 
@@ -54,6 +67,18 @@ void ARampageMonster::BeginPlay()
         EnemyAnimInst->OnDeattachRock.BindUObject(this, &ThisClass::DeattachRock);
     }
 
+    TArray<AActor*> OutActor;
+	UGameplayStatics::GetAllActorsOfClass(this, AreaActor.Get(), OutActor);
+	if(!OutActor.IsEmpty())
+	{
+		for(auto Area : OutActor)
+        {
+            if(BossAreaNum == Cast<ABossArea>(Area)->GetAreaNum())
+            {
+                Cast<ABossArea>(Area)->Init(this);
+            }
+        }
+	}
 }
 
 void ARampageMonster::Special1()
@@ -137,9 +162,60 @@ void ARampageMonster::Special4()
     }
 }
 
-void ARampageMonster::Special4Explode()
+void ARampageMonster::Special5()
 {
+    if(EnemyAnimInst && Special5Montage && Target)
+    {
+        GetWorld()->GetTimerManager().SetTimer(HeightCurveTimerHandle, this, &ThisClass::FinishSetHeight, CurveTime);
+        GetWorld()->GetTimerManager().SetTimer(FlightTimerHandle, this, &ThisClass::MonsterFalling, FlightTime);
+        CurrentLocation = GetOwner()->GetActorLocation();
+        bPlayCurve = true;
+        EnemyAnimInst->Montage_Play(Special5Montage);
+        EnemyAnimInst->Montage_JumpToSection(TEXT("JumpStart"), Special5Montage);
+        JumpTargetLocation = Target->GetActorLocation();
+    }
+}
 
+void ARampageMonster::SetHeight(float DeltaTime)
+{
+    if(MonsterHeightCurve && Target)
+    {
+        FVector MonsterLocation = CurrentLocation;
+        const float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(HeightCurveTimerHandle); 
+        const float HeightCurveValue = MonsterHeightCurve->GetFloatValue(ElapsedTime);
+        MonsterLocation.Z += HeightCurveValue * 700;
+        if(HeightCurveValue == 1)
+        {
+            if(EnemyAnimInst && Special5Montage)
+            {
+                EnemyAnimInst->Montage_Play(Special5Montage);
+                EnemyAnimInst->Montage_JumpToSection(TEXT("Loop"), Special5Montage);
+            }
+        }
+
+        FVector Result = FMath::VInterpTo(GetActorLocation(), JumpTargetLocation, DeltaTime, 5.f);
+
+        FHitResult HitResult;
+        GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), GetActorLocation() + (GetActorUpVector() * -600.f), ECollisionChannel::ECC_Visibility);
+        if(HitResult.bBlockingHit)
+        {
+            SetActorLocation(FVector(Result.X, Result.Y, MonsterLocation.Z));
+        }
+    }
+}
+
+void ARampageMonster::MonsterFalling()
+{
+    if(EnemyAnimInst && Special5Montage)
+    {
+        EnemyAnimInst->Montage_Play(Special5Montage);
+        EnemyAnimInst->Montage_JumpToSection(TEXT("JumpAttackEnd"), Special5Montage);
+    }
+}
+
+void ARampageMonster::FinishSetHeight()
+{
+    bPlayCurve = false;
 }
 
 void ARampageMonster::DeattachRock()
@@ -173,7 +249,6 @@ FVector ARampageMonster::FindFloor()
         {
             return HitResult.ImpactPoint;
         }
-        //DrawDebugLine(GetWorld(), FindLoc, FindLoc + (Target->GetActorUpVector() * -600.f), FColor::Cyan, true, -1, 0, 12.333);
     }
 
     return FVector::ZeroVector;
@@ -193,7 +268,6 @@ FVector ARampageMonster::FindRandomFloor()
         {
             return HitResult.ImpactPoint;
         }
-        //DrawDebugLine(GetWorld(), FindLoc, FindLoc + (Target->GetActorUpVector() * -600.f), FColor::Cyan, true, -1, 0, 12.333);
     }
 
     return FVector::ZeroVector;

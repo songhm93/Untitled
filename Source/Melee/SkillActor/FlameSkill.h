@@ -42,4 +42,9 @@ private:
 
 	void DestroyFlame();
 
+	float FinalDamage;
+
+public:
+	void Init(float Damage);
+
 };

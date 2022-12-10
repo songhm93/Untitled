@@ -5,7 +5,7 @@
 #include "../Type/Types.h"
 #include "MeleeAnimInstance.generated.h"
 
-DECLARE_DELEGATE(FOnImpact);
+DECLARE_DELEGATE_OneParam(FOnImpact, int32);
 DECLARE_DELEGATE(FOnUltimateComplete);
 DECLARE_DELEGATE(FOnUltimateImpact);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDodge);
@@ -44,6 +44,9 @@ private:
 
 	UFUNCTION()
 	void AnimNotify_Impact();
+
+	UFUNCTION()
+	void AnimNotify_Skill3Impact();
 
 	UFUNCTION()
 	void AnimNotify_UltimateComplete();

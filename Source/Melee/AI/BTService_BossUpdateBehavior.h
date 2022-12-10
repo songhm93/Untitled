@@ -35,6 +35,8 @@ private:
 
 	void SetBossBehavior(EBossBehavior AIBehavior);
 
-	void SetRandSpecial();
+	void SetRandMeleeSpecial();
+
+	void SetRandDistSpecial();
 
 };

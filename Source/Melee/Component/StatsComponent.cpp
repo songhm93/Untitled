@@ -23,8 +23,9 @@ void UStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	InitStats();
-	InitDBInfo();
+	//InitStats();
+	UE_LOG(LogTemp, Warning, TEXT("스탯컴포넌트 비긴플레이"));
+	InitInfo();
 
 
 	if (GetOwner())
@@ -132,10 +133,9 @@ void UStatsComponent::PlusCurrentStatValue(EStats Stat, float Value)
 	}
 }
 
-void UStatsComponent::InitDBInfo() //DB에서 꺼내온다.
+void UStatsComponent::InitInfo() //DB에서 꺼내온다.
 {
 	FString PID = "9824"; //얘를 어떤식으로?
-	
 	if(Http)
 	{
 		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
@@ -154,6 +154,7 @@ void UStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpRes
 	if(Success)
 	{
         FPlayerInfoDB PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
+		
 		SetCurrentStatValue(EStats::HP, PlayerInfo.Currenthp);
 		SetCurrentStatValue(EStats::STAMINA, PlayerInfo.Currentstamina);
 		SetCurrentStatValue(EStats::ATK, PlayerInfo.Atk);
@@ -223,15 +224,30 @@ void UStatsComponent::PlusExp(float Value)
 	}
 	else //레벨업
 	{
-		int32 RemainExp = CurrentExp + Value - MaxExp;
-		ExpStats[EExpStats::CURRENT_EXP] = RemainExp;
-		ExpStats[EExpStats::LEVEL] += 1;
-		CalcMaxExp();
-		//체력증가? 성장체력? 보류
-		CurrentStats[EStats::SP] += 1;
-
-		OnSavePlayerData.ExecuteIfBound(); //db update
+		LevelUp(CurrentExp, MaxExp, Value);
 	}
+}
+
+void UStatsComponent::LevelUp(int32 CurrentExp, int32 MaxExp, int32 Value)
+{
+	int32 RemainExp = CurrentExp + Value - MaxExp;
+	ExpStats[EExpStats::CURRENT_EXP] = RemainExp;
+	ExpStats[EExpStats::LEVEL] += 1;
+	CalcMaxExp();
+
+	CurrentStats[EStats::SP] += 1;
+
+	OnSavePlayerData.ExecuteIfBound(); //db update
+}
+
+void UStatsComponent::DevLevelUp()
+{
+	ExpStats[EExpStats::CURRENT_EXP] = 0;
+	ExpStats[EExpStats::LEVEL] += 1;
+	CalcMaxExp();
+	CurrentStats[EStats::SP] += 1;
+
+	OnSavePlayerData.ExecuteIfBound();
 }
 
 void UStatsComponent::UpdateSkillLevel(int32 SkillNum, int32 WeaponId)

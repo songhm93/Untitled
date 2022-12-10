@@ -4,6 +4,8 @@
 
 #include "../Type/Types.h"
 #include "../Component/StateManagerComponent.h"
+#include "../Component/StatsComponent.h"
+#include "../PlayerCharacter/BaseCharacter.h"
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -105,4 +107,39 @@ TArray<FPlayerSkillInfo> ABaseWeapon::ConvertToPlayerSkillInfo(const FString& Re
     }
 
     return PlayerSkillInfo;
+}
+
+float ABaseWeapon::GetPlayerATK()
+{
+    ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwner());
+    float PlayerATK = 0.f;
+    if(OwnerCharacter && OwnerCharacter->GetStatComp())
+        PlayerATK = OwnerCharacter->GetStatComp()->GetCurrentStatValue(EStats::ATK);
+
+    return PlayerATK;
+}
+
+int32 ABaseWeapon::SkillATKCalc(int32 SkillNum)
+{
+    if(GetSkillInfo().Contains(SkillNum))
+    {
+        return GetSkillInfo()[SkillNum].CurrentLevel;
+    }
+    return 1.f;
+}
+
+int32 ABaseWeapon::GetWeaponSkillATK(int32 SkillNum)
+{
+    switch (SkillNum)
+    {
+    case 1:
+        return Skill1ATK;
+    case 2:
+        return Skill2ATK;
+    case 3:
+        return Skill3ATK;
+    case 4:
+        return Skill4ATK;
+    }
+    return 1;
 }

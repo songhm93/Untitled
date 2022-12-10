@@ -34,7 +34,7 @@ private:
 	UStatsComponent* StatComp;
 
 	UPROPERTY(Meta = (BindWidget))
-	UTextBlock* BossName;
+	UTextBlock* MonsterName;
 
 	UFUNCTION()
 	void OnStatValueUpdated(EStats Stat, float Value);
@@ -42,7 +42,10 @@ private:
 	UPROPERTY(Transient, Meta = (BindWidgetAnim))
 	UWidgetAnimation* OpacityAnim;
 	
-public: //set
-	UTextBlock* GetBossNameText() const { return BossName; };
+public: //get
+	FORCEINLINE UTextBlock* GetMonsterNameText() const { return MonsterName; };
+
+public:
+	void SetMonsterName(FString Name);
 	
 };

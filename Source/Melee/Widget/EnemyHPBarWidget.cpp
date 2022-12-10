@@ -1,5 +1,7 @@
 #include "EnemyHPBarWidget.h"
 #include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
+
 #include "../Component/StatsComponent.h"
 #include "../MonsterCharacter/EnemyCharacter.h"
 
@@ -47,4 +49,12 @@ void UEnemyHPBarWidget::PlayOpacityAnim(bool Forward)
             PlayAnimationReverse(OpacityAnim);
     }   
     
+}
+
+void UEnemyHPBarWidget::SetMonsterName(FString Name)
+{
+    if(MonsterName)
+    {
+        MonsterName->SetText(FText::FromString(Name));
+    }
 }

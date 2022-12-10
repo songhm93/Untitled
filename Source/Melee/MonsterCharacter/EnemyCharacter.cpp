@@ -49,6 +49,14 @@ AEnemyCharacter::AEnemyCharacter()
 	bTargetingState = false;
 	CurrentElement = EElements::NONE;
 	RespawnTime = 5.f;
+
+	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBarWidget"));
+    HPBarWidget->SetupAttachment(GetMesh());
+	HideHPBarTime = 3.f;
+
+	IsBossFurious = false;
+	DefaultATK = 0;
+	DefaultDEF = 0;
 }
 
 void AEnemyCharacter::Tick(float DeltaTime)
@@ -70,7 +78,7 @@ void AEnemyCharacter::BeginPlay()
 	{
 		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
 		StateManagerComp->SetCurrentState(ECurrentState::GENERAL_STATE);
-		
+		StateManagerComp->OnCombatState.AddUObject(this, &ThisClass::HPBarOnOff);
 	}
 
     if(LockOnWidget)
@@ -84,8 +92,19 @@ void AEnemyCharacter::BeginPlay()
 	
 	if(MonsterStatComp)
 	{
-		MonsterStatComp->InitStats();
 		MonsterStatComp->PlusCurrentStatValue(EStats::HP, 0.00000001f);
+	}
+
+	if(HPBarWidget)
+	{
+		EnemyHPBarWidget = CreateWidget<UEnemyHPBarWidget>(GetWorld(), HPBarWidget->GetWidgetClass());
+		if(EnemyHPBarWidget)
+		{
+			HPBarWidget->SetWidget(EnemyHPBarWidget);
+			HPBarWidget->SetVisibility(false);
+			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->Init(MonsterStatComp);
+			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->SetMonsterName(MonsterName);
+		}
 	}
 }
 
@@ -166,26 +185,58 @@ bool AEnemyCharacter::CalcCritical(float Percent)
 	return ReturnValue;
 }
 
-void AEnemyCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
+void AEnemyCharacter::CalcReceiveDamage(float PlayerATK) //받는 총 대미지 계산
 {
 	bool IsCritical = CalcCritical(10.f);
-	//대미지 계산
+	
 	if(MonsterStatComp)
 	{
 		const float Def = MonsterStatComp->GetCurrentStatValue(EStats::DEF);
-		float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		float Result = FMath::Clamp((PlayerATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
 		if(IsCritical) Result *= 2.f;
 		MonsterStatComp->PlusCurrentStatValue(EStats::HP, Result * -1); //HP 적용
-		if(MonsterStatComp->GetCurrentStatValue(EStats::HP) <= 0)
+
+		int32 CurrentHP = MonsterStatComp->GetCurrentStatValue(EStats::HP);
+
+		if(MonsterType == EMonsterType::BOSS)
+		{
+			int32 MaxHP = MonsterStatComp->GetMaxValue(EStats::HP);
+			int32 FuriousHP = MaxHP - (MaxHP * 0.6);
+			if((CurrentHP < FuriousHP) && !IsBossFurious) //분노
+			{
+				IsBossFurious = true;
+				BossFurious();
+			}
+		}
+		
+		if(CurrentHP <= 0)
 		{
 			if(StateManagerComp)
 				StateManagerComp->SetCurrentState(ECurrentState::DEAD);
+			if(MonsterType == EMonsterType::BOSS)
+			{
+				FuriousDead();
+			}
 		}
 		//Result로 대미지 위젯
 		ShowDamageText(Result, IsCritical);
 	}
 }
 
+void AEnemyCharacter::BossFurious()
+{
+	if(MonsterStatComp)
+	{
+		DefaultATK = MonsterStatComp->GetCurrentStatValue(EStats::ATK);
+		DefaultDEF = MonsterStatComp->GetCurrentStatValue(EStats::DEF);
+
+		MonsterStatComp->SetCurrentStatValue(EStats::ATK, DefaultATK + DefaultATK * 0.2);
+		MonsterStatComp->SetCurrentStatValue(EStats::DEF, DefaultDEF + DefaultDEF);
+	}
+	//액터 스폰
+	//BP에서 BeginPlay에서 PP 설정
+	SetFuriousPP();
+}
 
 void AEnemyCharacter::ApplyImpactEffect()
 {
@@ -311,7 +362,7 @@ void AEnemyCharacter::Respawn()
 	
 	if(MonsterStatComp)
 	{
-		MonsterStatComp->InitDBInfo();
+		MonsterStatComp->InitInfo();
 	}
 	if(StateManagerComp)
 	{
@@ -393,6 +444,15 @@ void AEnemyCharacter::LookAtPlayer(AActor* Player, float DeltaTime)
 void AEnemyCharacter::EnterCombat(AActor* Player, bool First)
 {
 	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
+
+	if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
+	}
+	if(GetWorldTimerManager().IsTimerActive(AreaAgroCancelTimeHandle))
+	{
+		GetWorldTimerManager().ClearTimer(AreaAgroCancelTimeHandle);
+	}
 	
 	if(AIController && StateManagerComp)
 	{
@@ -404,10 +464,9 @@ void AEnemyCharacter::EnterCombat(AActor* Player, bool First)
 		StateManagerComp->SetCurrentCombatState(ECurrentCombatState::COMBAT_STATE);
 		AIController->GetBBComp()->SetValueAsBool(TEXT("CombatState"), true);
 	}
-	if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
-	{
-		GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
-	}
+	
+	
+	if(MonsterType == EMonsterType::BOSS) return;
 	if(First)
 	{
 		TArray<AActor*> OutActor;
@@ -436,15 +495,6 @@ void AEnemyCharacter::ExitCombat(bool First)
 {
 	AIController = AIController == nullptr ? Cast<AEnemyAIController>(GetController()) : AIController;
 	
-	if(First)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("First ExitCombat"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Other ExitCombat"));
-	}
-		
 	
 	if(AIController && StateManagerComp)
 	{
@@ -461,6 +511,8 @@ void AEnemyCharacter::ExitCombat(bool First)
 	{
 		GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
 	}
+
+	if(MonsterType == EMonsterType::BOSS) return;
 	if(First)
 	{
 		TArray<AActor*> OutActor;
@@ -479,3 +531,67 @@ void AEnemyCharacter::ExitCombat(bool First)
 	}
 }
 
+void AEnemyCharacter::BossAgroCancel()
+{
+	if(GetWorldTimerManager().IsTimerActive(AgroCancelTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(AgroCancelTimerHandle);
+	}
+	GetWorldTimerManager().SetTimer(AgroCancelTimerHandle, this, &ThisClass::AgroCancel, AgroCancelTime);
+}
+
+void AEnemyCharacter::HPBarOnOff(bool Show)
+{
+	if(HPBarWidget)
+	{
+		if(Show)
+		{
+			if(GetWorldTimerManager().IsTimerActive(HideHPBarTimerHandle))
+				GetWorldTimerManager().ClearTimer(HideHPBarTimerHandle);
+			
+			if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DEAD)
+			{
+				HPBarWidget->SetVisibility(false);
+				return;
+			}
+			
+			HPBarWidget->SetVisibility(Show);
+		}
+		else
+		{
+			GetWorldTimerManager().SetTimer(HideHPBarTimerHandle, this, &ThisClass::HideHPBar, HideHPBarTime);
+		}
+	}
+}
+
+void AEnemyCharacter::HideHPBar()
+{
+	if(HPBarWidget)
+	{
+		HPBarWidget->SetVisibility(false);
+	}
+}
+
+void AEnemyCharacter::SetMonsterName(FString Name)
+{
+	MonsterName = Name;
+	if(Cast<UEnemyHPBarWidget>(EnemyHPBarWidget))
+	{
+		Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->SetMonsterName(MonsterName);
+	}
+}
+
+void AEnemyCharacter::PlayCameraShake(bool IsDefault)
+{
+	if(DefaultCameraShakeClass && ExplodeCameraShakeClass)
+	{
+		if(IsDefault)
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(DefaultCameraShakeClass);
+		}
+		else
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(ExplodeCameraShakeClass);
+		}
+	}
+}

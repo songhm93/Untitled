@@ -23,8 +23,7 @@ public:
 	FOnPlusCurrentStatValue OnPlusCurrentStatValue;
 	FOnSavePlayerData OnSavePlayerData;
 	virtual void InitStats();
-	virtual void InitDBInfo();
-
+	virtual void InitInfo();
 protected:
 	virtual void BeginPlay() override;
 	virtual void TrackingRegen(float DeltaTime);
@@ -49,6 +48,7 @@ private:
 	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
 	FPlayerInfoDB ConvertToPlayerInfo(const FString& ResponseString);
 	void OnSkillUpComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
+	
 public: //get	
 
 public: //set
@@ -69,4 +69,6 @@ public:
 	void PlusExp(float Value);
 	UFUNCTION(BlueprintCallable)
 	void UpdateSkillLevel(int32 SkillNum, int32 WeaponId);
+	void LevelUp(int32 CurrentExp, int32 MaxExp, int32 Value);
+	void DevLevelUp(); //Test용도
 };

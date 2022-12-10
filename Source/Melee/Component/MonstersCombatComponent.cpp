@@ -32,7 +32,7 @@ void UMonstersCombatComponent::BeginPlay()
 		AnimInst = OwnerCharacter->GetMesh()->GetAnimInstance();
 		if(Cast<UEnemyAnimInstance>(AnimInst))
 		{
-			Cast<UEnemyAnimInstance>(AnimInst)->OnImpact.BindUObject(this, &ThisClass::ImpactTrace);
+			Cast<UEnemyAnimInstance>(AnimInst)->OnImpact.BindUObject(this, &ThisClass::MonsterImpactTrace);
 		}
 	} 
 }
@@ -104,7 +104,7 @@ void UMonstersCombatComponent::ReadyToAttack()
 	}
 }
 
-void UMonstersCombatComponent::ImpactTrace()
+void UMonstersCombatComponent::MonsterImpactTrace()
 {
 	float AttackRange = Cast<AEnemyCharacter>(GetOwner())->GetAttackRange();
 	const FVector Start = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * ( AttackRange * 0.5f );

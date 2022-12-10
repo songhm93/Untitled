@@ -22,6 +22,8 @@ class USphereComponent;
 class AEnemyAIController;
 class UEnemyAnimInstance;
 class UMonstersCombatComponent;
+class UUserWidget;
+class UCameraShakeBase;
 
 UENUM(BlueprintType)
 enum class EEnemyActionType : uint8
@@ -67,6 +69,8 @@ public:
 	virtual void Respawn();
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowDamageText(int32 Damage, bool IsCritical);
+	void EnterCombat(AActor* Player, bool First);
+	void ExitCombat(bool First);
 protected:
 	virtual void BeginPlay() override;
 
@@ -109,11 +113,8 @@ protected:
 		const UDamageType* DamageType, 
 		AController* InstigatedBy, 
 		AActor* DamageCauser);
+
 	virtual void Dead();
-
-	void EnterCombat(AActor* Player, bool First);
-
-	void ExitCombat(bool First);
 
 	bool CalcChance(float Percent);
 
@@ -123,7 +124,10 @@ protected:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 MId;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* HPBarWidget;
 
+	bool IsBossFurious;
 private:
 	void DestroyDead();
 
@@ -198,8 +202,30 @@ private:
 
 	float RespawnTime;
 
+	FString MonsterName;
 
+	FTimerHandle HideHPBarTimerHandle;
+
+	float HideHPBarTime;
 	
+	void HPBarOnOff(bool Show);
+
+	void HideHPBar();
+
+	UPROPERTY()
+	UUserWidget* EnemyHPBarWidget;
+
+	void BossFurious();
+
+	float DefaultATK;
+
+	float DefaultDEF;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCameraShakeBase> DefaultCameraShakeClass;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCameraShakeBase> ExplodeCameraShakeClass;
 public: //get
 	FORCEINLINE	UBehaviorTree* GetBT() const { return BehaviorTree; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
@@ -208,7 +234,18 @@ public: //get
 	FORCEINLINE UMonsterStatsComponent* GetMonsterStatComp() const { return MonsterStatComp; }
 	FORCEINLINE FString GetAreaNum() const { return AreaNum; }
 	FORCEINLINE int32 GetMId() const { return MId; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE FString GetMonsterName() const { return MonsterName; }
+	
+
 public:
 	void AgroCancel();	
 	void AreaAgroCancel();
+	void BossAgroCancel();
+	void SetMonsterName(FString Name);
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetFuriousPP();
+	UFUNCTION(BlueprintImplementableEvent)
+	void FuriousDead();
+	void PlayCameraShake(bool IsDefault);
 };

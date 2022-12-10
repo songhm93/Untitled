@@ -39,6 +39,9 @@ private:
 	void HitEffect();
 
 	float Damage;
+
+	float SpawnTime;
+
 public:
 	FORCEINLINE	UStaticMeshComponent* GetMeshComp() const { return MeshComp; }
 	FORCEINLINE UCapsuleComponent* GetCapsuleComp() const { return CapsuleComp; }

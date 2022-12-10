@@ -27,6 +27,7 @@ class UAnimMontage;
 class USoundCue;
 class UParticleSystem;
 class UAnimInstance;
+class UCameraShakeBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UCombatComponent : public UActorComponent
@@ -59,7 +60,7 @@ protected:
 	UParticleSystem* BasicAttackImpactParticle;
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	USoundCue* BasicAttackImpactSound;
-	virtual void ImpactTrace();
+	void ImpactTrace(int32 SkillNum);
 	void ApplyImpact(AActor* HitActor);
 	void ClearHitActors();
 	
@@ -150,6 +151,9 @@ private:
 
 	UPROPERTY()
 	UAttackDamageType* AttackDamageType;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCameraShakeBase> DefaultCameraShakeClass;
 	
 	float DodgeStaminaCost;
 
@@ -208,6 +212,7 @@ public:
 	void AttachWeapon();
 	void AttachSecondWeapon(FName SocketName);
 	void HitCauseDamage(FHitResult& HitResult);
+	void HitCauseSkillDamage(FHitResult& HitResult, int32 SkillNum);
 	void PerformDodge();
 	void ContinueAttack();
 	void HeavyAttack();

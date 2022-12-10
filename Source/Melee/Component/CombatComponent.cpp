@@ -38,7 +38,7 @@ void UCombatComponent::BeginPlay()
 		if(Cast<AMeleePlayerController>(Controller))
 		{
 			Cast<AMeleePlayerController>(Controller)->OnLightAttack.BindUObject(this, &ThisClass::LightAttack);
-			Cast<AMeleePlayerController>(Controller)->OnChargedAttack.BindUObject(this, &ThisClass::ChargedAttack); //Attack함수를 어떻게 나눌까
+			Cast<AMeleePlayerController>(Controller)->OnChargedAttack.BindUObject(this, &ThisClass::ChargedAttack);
 		}
 		if(Cast<ACharacter>(GetOwner())->GetMesh())
 		{
@@ -319,7 +319,6 @@ void UCombatComponent::HitCauseDamage(FHitResult& HitResult) //내 총 공격력
 					const float CalcATK = AttackActionCorrectionValue * PlayerATK;
 
 					UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, EquippedWeapon, AttackDamageType->StaticClass());
-					//일단 무기의 기본 공격력과 보정치로 계산.
 				}
 			}
 		}
@@ -596,7 +595,7 @@ void UCombatComponent::PerformDodge()
 	}
 }
 
-void UCombatComponent::ImpactTrace()
+void UCombatComponent::ImpactTrace(int32 SkillNum)
 {
 	const FVector Start = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 50.f;
 	const FVector End = Start + GetOwner()->GetActorForwardVector() * 100.f;
@@ -640,8 +639,10 @@ void UCombatComponent::ImpactTrace()
 			{
 				HitFromDirection = GetOwner()->GetActorForwardVector();
 				AlreadyHitActors.Add(LastHit.GetActor());
-
-				HitCauseDamage(LastHit);
+				if(SkillNum == 0)
+					HitCauseDamage(LastHit);
+				else
+					HitCauseSkillDamage(LastHit, SkillNum);
 				ApplyImpact(LastHit.GetActor());
 			}
 		}
@@ -791,9 +792,40 @@ void UCombatComponent::UltimateImpact()
 				HitFromDirection = GetOwner()->GetActorForwardVector();
 				AlreadyHitActors.Add(LastHit.GetActor());
 
-				HitCauseDamage(LastHit);
+				HitCauseSkillDamage(LastHit, 4);
 				ApplyImpact(LastHit.GetActor());
 			}
 		}
 	}
+}
+
+void UCombatComponent::HitCauseSkillDamage(FHitResult& HitResult, int32 SkillNum)
+{
+	if(HitResult.GetActor() && GetOwner() && EquippedWeapon)
+    {
+        Controller = Controller == nullptr ? Cast<APawn>(GetOwner())->GetController() : Controller;
+
+		if(Controller)
+		{
+			HitFromDirection = GetOwner()->GetActorForwardVector();
+			
+			if(HitResult.GetActor()->Implements<UCombatInterface>() && Cast<ICombatInterface>(HitResult.GetActor())->CanReceiveDamage())
+			{
+				if (GetCurrentStatValue.IsBound())
+				{
+					const float PlayerATK = GetCurrentStatValue.Execute(EStats::ATK);
+					const float WeaponSkillATK = EquippedWeapon->GetWeaponSkillATK(SkillNum);
+					const float SkillLevel = EquippedWeapon->SkillATKCalc(SkillNum);
+					const float CalcATK = PlayerATK + WeaponSkillATK * SkillLevel;
+					
+					UGameplayStatics::ApplyPointDamage(HitResult.GetActor(), CalcATK, HitFromDirection, HitResult, Controller, EquippedWeapon, AttackDamageType->StaticClass());
+
+					if(SkillNum == 4 && DefaultCameraShakeClass)
+					{
+						Cast<APlayerController>(GetOwner()->GetInstigatorController())->ClientStartCameraShake(DefaultCameraShakeClass);
+					}
+				}
+			}
+		}
+    }
 }

@@ -19,15 +19,15 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent* HPBarWidget;
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	// UWidgetComponent* HPBarWidget;
 
-	void HideHPBar();
+	//void HideHPBar();
 
-	void HPBarOnOff(bool Show);
+	// void HPBarOnOff(bool Show);
 
-	FTimerHandle HideHPBarTimerHandle;
+	// FTimerHandle HideHPBarTimerHandle;
 
-	float HideHPBarTime;
+	// float HideHPBarTime;
 	
 };
