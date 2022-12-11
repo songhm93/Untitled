@@ -78,7 +78,7 @@ void UEnemyAnimInstance::AnimNotify_DeattachRock()
 
 void UEnemyAnimInstance::AnimNotify_Impact()
 {
-    OnImpact.ExecuteIfBound();
+    OnEnemyImpact.ExecuteIfBound();
 }
 
 void UEnemyAnimInstance::AnimNotify_DefaultCameraShake()

@@ -5,7 +5,7 @@
 #include "EnemyAnimInstance.generated.h"
 
 DECLARE_DELEGATE(FOnDeattachRock);
-DECLARE_DELEGATE(FOnImpact);
+DECLARE_DELEGATE(FOnEnemyImpact);
 
 class AEnemyCharacter;
 
@@ -18,7 +18,8 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	FOnDeattachRock OnDeattachRock;
-	FOnImpact OnImpact;
+	FOnEnemyImpact OnEnemyImpact;
+
 private:
 	UFUNCTION()
 	void AnimNotify_ResetCombat();

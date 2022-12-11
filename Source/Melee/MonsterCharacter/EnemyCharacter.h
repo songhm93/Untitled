@@ -71,6 +71,7 @@ public:
 	void ShowDamageText(int32 Damage, bool IsCritical);
 	void EnterCombat(AActor* Player, bool First);
 	void ExitCombat(bool First);
+	virtual void ActiveSquareArea(bool IsActive);
 protected:
 	virtual void BeginPlay() override;
 
@@ -128,6 +129,8 @@ protected:
 	UWidgetComponent* HPBarWidget;
 
 	bool IsBossFurious;
+
+	void BossFurious();
 private:
 	void DestroyDead();
 
@@ -214,8 +217,6 @@ private:
 
 	UPROPERTY()
 	UUserWidget* EnemyHPBarWidget;
-
-	void BossFurious();
 
 	float DefaultATK;
 

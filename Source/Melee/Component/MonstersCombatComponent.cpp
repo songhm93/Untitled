@@ -32,7 +32,7 @@ void UMonstersCombatComponent::BeginPlay()
 		AnimInst = OwnerCharacter->GetMesh()->GetAnimInstance();
 		if(Cast<UEnemyAnimInstance>(AnimInst))
 		{
-			Cast<UEnemyAnimInstance>(AnimInst)->OnImpact.BindUObject(this, &ThisClass::MonsterImpactTrace);
+			Cast<UEnemyAnimInstance>(AnimInst)->OnEnemyImpact.BindUObject(this, &ThisClass::MonsterImpactTrace);
 		}
 	} 
 }

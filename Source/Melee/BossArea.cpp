@@ -52,6 +52,7 @@ void ABossArea::AgroSphereBeginOverlap(
 		if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)))
 		{
 			BossCharacter->EnterCombat(OtherActor, false);
+			BossCharacter->ActiveSquareArea(true);
 		}
 	}
 }
@@ -70,6 +71,7 @@ void ABossArea::AgroSphereEndOverlap(
 		if(OtherActor && OtherActor->Implements<UTargetingInterface>() && !(Cast<AEnemyCharacter>(OtherActor)))
 		{
 			BossCharacter->BossAgroCancel();
+			BossCharacter->ActiveSquareArea(false);
 		}
 	}
 }

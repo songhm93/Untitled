@@ -233,8 +233,7 @@ void AEnemyCharacter::BossFurious()
 		MonsterStatComp->SetCurrentStatValue(EStats::ATK, DefaultATK + DefaultATK * 0.2);
 		MonsterStatComp->SetCurrentStatValue(EStats::DEF, DefaultDEF + DefaultDEF);
 	}
-	//액터 스폰
-	//BP에서 BeginPlay에서 PP 설정
+
 	SetFuriousPP();
 }
 
@@ -594,4 +593,8 @@ void AEnemyCharacter::PlayCameraShake(bool IsDefault)
 			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(ExplodeCameraShakeClass);
 		}
 	}
+}
+
+void AEnemyCharacter::ActiveSquareArea(bool IsActive)
+{
 }

@@ -7,6 +7,7 @@
 #include "EnemyAnimInstance.h"
 #include "../Component/MonsterStatsComponent.h"
 #include "../SkillActor/Rock.h"
+#include "../SkillActor/SquareArea.h"
 #include "../Melee.h"
 #include "../BossArea.h"
 
@@ -31,6 +32,16 @@ ARampageMonster::ARampageMonster()
     FlightTime = 1.32f;
 
     JumpTargetLocation = FVector::ZeroVector;
+
+    SquareAreaXLength = 300.f;
+    SquareAreaYLength = 330.f;
+
+    SquareAreaRefLoc = FVector(5015.f, 5725.f, 70.f);
+
+    TestTime = 0.f;
+
+    bActiveSquare = false;
+
 }
 
 void ARampageMonster::Tick(float DeltaTime)
@@ -54,6 +65,17 @@ void ARampageMonster::Tick(float DeltaTime)
     {
         SetHeight(DeltaTime);
     }
+
+    if(bActiveSquare)
+    {
+        TestTime += DeltaTime;
+        if(TestTime >= 5.f)
+        {
+            SetSquareArea();
+            TestTime = 0.f;
+        }
+    }
+
 }
 
 
@@ -297,5 +319,71 @@ void ARampageMonster::ResumeS3Montage()
         EnemyAnimInst->Montage_Resume(Special3Montage);
         bPauseS3Montage = false;
         CurrentSkillCount = 0;
+    }
+}
+
+void ARampageMonster::SetSquareArea()
+{
+    bActiveSquare = false;
+
+    int32 RandXValue = FMath::RandRange(-5, 5);
+    int32 RandYValue = FMath::RandRange(-5, 5);
+
+    RandXValue *= SquareAreaXLength;
+    RandYValue *= SquareAreaYLength;
+    RandXValue += SquareAreaRefLoc.X;
+    RandYValue += SquareAreaRefLoc.Y;
+
+
+    if(IsExistLoc(RandXValue + RandYValue)) //존재하면 랜덤 다시 뽑아야함
+    {
+        SetSquareArea();
+        return;
+    }
+    else 
+    {
+        FActorSpawnParameters Params; 
+        Params.Owner = this;
+        Params.Instigator = Cast<APawn>(this);
+        
+        FVector ResultLoc = FVector(RandXValue, RandYValue, SquareAreaRefLoc.Z);
+        FTransform SpawnTransform = GetActorTransform();
+        SpawnTransform.SetLocation(ResultLoc);
+        SpawnTransform.SetRotation(FQuat4d::MakeFromRotator(FRotator::ZeroRotator));
+        ASquareArea* SquareArea = GetWorld()->SpawnActor<ASquareArea>(SquareAreaClass, SpawnTransform, Params);
+        SquareAreaCoord.Add(FSquareArea(RandXValue, RandYValue, RandXValue + RandYValue, SquareArea));
+        bActiveSquare = true;
+    }
+}
+
+bool ARampageMonster::IsExistLoc(int32 PlusValue)
+{
+    if(SquareAreaCoord.IsEmpty()) return false;
+
+    for(auto Squares : SquareAreaCoord)
+    {
+        if(Squares.CoordPlusValue == PlusValue)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void ARampageMonster::ActiveSquareArea(bool IsActive)
+{
+    bActiveSquare = IsActive;
+
+    if(!bActiveSquare)
+    {
+        //있던 거 다 삭제해야함
+        if(!SquareAreaCoord.IsEmpty())
+        {
+            for(auto SquareAreaActor : SquareAreaCoord)
+            {
+                SquareAreaActor.SquareArea->RequestDestroy();
+            }
+            SquareAreaCoord.Empty();
+        }
     }
 }

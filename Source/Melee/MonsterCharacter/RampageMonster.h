@@ -6,6 +6,25 @@
 
 class ARock;
 class UCurveFloat;
+class ASquareArea;
+
+struct FSquareArea
+{
+	FSquareArea(){}
+	FSquareArea(int32 _SquareAreaX, int32 _SquareAreaY, int32 _CoordPlusValue, ASquareArea* _SquareArea)
+	{
+		SquareAreaX = _SquareAreaX;
+		SquareAreaY = _SquareAreaY;
+		CoordPlusValue = _CoordPlusValue;
+		SquareArea = _SquareArea;
+	}
+	int32 SquareAreaX;
+	int32 SquareAreaY;
+	int32 CoordPlusValue;
+	UPROPERTY()
+	ASquareArea* SquareArea;
+};
+
 
 UCLASS()
 class MELEE_API ARampageMonster : public ABossMonster
@@ -20,9 +39,9 @@ public:
 	virtual void Special4() override;
 	virtual void Special5() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void ActiveSquareArea(bool IsActive) override;
 protected:
 	virtual void BeginPlay() override;
-	
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> RockActor;
@@ -90,7 +109,25 @@ private:
 	void MonsterFalling();
 
 	FVector JumpTargetLocation;
-	
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AActor> SquareAreaClass;
+
+	TArray<FSquareArea> SquareAreaCoord;
+
+	int32 SquareAreaXLength;
+
+	int32 SquareAreaYLength;
+
+	FVector SquareAreaRefLoc;
+
+	void SetSquareArea();
+
+	bool IsExistLoc(int32 PlusValue);
+
+	float TestTime;
+
+	bool bActiveSquare;
 public:
 	
 };

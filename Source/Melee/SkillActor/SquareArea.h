@@ -2,35 +2,24 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "FlameSkill.generated.h"
+#include "SquareArea.generated.h"
 
-
-class USphereComponent; 
+class UBoxComponent;
 
 UCLASS()
-class MELEE_API AFlameSkill : public AActor
+class MELEE_API ASquareArea : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
-	AFlameSkill();
+	ASquareArea();
 	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay() override;
 
 private:	
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
-	USphereComponent* SphereComp;
-
-	bool bOvelapped;
-
-	FTimerHandle DestoryFlameTimerHandle;
-
-	float DestroyFlameTime;
-
-	TArray<AActor*> DamageActor;
-
-	float DamageTime; //0.25초마다 대미지 적용
+	UBoxComponent* BoxComp;
 
 	UFUNCTION()
 	void OverlappedApplyDamage(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -38,11 +27,17 @@ private:
 	UFUNCTION()
 	void RemoveOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	void DestroyFlame();
+	bool bOvelapped;
 
-	float FinalDamage;
+	TArray<AActor*> DamageActor;
 
+	float DamageTime;
+
+	bool IsMove;
+
+	FVector CurrentLoc;
+
+	float DestroyTime;
 public:
-	void Init(float Damage);
-
+	void RequestDestroy();
 };

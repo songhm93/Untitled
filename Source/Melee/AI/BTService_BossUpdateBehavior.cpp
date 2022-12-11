@@ -59,7 +59,7 @@ void UBTService_BossUpdateBehavior::BossCase(float Dist, AActor* Target)
 		{								   
 			if(Dist > 2000.f)
 			{
-				int32 RandValue = FMath::RandRange(0, 2);
+				int32 RandValue = FMath::RandRange(0, 1);
 				if(RandValue == 0)
 					SetBossBehavior(EBossBehavior::SPECIAL2);
 				else if(RandValue == 1)
