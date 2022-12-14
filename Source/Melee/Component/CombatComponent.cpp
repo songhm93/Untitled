@@ -12,6 +12,7 @@
 #include "../Interface/TargetingInterface.h"
 #include "../PlayerController/MeleePlayerController.h"
 #include "../PlayerCharacter/MeleeAnimInstance.h"
+#include "../PlayerCharacter/BaseCharacter.h"
 
 
 UCombatComponent::UCombatComponent()
@@ -26,6 +27,9 @@ UCombatComponent::UCombatComponent()
 	bSecondSkillTimerRunning = false;
 	bThirdSkillTimerRunning = false;
 	bUltimateSkillTimerRunning = false;
+	bHoldWeapon = false;
+	HoldTime = 0.f;
+
 }
 
 void UCombatComponent::BeginPlay()
@@ -38,7 +42,6 @@ void UCombatComponent::BeginPlay()
 		if(Cast<AMeleePlayerController>(Controller))
 		{
 			Cast<AMeleePlayerController>(Controller)->OnLightAttack.BindUObject(this, &ThisClass::LightAttack);
-			Cast<AMeleePlayerController>(Controller)->OnChargedAttack.BindUObject(this, &ThisClass::ChargedAttack);
 		}
 		if(Cast<ACharacter>(GetOwner())->GetMesh())
 		{
@@ -49,7 +52,7 @@ void UCombatComponent::BeginPlay()
 				Cast<UMeleeAnimInstance>(AnimInst)->OnUltimateImpact.BindUObject(this, &ThisClass::UltimateImpact);
 			}
 		}
-
+		BaseCharacter = Cast<ABaseCharacter>(GetOwner());
 	}
 }
 
@@ -91,6 +94,28 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		{
 			bUltimateSkillTimerRunning = false;
 		}
+	}
+
+	if(bHoldWeapon)
+	{
+		if(BaseCharacter)
+		{
+			if(!BaseCharacter->GetIsHoldWeapon())
+			{
+				BaseCharacter->SetIsHoldWeapon(true); //무기 들게
+			}
+
+			HoldTime += DeltaTime;
+			if(HoldTime >= 8.f)
+			{
+				bHoldWeapon = false;
+				HoldTime = 0.f;
+				//무기 집어넣게
+				BaseCharacter->SetIsHoldWeapon(false);
+			}
+
+		}
+		
 	}
 }
 
@@ -397,7 +422,7 @@ void UCombatComponent::LightAttack()
 	{
 		if(CurrentState == ECurrentState::ATTACKING)
 		{
-			SetIsAttackSaved(true);
+			bIsAttackSaved = true;
 		}
 		else
 		{
@@ -406,42 +431,11 @@ void UCombatComponent::LightAttack()
 	}
 }
 
-void UCombatComponent::HeavyAttack()
-{
-	if(!CanAttack() || !GetCurrentState.IsBound()) return;
-	const ECurrentState CurrentState = GetCurrentState.Execute();
-	if(CurrentState == ECurrentState::NOTHING)
-	{
-		if(CurrentState == ECurrentState::ATTACKING)
-		{
-			SetIsAttackSaved(true);
-		}
-		else
-		{
-			SubAttack(ECurrentAction::HEAVY_ATTACK);
-		}
-	}
-}
-
-void UCombatComponent::ChargedAttack()
-{
-	if(!CanAttack() || !GetCurrentState.IsBound()) return;
-	const ECurrentState CurrentState = GetCurrentState.Execute();
-	if(CurrentState == ECurrentState::NOTHING)
-	{
-		if(CurrentState == ECurrentState::ATTACKING)
-		{
-			SetIsAttackSaved(true);
-		}
-		else
-		{
-			SubAttack(ECurrentAction::CHARGED_ATTACK);
-		}
-	}
-}
-
 void UCombatComponent::Attack(int32 Count)
 {
+	bHoldWeapon = true;
+	HoldTime = 0.f;
+	
 	EMovementType MovementType = GetCurrentMovementType.Execute();
 	UAnimMontage* TempLightAttackMontage = nullptr;
 	UAnimMontage* TempSprintAttackMontage = nullptr;
@@ -472,49 +466,9 @@ void UCombatComponent::Attack(int32 Count)
 		{
 			AnimInst->Montage_Play(TempSprintAttackMontage);
 		}
+		
 		OnUpdateCurrentState.ExecuteIfBound(ECurrentState::ATTACKING);
 		OnUpdateCurrentAction.ExecuteIfBound(ECurrentAction::LIGHT_ATTACK);
-	}
-}
-
-void UCombatComponent::SubAttack(ECurrentAction Action)
-{
-	UAnimMontage* TempMontage = nullptr;
-	if(EquippedWeapon)
-	{
-		EWeaponType WeaponType = EquippedWeapon->GetWeaponType();
-		if(WeaponType == EWeaponType::LIGHT_SWORD)
-		{
-			switch(Action)
-			{
-				case ECurrentAction::HEAVY_ATTACK:
-					TempMontage = LSHeavyAttackMontage;
-					AttackActionCorrectionValue = 3.f;
-				break;
-				case ECurrentAction::CHARGED_ATTACK:
-					TempMontage = LSChargedAttackMontage;
-					AttackActionCorrectionValue = 4.f;
-				break;
-			}
-		}
-		else if(WeaponType == EWeaponType::DUAL_SWORD)
-		{
-			switch(Action)
-			{
-				case ECurrentAction::HEAVY_ATTACK:
-					TempMontage = DSHeavyAttackMontage;
-					AttackActionCorrectionValue = 3.f;
-				break;
-				case ECurrentAction::CHARGED_ATTACK:
-					TempMontage = DSChargedAttackMontage;
-					AttackActionCorrectionValue = 4.f;
-				break;
-			}
-		}
-		OnUpdateCurrentState.ExecuteIfBound(ECurrentState::ATTACKING);
-		OnUpdateCurrentAction.ExecuteIfBound(Action);
-		
-		Cast<ACharacter>(GetOwner())->PlayAnimMontage(TempMontage);
 	}
 }
 
@@ -523,12 +477,11 @@ void UCombatComponent::ContinueAttack()
 {
 	OnUpdateCurrentState.ExecuteIfBound(ECurrentState::NOTHING);
 
-	if(GetIsAttackSaved())
+	if(bIsAttackSaved)
 	{
-		SetIsAttackSaved(false);
+		bIsAttackSaved = false;
 		Attack(AttackCount);
 	}
-	
 }
 
 bool UCombatComponent::CanAttack()
@@ -537,7 +490,7 @@ bool UCombatComponent::CanAttack()
 	const ECurrentCombatState CurrentCombatState = GetCurrentCombatState.Execute();
 	bool Condition =  
 		(!EquippedWeapon || CurrentCombatState == ECurrentCombatState::NONE_COMBAT_STATE);
-	if(Condition) return false;
+	if(!EquippedWeapon) return false;
 	
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::ATTACKING);
@@ -545,6 +498,7 @@ bool UCombatComponent::CanAttack()
 	CharacterStates.Add(ECurrentState::DEAD);
 	CharacterStates.Add(ECurrentState::DISABLED);
 	CharacterStates.Add(ECurrentState::GENERAL_STATE);
+	CharacterStates.Add(ECurrentState::STUN);
 	bool ReturnValue = false;
 
 	const bool EqualTo = IsCurrentStateEqualToThis.Execute(CharacterStates);
@@ -585,6 +539,8 @@ void UCombatComponent::PerformDodge()
 {
 	if(DodgeMontage && GetOwner())
 	{
+		bHoldWeapon = true;
+		HoldTime = 0.f;
 		OnUpdateCurrentState.ExecuteIfBound(ECurrentState::DODGING);
 		OnUpdateCurrentAction.ExecuteIfBound(ECurrentAction::DODGE);
 	
@@ -672,6 +628,8 @@ void UCombatComponent::Skill1()
 
 	if(EquippedWeapon)
 	{
+		bHoldWeapon = true;
+		HoldTime = 0.f;
 		EquippedWeapon->Skill1();
 
 		FirstSkillSlotCooldown = EquippedWeapon->GetSkill1Cooldown();
@@ -687,6 +645,8 @@ void UCombatComponent::Skill2()
 
 	if(EquippedWeapon)
 	{
+		bHoldWeapon = true;
+		HoldTime = 0.f;
 		EquippedWeapon->Skill2();
 
 		SecondSkillSlotCooldown = EquippedWeapon->GetSkill2Cooldown();
@@ -710,6 +670,8 @@ void UCombatComponent::Skill3()
 
 	if(EquippedWeapon)
 	{
+		bHoldWeapon = true;
+		HoldTime = 0.f;
 		EquippedWeapon->Skill3();
 
 		if(bThirdSkillTimerRunning) return; //위는 블링크 재사용때
@@ -729,6 +691,8 @@ void UCombatComponent::SkillUltimate()
 	}
 	if(EquippedWeapon)
 	{
+		bHoldWeapon = true;
+		HoldTime = 0.f;
 		EquippedWeapon->SkillUltimate();
 		UltimateSkillSlotCooldown = EquippedWeapon->GetSkillUltimateCooldown();
 		GetWorld()->GetTimerManager().SetTimer(UltimateSkillTimerHandle, UltimateSkillSlotCooldown, false);

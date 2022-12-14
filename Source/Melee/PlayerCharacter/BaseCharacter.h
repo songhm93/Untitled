@@ -123,15 +123,9 @@ private:
 
 	void PerformKnockdown();
 
+	void PerformStun();
+
 	FName GetLightAttackSectionName(int32 AttackCount);
-
-	void HotkeySlot1ButtonPressed();
-
-	void HotkeySlot2ButtonPressed();
-
-	void HotkeySlot3ButtonPressed();
-
-	void HotkeySlot4ButtonPressed();
 
 	void LeftClickPressed();
 
@@ -156,9 +150,6 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	FRotator GetDesiredRotation();
-
-	UFUNCTION()
-	void CharacterStateBegin(ECurrentState State);
 
 	UFUNCTION()
 	void ReceiveDamage(
@@ -194,6 +185,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* KnockdownBackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CommonMontage", Meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* StunMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;
@@ -252,6 +246,7 @@ private:
 
 	float RespawnTime;
 	
+	bool bIsHoldWeapon;
 	
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -263,14 +258,18 @@ public: //get
 	FORCEINLINE UInventoryComponent* GetInventoryComp() const { return InventoryComp; }
 	FORCEINLINE UMainHUDWidget* GetMainHUDWidget() const { return MainHUDWidget; }
 	FORCEINLINE UQuestLogComponent* GetQuestLogComp() const { return QuestLogComp; }
+	FORCEINLINE bool GetIsHoldWeapon() const { return bIsHoldWeapon; }
 
 public:
-	void HeavyAttack();
+	
+
+public:
 	void LightAttack();
 	void ChargedAttack();
 	void SetMovementType(EMovementType Type);
 	UFUNCTION(BlueprintCallable)
 	void AddExp(int32 Exp);
+	void SetIsHoldWeapon(bool Boolean);
 	
 };
 

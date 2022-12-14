@@ -14,9 +14,13 @@ public:
 	UAttackDamageType();
 	
 private:
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	EDamageType DamageType;
 
 public: //get
 	FORCEINLINE EDamageType GetDamageType() const { return DamageType; }
+
+public:
+	FORCEINLINE void SetDamageType(EDamageType Type) { DamageType = Type; }
 	
 };

@@ -6,6 +6,7 @@
 #include "../Interface/ItemInterface.h"
 #include "MerchantNPC.generated.h"
 
+class UMerchantWidget;
 
 UCLASS()
 class MELEE_API AMerchantNPC : public ABaseNPC
@@ -22,6 +23,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TArray<int32> HaveItemId;
+
+	UPROPERTY()
+	UMerchantWidget* MerchantWidget;
 
 public:
 	FORCEINLINE TArray<int32> GetHaveItemId() const { return HaveItemId; }

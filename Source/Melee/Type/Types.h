@@ -43,6 +43,7 @@ enum class ECurrentState : uint8 //현재 상태
     GENERAL_STATE UMETA(DisplayName = "GENERAL_STATE"),
     DEAD UMETA(DisplayName = "DEAD"),
     DISABLED UMETA(DisplayName = "DISABLED"),
+    STUN UMETA(DisplayName = "DISABLED"),
 
     MAX UMETA(DisplayName = "MAX")
 };

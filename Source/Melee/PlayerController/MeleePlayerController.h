@@ -9,7 +9,6 @@
 
 
 DECLARE_DELEGATE(FOnLightAttack);
-DECLARE_DELEGATE(FOnChargedAttack);
 
 class ABaseCharacter;
 class UGetItemWidget;
@@ -47,7 +46,6 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void BeginPlay() override;
 	FOnLightAttack OnLightAttack;
-	FOnChargedAttack OnChargedAttack;
 	void RequestEntry();
 	void SaveData();
 	void GetItemWidgetVisible(FItemInfoInSlot AddItemInfo, int32 Amount);
@@ -63,10 +61,6 @@ protected:
 
 private:
 	void AttackButtonPressed();
-
-	void AttackButtonReleased();
-
-	void TrackingChargedAttack(float DeltaTime);
 
 	void TrackingSprint();
 
@@ -89,14 +83,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UFadeWidget> DeathWidgetClass;
-
-	bool bLeftClickIsPressed;
-
-	float LeftClickTime;
-
-	float ChargedTime;
-
-	bool bCharged;
 
 	int32 ExistGetItemWidgetNum; //현재 띄워져있는 위젯 갯수 -> 최대 4개
 

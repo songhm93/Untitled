@@ -15,7 +15,7 @@ void AMerchantNPC::Interact(AActor* Caller)
 {
     Super::Interact(Caller);
 
-    //여기서 플레이어 MainHUD 지우고, 상점 위젯 띄우기.
+    //플레이어 MainHUD 지우고, 상점 위젯 띄우기.
     ABaseCharacter* MC = Cast<ABaseCharacter>(Caller);
     
     if(MC && MC->GetMainHUDWidget())
@@ -24,7 +24,7 @@ void AMerchantNPC::Interact(AActor* Caller)
         if(MPC && MPC->GetMerchantWidgetClass())
         {
             MC->GetMainHUDWidget()->SetVisibility(ESlateVisibility::Hidden);
-            UMerchantWidget* MerchantWidget = CreateWidget<UMerchantWidget>(GetWorld(), MPC->GetMerchantWidgetClass());
+            MerchantWidget = CreateWidget<UMerchantWidget>(GetWorld(), MPC->GetMerchantWidgetClass());
             if(MerchantWidget)
             {
                 //Init할때 이 NPC가 갖고있는 물품들을 Init에 넣어 보내줌

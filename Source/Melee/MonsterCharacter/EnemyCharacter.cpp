@@ -76,7 +76,6 @@ void AEnemyCharacter::BeginPlay()
 
 	if(StateManagerComp)
 	{
-		StateManagerComp->OnStateBegin.AddUObject(this, &ThisClass::CharacterStateBegin);
 		StateManagerComp->SetCurrentState(ECurrentState::GENERAL_STATE);
 		StateManagerComp->OnCombatState.AddUObject(this, &ThisClass::HPBarOnOff);
 	}
@@ -213,6 +212,8 @@ void AEnemyCharacter::CalcReceiveDamage(float PlayerATK) //받는 총 대미지 
 		{
 			if(StateManagerComp)
 				StateManagerComp->SetCurrentState(ECurrentState::DEAD);
+
+			Dead();
 			if(MonsterType == EMonsterType::BOSS)
 			{
 				FuriousDead();
@@ -257,31 +258,6 @@ void AEnemyCharacter::ApplyHitReaction(EDamageType DamageType)
 	{
 		if(HitReactBackMontage)
 			PlayAnimMontage(HitReactBackMontage);
-	}
-}
-
-void AEnemyCharacter::CharacterStateBegin(ECurrentState State)
-{
-	switch (State)
-	{
-	case ECurrentState::NOTHING:
-		
-		break;
-	case ECurrentState::ATTACKING:
-		
-		break;
-	case ECurrentState::DODGING:
-		
-		break;
-	case ECurrentState::GENERAL_STATE:
-		
-		break;
-	case ECurrentState::DEAD:
-			Dead();
-		break;
-	case ECurrentState::DISABLED:
-		
-		break;
 	}
 }
 

@@ -6,6 +6,8 @@
 
 #include "../PlayerCharacter/BaseCharacter.h"
 #include "../MonsterCharacter/EnemyCharacter.h"
+#include "../AttackDamageType.h"
+
 
 ARock::ARock()
 {
@@ -26,8 +28,7 @@ ARock::ARock()
 	Damage = 2000.f;
 
 	SpawnTime = 0.f;
-	
-	
+
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> RockMesh(TEXT("/Game/Migrated/SM_Rock_To_Hold"));
 	
 	if (RockMesh.Succeeded())
@@ -79,7 +80,7 @@ void ARock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveCo
 					200.f, //데미지 내부 반경
 					500.f, //데미지 외부 반경
 					1.f, //데미지 감소
-					UDamageType::StaticClass(), //DamageType 클래스
+					DamageType, //DamageType 클래스
 					TArray<AActor*>(), //무시할 액터
 					this, // 데미지를 입힌 액터
 					InstigatorController 

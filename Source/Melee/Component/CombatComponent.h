@@ -20,6 +20,7 @@ DECLARE_DELEGATE_RetVal(EMovementType, FGetCurrentMovementType);
 
 class ABaseWeapon;
 class ABaseEquippable;
+class ABaseCharacter;
 class ABaseArmor;
 class UAttackDamageType;
 class UStateManagerComponent;
@@ -71,10 +72,6 @@ private:
 
 	void Attack(int32 AttackCount);
 
-	void ChargedAttack();
-
-	void SubAttack(ECurrentAction Action);
-
 	bool CanAttack();
 
 	void ApplySkillExplodeDamage(float SkillATK, FHitResult HitResult);
@@ -88,9 +85,6 @@ private:
 	//Light Sword
 	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LSLightAttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* LSChargedAttackMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "LSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LSHeavyAttackMontage;
@@ -107,9 +101,6 @@ private:
 	//Dual Sword
 	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DSLightAttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DSChargedAttackMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "DSMontage", Meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DSHeavyAttackMontage;
@@ -145,6 +136,9 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Meta=(AllowPrivateAccess = "true"))
 	bool bIsAttackSaved;
+
+	UPROPERTY()
+	ABaseCharacter* BaseCharacter;
 
 	UPROPERTY()
 	AController* Controller;
@@ -183,6 +177,10 @@ private:
 
 	bool bUltimateSkillTimerRunning;
 
+	bool bHoldWeapon;
+
+	float HoldTime;
+
 public: //get
 	FORCEINLINE ABaseWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 	FORCEINLINE bool GetIsAttackSaved() const { return bIsAttackSaved; }
@@ -199,7 +197,8 @@ public: //set
 	FORCEINLINE void SetIsAttackSaved(bool Boolean) { bIsAttackSaved = Boolean; }
 	FORCEINLINE void SetAttackCount(int32 Count) { AttackCount = Count; }
 	FORCEINLINE void SetAttackActionCorrectionValue(float Value) { AttackActionCorrectionValue = Value; }
-
+	FORCEINLINE void SetHoldWeapon(bool Boolean) { bHoldWeapon = Boolean; }
+	FORCEINLINE void SetHoldTime(float Value) { HoldTime = Value; }
 public:
 	FORCEINLINE void IncrementAttackCount() { ++AttackCount; }
 	FORCEINLINE void ResetAttackCount() { AttackCount = 0; }

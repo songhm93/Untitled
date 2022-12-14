@@ -8,6 +8,7 @@ class UStaticMeshComponent;
 class UCapsuleComponent;
 class UParticleSystem;
 class USoundCue;
+class UAttackDamageType;
 
 UCLASS()
 class MELEE_API ARock : public AActor
@@ -41,6 +42,9 @@ private:
 	float Damage;
 
 	float SpawnTime;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UAttackDamageType> DamageType;
 
 public:
 	FORCEINLINE	UStaticMeshComponent* GetMeshComp() const { return MeshComp; }

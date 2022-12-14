@@ -186,42 +186,47 @@ void ARampageMonster::Special4()
 
 void ARampageMonster::Special5()
 {
-    if(EnemyAnimInst && Special5Montage && Target)
+    if(EnemyAnimInst && Special5Montage && Target && GetCharacterMovement())
     {
-        GetWorld()->GetTimerManager().SetTimer(HeightCurveTimerHandle, this, &ThisClass::FinishSetHeight, CurveTime);
-        GetWorld()->GetTimerManager().SetTimer(FlightTimerHandle, this, &ThisClass::MonsterFalling, FlightTime);
-        CurrentLocation = GetOwner()->GetActorLocation();
+        // GetWorld()->GetTimerManager().SetTimer(HeightCurveTimerHandle, this, &ThisClass::FinishSetHeight, CurveTime);
+        // GetWorld()->GetTimerManager().SetTimer(FlightTimerHandle, this, &ThisClass::MonsterFalling, FlightTime);
+        GetCharacterMovement()->GravityScale = 2.f;
+        CurrentLocation = GetActorLocation();
         bPlayCurve = true;
         EnemyAnimInst->Montage_Play(Special5Montage);
         EnemyAnimInst->Montage_JumpToSection(TEXT("JumpStart"), Special5Montage);
         JumpTargetLocation = Target->GetActorLocation();
+    
+        LaunchCharacter(FVector(JumpTargetLocation.X - GetActorLocation().X, JumpTargetLocation.Y - GetActorLocation().Y, 1500.f), false, false);
     }
 }
 
 void ARampageMonster::SetHeight(float DeltaTime)
 {
-    if(MonsterHeightCurve && Target)
+    if(MonsterHeightCurve && Target && GetCharacterMovement())
     {
-        FVector MonsterLocation = CurrentLocation;
-        const float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(HeightCurveTimerHandle); 
-        const float HeightCurveValue = MonsterHeightCurve->GetFloatValue(ElapsedTime);
-        MonsterLocation.Z += HeightCurveValue * 700;
-        if(HeightCurveValue == 1)
+        BeforeLocation = CurrentLocation;
+        CurrentLocation = GetActorLocation();
+
+        if(BeforeLocation.Z > CurrentLocation.Z)
         {
-            if(EnemyAnimInst && Special5Montage)
+            //떨어진다.
+            GetCharacterMovement()->GravityScale = 3.5f;
+
+            FHitResult HitResult;
+            GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), GetActorLocation() + (GetActorUpVector() * -600.f), ECollisionChannel::ECC_Visibility);
+            if(HitResult.bBlockingHit)
             {
-                EnemyAnimInst->Montage_Play(Special5Montage);
-                EnemyAnimInst->Montage_JumpToSection(TEXT("Loop"), Special5Montage);
+                if(HitResult.Distance < 450.f)
+                {
+                    if(EnemyAnimInst && Special5Montage)
+                    {
+                        EnemyAnimInst->Montage_Play(Special5Montage);
+                        EnemyAnimInst->Montage_JumpToSection(TEXT("JumpAttackEnd"), Special5Montage);
+                    }
+                    bPlayCurve = false;
+                }
             }
-        }
-
-        FVector Result = FMath::VInterpTo(GetActorLocation(), JumpTargetLocation, DeltaTime, 5.f);
-
-        FHitResult HitResult;
-        GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), GetActorLocation() + (GetActorUpVector() * -600.f), ECollisionChannel::ECC_Visibility);
-        if(HitResult.bBlockingHit)
-        {
-            SetActorLocation(FVector(Result.X, Result.Y, MonsterLocation.Z));
         }
     }
 }
@@ -334,7 +339,6 @@ void ARampageMonster::SetSquareArea()
     RandXValue += SquareAreaRefLoc.X;
     RandYValue += SquareAreaRefLoc.Y;
 
-
     if(IsExistLoc(RandXValue + RandYValue)) //존재하면 랜덤 다시 뽑아야함
     {
         SetSquareArea();
@@ -386,4 +390,11 @@ void ARampageMonster::ActiveSquareArea(bool IsActive)
             SquareAreaCoord.Empty();
         }
     }
+}
+
+void ARampageMonster::Dead()
+{
+    ActiveSquareArea(false);
+
+    Super::Dead();
 }

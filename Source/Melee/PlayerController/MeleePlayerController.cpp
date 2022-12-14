@@ -17,10 +17,6 @@
 
 AMeleePlayerController::AMeleePlayerController()
 {
-    bLeftClickIsPressed = false;
-    LeftClickTime = 0.f;
-    ChargedTime = 0.3f;
-    bCharged = false;
     ExistGetItemWidgetNum = 0;
     WaitGetItemWidgetNum = 0;
 
@@ -35,7 +31,6 @@ void AMeleePlayerController::OnPossess(APawn* InPawn)
 
 void AMeleePlayerController::Tick(float DeltaTime)
 {
-    TrackingChargedAttack(DeltaTime);
     TrackingSprint();
 }
 
@@ -59,40 +54,13 @@ void AMeleePlayerController::SetupInputComponent()
     Super::SetupInputComponent();
     if(nullptr == InputComponent) return; 
     InputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::AttackButtonPressed);
-    InputComponent->BindAction("Attack", IE_Released, this, &ThisClass::AttackButtonReleased);
 }
- 
+
 void AMeleePlayerController::AttackButtonPressed() 
 {
-    bLeftClickIsPressed = true;
+   OnLightAttack.ExecuteIfBound();
 }
 
-void AMeleePlayerController::AttackButtonReleased() 
-{
-    bLeftClickIsPressed = false; 
-
-    if(!bCharged)
-        OnLightAttack.ExecuteIfBound();
-    bCharged = false;
-}
-
-void AMeleePlayerController::TrackingChargedAttack(float DeltaTime)
-{
-    if(bLeftClickIsPressed)
-    {
-        LeftClickTime += DeltaTime;
-        if(LeftClickTime >= ChargedTime)
-        {
-            OnChargedAttack.ExecuteIfBound();
-            bCharged = true;
-            bLeftClickIsPressed = false;
-        }
-    }
-    else
-    {
-        LeftClickTime = 0.f;
-    }  
-}
 
 void AMeleePlayerController::TrackingSprint()
 {

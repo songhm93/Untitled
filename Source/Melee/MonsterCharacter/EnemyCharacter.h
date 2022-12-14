@@ -136,9 +136,6 @@ private:
 
 	void LookAtPlayer(AActor* Player, float DeltaTime);
 
-	UFUNCTION()
-	void CharacterStateBegin(ECurrentState State);
-
 	void DropItem();
 	
 	UPROPERTY(EditAnywhere, Category = "Common", Meta = (AllowPrivateAccess = "true"))

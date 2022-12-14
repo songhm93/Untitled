@@ -5,7 +5,6 @@
 #include "../Type/Types.h"
 #include "StateManagerComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnStateBegin, ECurrentState);
 DECLARE_DELEGATE_OneParam(FShouldRegen, bool);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCombatState, bool);
 
@@ -17,7 +16,6 @@ class MELEE_API UStateManagerComponent : public UActorComponent
 public:	
 	UStateManagerComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	FOnStateBegin OnStateBegin;
 	FShouldRegen ShouldRegen;
 	FOnCombatState OnCombatState;
 

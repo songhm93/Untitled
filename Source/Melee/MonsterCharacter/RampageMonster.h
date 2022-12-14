@@ -42,6 +42,7 @@ public:
 	virtual void ActiveSquareArea(bool IsActive) override;
 protected:
 	virtual void BeginPlay() override;
+	virtual void Dead() override;
 private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> RockActor;
@@ -92,6 +93,8 @@ private:
 	float CurveTime;
 
 	FVector CurrentLocation;
+
+	FVector BeforeLocation;
 
 	void SetHeight(float DeltaTime);
 

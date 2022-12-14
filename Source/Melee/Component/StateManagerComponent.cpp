@@ -48,7 +48,7 @@ void UStateManagerComponent::SetCurrentState(ECurrentState State)
 	if(CurrentState != State)
 	{
 		CurrentState = State;
-		OnStateBegin.Broadcast(CurrentState);
+		
 		if(CurrentState == ECurrentState::DEAD)
 			ShouldRegen.ExecuteIfBound(false);
 		else
