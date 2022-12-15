@@ -9,11 +9,71 @@ DB : MySql(서버 연동으로 멀티 게임을 기반에 둔 것이 아닌 공�
 
 ### Character
 + Character - Interface 상속 <br>
-	+ Interact, 전투에 관련된 함수들은 부모 클래스로 호출하기 위해 인터페이스를 상속, 재정의해서 사용
+	+ EnemyCharacter는 BaseCharacter를 상속받지 않음
+	+ 대신 비슷하거나 같은 기능을 하는 함수를 인터페이스에 순수가상함수로 선언 후 재정의해서 사용
 
 ![Character](https://user-images.githubusercontent.com/27758519/207755957-77522c8a-e46e-48b7-944d-de5fc50b19a7.jpg)
 
+```c++
+public:
+	virtual void ResetCombat() = 0; 
+	virtual bool CanReceiveDamage() = 0;
+	virtual void CalcReceiveDamage(float ATK) = 0;
+	virtual void ApplyHitReaction(EDamageType DamageType) = 0;
+	virtual void ApplyImpactEffect() = 0;
+	virtual bool CalcCritical(float Percent) = 0;
+```
 
++ OnTakeAnyDamage 델리게이트 바인딩, 받은 대미지 계산 후 처리
+```c++
+void ABaseCharacter::ReceiveDamage(
+	AActor* DamagedActor, 
+	float EnemyATK, 
+	const UDamageType* DamageType, 
+	AController* InstigatedBy, 
+	AActor* DamageCauser)
+{
+	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DODGING) return;
+
+	ApplyImpactEffect();
+
+	if(Cast<UAttackDamageType>(DamageType))
+	{
+		ApplyHitReaction(Cast<UAttackDamageType>(DamageType)->GetDamageType());
+	}
+	if(CombatCompo)
+	{
+		CombatCompo->SetHoldWeapon(true);
+		CombatCompo->SetHoldTime(0.f);
+	}
+
+	CalcReceiveDamage(EnemyATK);
+}
+```
+```c++
+void ABaseCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
+{
+	bool IsCritical = CalcCritical(10.f);
+
+	if(StatComp)
+	{
+		const float Def = StatComp->GetCurrentStatValue(EStats::DEF);
+		float Result = FMath::Clamp((EnemyATK * FMath::RandRange(0.8, 1.2)) * (1 - (Def / (100 + Def))), 0, INT_MAX);
+		if(IsCritical) Result *= 2.f;
+		StatComp->PlusCurrentStatValue(EStats::HP, Result * -1); //HP 적용
+		if(StatComp->GetCurrentStatValue(EStats::HP) <= 0)
+		{
+			if(StateManagerComp)
+				StateManagerComp->SetCurrentState(ECurrentState::DEAD);
+			Dead();
+		}
+		//Result로 대미지 위젯
+		ShowDamageText(Result, IsCritical);
+	}
+}
+```
+
++ 대미지를 받는 쪽에서 운에 따라 크리티컬로 맞을지 결정...
 
 
 
@@ -23,7 +83,8 @@ DB : MySql(서버 연동으로 멀티 게임을 기반에 둔 것이 아닌 공�
 
 ![EnemyCharacter](https://user-images.githubusercontent.com/27758519/207756445-a0955fb6-11a3-4963-8a11-300d07b644bb.jpg)
 
-
++ 플레이어 타겟팅을 단순히 Sphere에 Overlap 됐을 때 타겟으로 잡을 수 있도록 구현
++ NPM은 플레이어가 공격시 플레이어를 타겟으로 잡을 수 있도록 구현(해당 구역에 있는 몬스터들이 모두 타겟으로 잡음)
 
 # RampageMonster
 + BossMonster에 필요한 변수들과 필요한 함수들 가상 함수로 선언, 상속받아 재정의해서 사용
@@ -65,10 +126,23 @@ void ARampageMonster::SetSquareArea()
 }
 
 ```
++ 보스존은 고정된 위치이고, 바닥 패턴의 크기가 일정함을 이용
++ 랜덤한 위치로 생성한 액터는 좌표와 함께 구조체에 담아 배열에 저장 
 
-![바닥패턴](https://user-images.githubusercontent.com/27758519/207754218-651d658c-d093-486e-b26e-1e485cfaad1e.jpg)
 
 
+![바닥패턴](https://user-images.githubusercontent.com/27758519/207754218-651d658c-d093-486e-b26e-1e485cfaad1e.jpg) <br>
++ 랜덤으로 생성, 박스 컴포넌트에 오버랩 된 상태로 있으면 지속 대미지를 받게 설계
+
+
+
+
+# BehaviorTree
++ 일반 몬스터 BT와 보스 BT로 나누어 설계
++ 일반 몬스터는 단순하게 Patrol, Chase, Attack 형태
+![BTMonster](https://user-images.githubusercontent.com/27758519/207778475-5aadbf1c-d6d9-48b3-876b-41ab25b61087.jpg)
++ 보스 몬스터는 스킬 상태에 관한 변수 추가
+![BTBoss](https://user-images.githubusercontent.com/27758519/207778505-ea1c3956-52cb-44d1-8317-b5399cfe6105.jpg)
 
 
 # 주요 컴포넌트
@@ -115,6 +189,10 @@ void ARampageMonster::SetSquareArea()
 # NPC
 + BaseNPC 
   + 상호작용 가능한 클래스들은 Interactable 인터페이스를 상속 
+```c++
+public:
+	virtual void Interact(AActor* Caller) = 0;
+```
   + 상호작용 버튼을 누르면 SphereTrace를 이용해 HitResult를 받고 액터들 중 Interactable 인터페이스를 상속받은 액터면 해당 함수 호출 
    ```c++
   if(OutHit.GetActor())
@@ -198,7 +276,6 @@ void ARampageMonster::SetSquareArea()
           }
       }
   }
-  
   ```
   
   ```c++
@@ -222,7 +299,11 @@ void ARampageMonster::SetSquareArea()
           StatBar->SetPercent(ResultValue);
       }
   }
-  
-  
   ```
++ 스킬 쿨다운 다이나믹 머티리얼 파라미터 값 세팅
+![Skillcooldown](https://user-images.githubusercontent.com/27758519/207785455-5fde8be6-881f-4284-830e-acca6ef91c9a.jpg)
+	+ 사용한 스킬의 총 쿨다운 시간을 가져와서 초마다 빼줘야하는 파라미터 값을 구함(부드럽게 바뀌게 하기 위해 DeltaTime을 곱해줌)
+	+ 현재 돌아가고 있는 쿨다운 시간을 가져와서 Text로 표시
+	+ DeltaTime마다 바뀌어야 하는 값을 기존 값에서 빼주고 빼준 값은 저장 후 그 값으로 파라미터 값을 세팅
+	+ 액션바 비어있지 않은 슬롯에서 Tick 함수로 반복
 
