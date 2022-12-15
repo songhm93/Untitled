@@ -5,25 +5,70 @@
 엔진 : UnrealEngine 5.0.3 <br>
 제작기간 : 약 2달 <br>
 개발 규모 : 1인 개발 <br>
-
+DB : MySql(서버 연동으로 멀티 게임을 기반에 둔 것이 아닌 공부 목적으로 DB 사용, 웹서버 언어로는 코틀린을 사용) <br>
 
 ### Character
-Character - Interface 상속 <br>
-Interact, 전투에 관련된 함수들은 부모 클래스로 호출하기 위해 인터페이스를 상속, 재정의해서 사용
++ Character - Interface 상속 <br>
+	+ Interact, 전투에 관련된 함수들은 부모 클래스로 호출하기 위해 인터페이스를 상속, 재정의해서 사용
 
-1-1 사진
-
-
+![Character](https://user-images.githubusercontent.com/27758519/207755957-77522c8a-e46e-48b7-944d-de5fc50b19a7.jpg)
 
 
-EnemyCharacter
-몬스터 범위에 들어가면 선제 공격을 하는 PreemptiveMonster 클래스와 플레이어가 공격을 했을 때 어그로가 끌리는 NonPreemptiveMonster 클래스로 나누어 설계
-선제 공격을 하는 몬스터 클래스에서 PMMob 클래스와 BossMonster 클래스로 나누어 설계.
+
+
+
++ EnemyCharacter
+	+ 몬스터 범위에 들어가면 선제 공격을 하는 PreemptiveMonster 클래스와 플레이어가 공격을 했을 때 어그로가 끌리는 NonPreemptiveMonster 클래스로 나누어 설계 <br>
+	+ 선제 공격을 하는 몬스터 클래스에서 PMMob 클래스와 BossMonster 클래스로 나누어 설계함
+
+![EnemyCharacter](https://user-images.githubusercontent.com/27758519/207756445-a0955fb6-11a3-4963-8a11-300d07b644bb.jpg)
+
 
 
 # RampageMonster
 + BossMonster에 필요한 변수들과 필요한 함수들 가상 함수로 선언, 상속받아 재정의해서 사용
-+ 스킬들에 필요한 함수들은 추가하여 설계
++ 스킬들에 필요한 함수들은 추가하여 사용
+<br>
+
+```c++
+void ARampageMonster::SetSquareArea()
+{
+    bActiveSquare = false;
+
+    int32 RandXValue = FMath::RandRange(-5, 5);
+    int32 RandYValue = FMath::RandRange(-5, 5);
+
+    RandXValue *= SquareAreaXLength;
+    RandYValue *= SquareAreaYLength;
+    RandXValue += SquareAreaRefLoc.X;
+    RandYValue += SquareAreaRefLoc.Y;
+
+    if(IsExistLoc(RandXValue + RandYValue)) //존재하면 다시
+    {
+        SetSquareArea();
+        return;
+    }
+    else 
+    {
+        FActorSpawnParameters Params; 
+        Params.Owner = this;
+        Params.Instigator = Cast<APawn>(this);
+        
+        FVector ResultLoc = FVector(RandXValue, RandYValue, SquareAreaRefLoc.Z);
+        FTransform SpawnTransform = GetActorTransform();
+        SpawnTransform.SetLocation(ResultLoc);
+        SpawnTransform.SetRotation(FQuat4d::MakeFromRotator(FRotator::ZeroRotator));
+        ASquareArea* SquareArea = GetWorld()->SpawnActor<ASquareArea>(SquareAreaClass, SpawnTransform, Params);
+        SquareAreaCoord.Add(FSquareArea(RandXValue, RandYValue, RandXValue + RandYValue, SquareArea));
+        bActiveSquare = true;
+    }
+}
+
+```
+
+![바닥패턴](https://user-images.githubusercontent.com/27758519/207754218-651d658c-d093-486e-b26e-1e485cfaad1e.jpg)
+
+
 
 
 # 주요 컴포넌트
@@ -31,9 +76,8 @@ EnemyCharacter
 + CombatComponent
   + 전투와 관련된 부분들 처리를 위한 컴포넌트
   + 장착된 장비 관리(장착 장비의 스탯 Delegate로 업데이트)
- 
-+ MonsterCombatComponent
-  + 몬스터 기본 공격 등 추가 기능을 위해 상속받아 사용
+  + MonsterCombatComponent
+  	+ 몬스터 기본 공격 등 추가 기능을 위해 상속받아 사용
 
 + StateManagerComponent
   + 상태 관리를 위한 컴포넌트
@@ -59,13 +103,13 @@ EnemyCharacter
 	  }
   }
   ```
-  + DB 연동으로 플레이어 정보 초기화
+  + DB 연동으로 플레이어 정보 초기화 (웹서버 연동으로 서버쪽에 요청 후 받은 JSON을 파싱하여 구조체 형태로 받아 저장)
  
  + InventoryComponent
     + 인벤토리 관리를 위한 컴포넌트
     + DB 연동으로 인벤토리 관리
     + DB에 저장되는 형태와 동일하게 저장하는 배열과 인벤토리 슬롯 하나하나에 어떤 것이 들어있는지 저장하는 배열
-    + 맨 처음 InitInventory 함수로 두 배열 정리 후 InventoryWidget에 Delegate Execute
+    + InitInventory 함수로 두 배열 정리 후 InventoryWidget에 Delegate Execute
   
 
 # NPC
