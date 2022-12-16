@@ -238,6 +238,20 @@ public:
         }
     }
      ```
+		 
+![Curve](https://user-images.githubusercontent.com/27758519/208029679-c0fbb633-1ea7-43eb-a913-3a1962703fc1.jpg)
+
+		 
+  ``` c++
+	FVector PlayerLocation = CurrentLocation;
+	const float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(HeightCurveTimerHandle); 
+	const float HeightCurveValue = PlayerHeightCurve->GetFloatValue(ElapsedTime);
+	PlayerLocation.Z += HeightCurveValue * 150;
+	if(GetOwner())
+	    GetOwner()->SetActorLocation(PlayerLocation);
+   
+  ```
++ 스킬 컨셉에 맞춰 커브를 이용해서 캐릭터의 높이 조정하는 함수
 
 # Widget
 + C++로 구현하다가 편의성으로 후반부에는 블루프린트로 구현
