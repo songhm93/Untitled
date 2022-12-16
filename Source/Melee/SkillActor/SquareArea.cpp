@@ -10,7 +10,8 @@ ASquareArea::ASquareArea()
 
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
 	RootComponent = BoxComp;
-	
+	BoxComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+		BoxComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
 	bOvelapped = false;
 	DamageTime = 0.f;
@@ -80,7 +81,7 @@ void ASquareArea::OverlappedApplyDamage(UPrimitiveComponent* OverlappedComponent
 	if(OtherActor && OtherActor->Implements<UCombatInterface>())
 	{
 		bOvelapped = true;
-		if(!DamageActor.Contains(OtherActor) && OtherActor != GetOwner()) //여기 getOwner부분 수정해야함
+		if(!DamageActor.Contains(OtherActor) && OtherActor != GetOwner())
 		{
 			DamageActor.Add(OtherActor);
 		}

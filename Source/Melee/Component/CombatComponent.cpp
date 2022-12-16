@@ -22,7 +22,6 @@ UCombatComponent::UCombatComponent()
 	AttackCount = 0;
 	HitFromDirection = FVector::ZeroVector;
 	AttackActionCorrectionValue = 1.f;
-	DodgeStaminaCost = 10.f;
 	bFirstSkillTimerRunning = false;
 	bSecondSkillTimerRunning = false;
 	bThirdSkillTimerRunning = false;
@@ -175,7 +174,7 @@ void UCombatComponent::OnEquipWeapon(ABaseWeapon* Equipment)
 			OnUpdateCurrentStatValue.ExecuteIfBound(EStats::ATK, -EquippedWeapon->GetWeaponATK());
 			EquippedWeapon->Destroy();
 		}
-		EquippedWeapon = Cast<ABaseWeapon>(Equipment);
+		EquippedWeapon = Equipment;
 
 		if(EquippedWeapon)
 		{
@@ -545,7 +544,7 @@ void UCombatComponent::PerformDodge()
 		OnUpdateCurrentAction.ExecuteIfBound(ECurrentAction::DODGE);
 	
 		Cast<ACharacter>(GetOwner())->PlayAnimMontage(DodgeMontage);
-		OnUpdateCurrentStatValue.ExecuteIfBound(EStats::STAMINA, -(DodgeStaminaCost));
+		
 		
 		
 	}

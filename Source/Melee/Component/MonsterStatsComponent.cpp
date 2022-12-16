@@ -9,8 +9,7 @@ UMonsterStatsComponent::UMonsterStatsComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	
 	
-	HPRegenRate = 0.3f;
-	StaminaRegenRate = 1.0f;
+	HPRegenRate = 0.f;
 	bShouldRegen = true;
 	SATK.Special1ATK = 0.f;
 	SATK.Special2ATK = 0.f;

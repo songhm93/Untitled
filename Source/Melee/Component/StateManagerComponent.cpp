@@ -11,9 +11,7 @@ UStateManagerComponent::UStateManagerComponent()
 	CurrentAction = ECurrentAction::NOTHING;
 	CurrentCombatState = ECurrentCombatState::NONE_COMBAT_STATE;
 	IsHPPotionCooldown = false;
-	IsStaminaPotionCooldown = false;
 	HPPotionCooldownTime = 7.f;
-	StaminaPotionCooldownTime = 7.f;
 	IsDodgeCooldown = false;
 	DodgeCooldownTime = 5.f;
 
@@ -87,15 +85,6 @@ bool UStateManagerComponent::IsCurrentActionEqualToThis(TArray<ECurrentAction> S
 void UStateManagerComponent::SetMovementType(EMovementType Type)
 {
 	CurrentMovementType = Type;
-	if (CurrentMovementType == EMovementType::SPRINTING)
-	{
-		ShouldRegen.ExecuteIfBound(false);
-	}
-	else
-	{
-		ShouldRegen.ExecuteIfBound(true);
-	}
-	
 }
 
 void UStateManagerComponent::SetCurrentCombatState(ECurrentCombatState CombatState)
@@ -124,25 +113,12 @@ void UStateManagerComponent::SetPotionCooldown(bool IsHPPotion)
 		PotionCooldownDelegate.BindUFunction(this, FName("PotionCooldownComplete"), IsHPPotion);
 		GetWorld()->GetTimerManager().SetTimer(HPPotionTimerHandle, PotionCooldownDelegate, HPPotionCooldownTime, false);
 	}
-	else
-	{
-		IsStaminaPotionCooldown = true;
-		PotionCooldownDelegate.BindUFunction(this, FName("PotionCooldownComplete"), IsHPPotion);
-		GetWorld()->GetTimerManager().SetTimer(StaminaPotionTimerHandle, PotionCooldownDelegate, StaminaPotionCooldownTime, false);
-	}
 }
 
 float UStateManagerComponent::GetHPPotionCurrentCooldownTime()
 {
 	if(IsHPPotionCooldown)
 		return GetWorld()->GetTimerManager().GetTimerRemaining(HPPotionTimerHandle);
-	return 0.f;
-}
-
-float UStateManagerComponent::GetStaminaPotionCurrentCooldownTime()
-{
-	if(IsStaminaPotionCooldown)
-		return GetWorld()->GetTimerManager().GetTimerRemaining(StaminaPotionTimerHandle);
 	return 0.f;
 }
 
@@ -158,10 +134,6 @@ void UStateManagerComponent::PotionCooldownComplete(bool IsHPPotion)
 	if(IsHPPotion)
 	{
 		IsHPPotionCooldown = false;
-	}
-	else
-	{
-		IsStaminaPotionCooldown = false;
 	}
 }
 

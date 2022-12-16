@@ -13,6 +13,7 @@ ABossArea::ABossArea()
 	DefaultComp = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultComp"));
 	DefaultComp->SetupAttachment(RootComponent);
 	AreaSphereComp->SetupAttachment(RootComponent);
+	
 }
 
 void ABossArea::Init(AEnemyCharacter* Boss)

@@ -8,7 +8,6 @@ enum class EStats : uint8
     HP UMETA(DisplayName="HP"),
     ATK UMETA(DisplayName = "ATK"), 
     DEF UMETA(DisplayName="DEF"),
-    STAMINA UMETA(DisplayName="STAMINA"),
     SP UMETA(DisplayName="SP"),
 
     MAX UMETA(DisplayName="MAX")

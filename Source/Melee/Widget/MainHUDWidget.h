@@ -37,9 +37,6 @@ private:
 	UHotkeyWidget* Potion1Hotkey;
 
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget), Meta = (AllowPrivateAccess = "true"))
-	UHotkeyWidget* Potion2Hotkey;
-
-	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget), Meta = (AllowPrivateAccess = "true"))
 	UHotkeyWidget* Skill1Hotkey;
 
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget), Meta = (AllowPrivateAccess = "true"))
@@ -71,7 +68,6 @@ public:
 	FORCEINLINE UItemThrowWidget* GetItemThrowWidget() const { return ItemThrowWidget; }
 	FORCEINLINE UInventoryWidget* GetInventoryWidget() const { return InventoryWidget; }
 	FORCEINLINE UHotkeyWidget* GetPotion1Hotkey() const { return Potion1Hotkey; }
-	FORCEINLINE UHotkeyWidget* GetPotion2Hotkey() const { return Potion2Hotkey; }
 	FORCEINLINE UHotkeyWidget* GetSkill1Hotkey() const { return Skill1Hotkey; }
 	FORCEINLINE UHotkeyWidget* GetSkill2Hotkey() const { return Skill2Hotkey; }
 	FORCEINLINE UHotkeyWidget* GetSkill3Hotkey() const { return Skill3Hotkey; }

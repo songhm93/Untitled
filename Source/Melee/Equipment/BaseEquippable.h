@@ -8,7 +8,7 @@
 #include "BaseEquippable.generated.h"
 
 UCLASS()
-class MELEE_API ABaseEquippable : public AActor, public IInteractable
+class MELEE_API ABaseEquippable : public AActor
 {
 	GENERATED_BODY()
 	
@@ -41,7 +41,6 @@ public: //set
 	FORCEINLINE void SetEquipmentType(EEquipmentType Type) { EquipmentType = Type; }
 
 public:
-	virtual void Interact(AActor* Caller) override;
 	UPrimitiveComponent* GetItemMeshComp();
 	
 };

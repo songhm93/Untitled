@@ -90,18 +90,3 @@ void UBTService_UpdateBehavior::SetBasicBehavior(EAIBasicBehavior AIBehavior)
 	}
 	BlackBoardComp->SetValueAsEnum(BasicBehavior.SelectedKeyName, EnumIdx);
 }
-
-void UBTService_UpdateBehavior::SetTargetCanAttackLocation(AActor* Target, float Dist)
-{
-	if(MonsterCharacter && Target && BlackBoardComp)
-	{
-		FVector DirectionTowardTarget = (Target->GetActorLocation() - MonsterCharacter->GetActorLocation()).GetSafeNormal();
-		float DistToGo = Dist - (MonsterCharacter->GetAttackRange() / 3);
-		DirectionTowardTarget *= DistToGo;
-		const FVector ResultVector = MonsterCharacter->GetActorLocation() + DirectionTowardTarget;
-
-		BlackBoardComp->SetValueAsVector(TEXT("TargetCanAttackLocation"), ResultVector);
-		
-
-	}
-}

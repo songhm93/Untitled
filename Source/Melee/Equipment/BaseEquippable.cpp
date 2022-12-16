@@ -35,8 +35,3 @@ UPrimitiveComponent* ABaseEquippable::GetItemMeshComp()
 		
 	return nullptr;
 }
-
-void ABaseEquippable::Interact(AActor* Caller)
-{
-	
-}

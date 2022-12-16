@@ -54,7 +54,7 @@ ABaseCharacter::ABaseCharacter()
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f;
+	CameraBoom->TargetArmLength = 750.0f;
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -78,7 +78,6 @@ ABaseCharacter::ABaseCharacter()
 	WalkSpeed = 300.f;
 	JogSpeed = 500.f;
 	SprintSpeed = 700;
-	SprintStaminaCost = 0.2f;
 	bSprintKeyPressed = false;
 	MouseSensitivity = 25.f;
 	bHitFront = false;
@@ -88,6 +87,8 @@ ABaseCharacter::ABaseCharacter()
     ResetCombat();
 
 	bIsHoldWeapon = false;
+
+	CurrentArmLength = 750.f;
 }
 
 void ABaseCharacter::BeginPlay()
@@ -99,7 +100,7 @@ void ABaseCharacter::BeginPlay()
 	
 	if(StatComp)
 	{
-		//StatComp->InitStats();
+		StatComp->OnLevelUp.BindUObject(this, &ThisClass::LevelUpEffect);
 	}
 
 	if(LockOnWidgetComp)
@@ -321,7 +322,7 @@ void ABaseCharacter::InteractButtonPressed()
 void ABaseCharacter::Dodge()
 {
 	if(!CanDodge()) return;
-	
+
 	CombatCompo->PerformDodge();
 }
 
@@ -342,8 +343,6 @@ bool ABaseCharacter::CanToggleCombat()
 
 bool ABaseCharacter::CanDodge()
 {
-	if(StatComp && CombatCompo &&(StatComp->GetCurrentStatValue(EStats::STAMINA) < CombatCompo->GetDodgeStaminaCost())) return false;
-	
 	TArray<ECurrentState> CharacterStates;
 	CharacterStates.Add(ECurrentState::DODGING);
 	CharacterStates.Add(ECurrentState::DEAD);
@@ -389,12 +388,6 @@ void ABaseCharacter::ReceiveDamage(
 	AActor* DamageCauser)
 {
 	if(StateManagerComp && StateManagerComp->GetCurrentState() == ECurrentState::DODGING) return;
-	
-	if(InstigatedBy)
-	{
-		float DotProductResult = GetDotProductTo(InstigatedBy->GetPawn()); //맞은 캐릭터와 때린 캐릭터간의 내적
-		bHitFront = FMath::IsWithin(DotProductResult, -0.1f, 1.f);
-	}
 
 	ApplyImpactEffect();
 
@@ -428,7 +421,7 @@ bool ABaseCharacter::CalcCritical(float Percent)
 void ABaseCharacter::CalcReceiveDamage(float EnemyATK) //받는 총 대미지 계산
 {
 	bool IsCritical = CalcCritical(10.f);
-	//대미지 계산
+
 	if(StatComp)
 	{
 		const float Def = StatComp->GetCurrentStatValue(EStats::DEF);
@@ -494,7 +487,6 @@ void ABaseCharacter::Respawn()
 	
 		TargetingComp->DisableLockOn();
 		StatComp->SetCurrentStatValue(EStats::HP, StatComp->GetMaxValue(EStats::HP) * 0.3);
-		StatComp->SetCurrentStatValue(EStats::STAMINA, StatComp->GetMaxValue(EStats::STAMINA) * 0.3);
 	}
 	if(Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance()))
 	{
@@ -747,9 +739,10 @@ void ABaseCharacter::PerformStun()
 	{
 		StateManagerComp->SetCurrentState(ECurrentState::STUN);
 	}
-	if(StunMontage)
+	if(StunMontage && StunParticle)
 	{
 		PlayAnimMontage(StunMontage);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), StunParticle, GetActorLocation() + GetActorUpVector() * 80.f);
 	}
 }
 
@@ -793,7 +786,11 @@ void ABaseCharacter::PerformKnockdown()
 
 void ABaseCharacter::CameraZoomInOut(float Rate)
 {
-	
+	if(CameraBoom)
+	{
+		CurrentArmLength = FMath::Clamp(CurrentArmLength + Rate * -15.f, 300.f, 750.f);
+		CameraBoom->TargetArmLength = CurrentArmLength;
+	}
 }
 
 bool ABaseCharacter::CanExecuteSkill()
@@ -929,5 +926,13 @@ void ABaseCharacter::SetIsHoldWeapon(bool Boolean)
 	else
 	{
 		ToggleCombat();
+	}
+}
+
+void ABaseCharacter::LevelUpEffect()
+{
+	if(LevelUpParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LevelUpParticle, GetActorLocation());
 	}
 }

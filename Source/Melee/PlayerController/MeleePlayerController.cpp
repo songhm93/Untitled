@@ -29,10 +29,7 @@ void AMeleePlayerController::OnPossess(APawn* InPawn)
     BaseCharacter = Cast<ABaseCharacter>(InPawn);
 }
 
-void AMeleePlayerController::Tick(float DeltaTime)
-{
-    TrackingSprint();
-}
+
 
 void AMeleePlayerController::BeginPlay()
 {
@@ -58,25 +55,7 @@ void AMeleePlayerController::SetupInputComponent()
 
 void AMeleePlayerController::AttackButtonPressed() 
 {
-   OnLightAttack.ExecuteIfBound();
-}
-
-
-void AMeleePlayerController::TrackingSprint()
-{
-    bool Condition = 
-        BaseCharacter && 
-        BaseCharacter->GetStatComp() && 
-        BaseCharacter->GetStateManagerComp() && 
-        BaseCharacter->GetStateManagerComp()->GetMovementType() == EMovementType::SPRINTING;
-    if(Condition)
-    {   //현재 스태미너가 소모량보다 적은 경우, 달리지 않는데 쉬프트가 눌려 있는 경우
-        if((BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::STAMINA) < BaseCharacter->GetSprintStaminaCost()) || BaseCharacter->GetVelocity().Size() <= 0.f)
-        {
-            BaseCharacter->SetMovementType(EMovementType::JOGGING);
-        }
-        BaseCharacter->GetStatComp()->PlusCurrentStatValue(EStats::STAMINA, -(BaseCharacter->GetSprintStaminaCost()));
-    }
+    OnLightAttack.ExecuteIfBound();
 }
 
 void AMeleePlayerController::RequestEntry()
@@ -108,7 +87,6 @@ void AMeleePlayerController::OnPlayerInfoRequestComplete(FHttpRequestPtr Request
             {
                 BaseCharacter->GetStatComp()->InitStats();
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::HP, PlayerInfo.Currenthp);
-                BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::STAMINA, PlayerInfo.Currentstamina);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::ATK, PlayerInfo.Atk);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::DEF, PlayerInfo.Def);
                 BaseCharacter->GetStatComp()->SetCurrentStatValue(EStats::SP, PlayerInfo.Sp);
@@ -194,8 +172,6 @@ void AMeleePlayerController::SaveData()
         PlayerInfo.Isvalid = true;
         PlayerInfo.Currenthp = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::HP);
         PlayerInfo.Maxhp = BaseCharacter->GetStatComp()->GetMaxValue(EStats::HP);
-        PlayerInfo.Currentstamina = BaseCharacter->GetStatComp()->GetCurrentStatValue(EStats::STAMINA);
-        PlayerInfo.Maxstamina = BaseCharacter->GetStatComp()->GetMaxValue(EStats::STAMINA);
         PlayerInfo.Xcoord = BaseCharacter->GetActorLocation().X;
         PlayerInfo.Ycoord = BaseCharacter->GetActorLocation().Y;
         PlayerInfo.Zcoord = BaseCharacter->GetActorLocation().Z;

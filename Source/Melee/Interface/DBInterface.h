@@ -18,10 +18,6 @@ struct FPlayerInfoDB
 	UPROPERTY()
 	float Maxhp = 0.f;
 	UPROPERTY()
-	float Currentstamina = 0.f;
-	UPROPERTY()
-	float Maxstamina = 0.f;
-	UPROPERTY()
 	float Xcoord = 0.f;
 	UPROPERTY()
 	float Ycoord = 0.f;

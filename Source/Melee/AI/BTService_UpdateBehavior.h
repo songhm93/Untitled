@@ -35,7 +35,5 @@ private:
 	FBlackboardKeySelector BasicBehavior;
 
 	void SetBasicBehavior(EAIBasicBehavior AIBehavior);
-	
-	void SetTargetCanAttackLocation(AActor* Target, float Dist);
 
 };

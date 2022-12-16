@@ -30,11 +30,9 @@ void UMainHUDWidget::GetExp(int32 Exp)
 		{
 			++ExistGetExpWidgetNum;
             GetExpBox->AddChild(GetExpWidget);
-            //GetExpWidget->AddToViewport();
 			GetExpWidget->FadeAnim(Exp);
 
             GetExpWidgetScrollUp();
-            
 		}
 	}
 }

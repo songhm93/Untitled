@@ -37,17 +37,10 @@ private:
 
 	bool IsHPPotionCooldown;
 
-	bool IsStaminaPotionCooldown;
-
 	FTimerHandle HPPotionTimerHandle;
-
-	FTimerHandle StaminaPotionTimerHandle;
 
 	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	float HPPotionCooldownTime;
-
-	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	float StaminaPotionCooldownTime;
 
 	FTimerDelegate PotionCooldownDelegate;
 
@@ -68,7 +61,6 @@ public:	//get
 	FORCEINLINE ECurrentAction GetCurrentAction() const { return CurrentAction; }
 	FORCEINLINE EMovementType GetMovementType() const { return CurrentMovementType; }
 	FORCEINLINE bool GetIsHPPotionCooldown() const { return IsHPPotionCooldown; }
-	FORCEINLINE bool GetIsStaminaPotionCooldown() const { return IsStaminaPotionCooldown; }
 	FORCEINLINE bool GetIsDodgeCooldown() const { return IsDodgeCooldown; }
 public:
 	void SetCurrentState(ECurrentState State);
@@ -84,8 +76,6 @@ public:
 	void SetDodgeCoolDown();
 	UFUNCTION(BlueprintCallable)
 	float GetHPPotionCurrentCooldownTime();
-	UFUNCTION(BlueprintCallable)
-	float GetStaminaPotionCurrentCooldownTime();
 	UFUNCTION(BlueprintCallable)
 	float GetDodgeCurrentCooldownTime();
 		

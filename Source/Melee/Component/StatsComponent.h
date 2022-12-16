@@ -10,7 +10,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlusCurrentStatValue, EStats, Stat, float, Value);
 DECLARE_DELEGATE(FOnSavePlayerData);
-
+DECLARE_DELEGATE(FOnLevelUp);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MELEE_API UStatsComponent : public UActorComponent
 {
@@ -22,6 +22,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Delegate")
 	FOnPlusCurrentStatValue OnPlusCurrentStatValue;
 	FOnSavePlayerData OnSavePlayerData;
+	FOnLevelUp OnLevelUp;
 	virtual void InitStats();
 	virtual void InitInfo();
 protected:
@@ -38,7 +39,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess ="true"))
 	bool bShouldRegen;
 	float RegenTime;
-	float StaminaRegenRate;
 	float HPRegenRate;
 	FHttpModule* Http;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))

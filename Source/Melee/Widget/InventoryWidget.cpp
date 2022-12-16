@@ -54,7 +54,7 @@ void UInventoryWidget::GenerateSlotWidgets() //슬롯들 업데이트
             for (int i = 0; i < InventoryComp->GetTotalSlotNum(); ++i)
             {
                 //총 슬롯 갯수만큼 위젯 생성을 해야하고
-                // Init은 아이템 있는 자리만 해야한다.
+                //Init은 아이템 있는 자리만 해야한다.
                 UUserWidget *InventorySlotWidget = CreateWidget<UInventorySlotWidget>(GetWorld(), InventorySlotWidgetClass);
                 SlotWidgets.Add(InventorySlotWidget);
 

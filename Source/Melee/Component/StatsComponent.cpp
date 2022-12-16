@@ -12,7 +12,6 @@ UStatsComponent::UStatsComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	
 	HPRegenRate = 8.f;
-	StaminaRegenRate = 1.0f;
 	bShouldRegen = true;
 
 	Http = &FHttpModule::Get();
@@ -24,7 +23,6 @@ void UStatsComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	//InitStats();
-	UE_LOG(LogTemp, Warning, TEXT("스탯컴포넌트 비긴플레이"));
 	InitInfo();
 
 
@@ -47,7 +45,7 @@ void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
-	if((!CurrentCompareMax(EStats::HP) || !CurrentCompareMax(EStats::STAMINA)) && bShouldRegen)
+	if(!CurrentCompareMax(EStats::HP) && bShouldRegen)
 		TrackingRegen(DeltaTime);
 	else
 		RegenTime = 0.f;
@@ -56,7 +54,7 @@ void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 void UStatsComponent::TrackingRegen(float DeltaTime)
 {
-	if(RegenTime > 0.5f)
+	if(RegenTime > 1.f)
 	{
 		Regen();
 		RegenTime = 0.f;
@@ -69,7 +67,7 @@ void UStatsComponent::TrackingRegen(float DeltaTime)
 
 void UStatsComponent::Regen()
 {
-	PlusCurrentStatValue(EStats::STAMINA, StaminaRegenRate);
+	HPRegenRate = GetMaxValue(EStats::HP) * 0.001f;
 	PlusCurrentStatValue(EStats::HP, HPRegenRate);
 }
 
@@ -104,12 +102,10 @@ float UStatsComponent::GetCurrentStatValue(EStats Stat)
 void UStatsComponent::InitStats()
 {
 	SetCurrentStatValue(EStats::HP, 0.f);
-	SetCurrentStatValue(EStats::STAMINA, 0.f);
 	SetCurrentStatValue(EStats::ATK, 0.f);
 	SetCurrentStatValue(EStats::DEF, 0.f);
 
 	SetMaxStatValue(EStats::HP, 0.f);
-	SetMaxStatValue(EStats::STAMINA, 0.f);
 	SetMaxStatValue(EStats::ATK, 0.f);
 	SetMaxStatValue(EStats::DEF, 0.f);
 
@@ -156,15 +152,12 @@ void UStatsComponent::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpRes
         FPlayerInfoDB PlayerInfo = ConvertToPlayerInfo(Response->GetContentAsString());
 		
 		SetCurrentStatValue(EStats::HP, PlayerInfo.Currenthp);
-		SetCurrentStatValue(EStats::STAMINA, PlayerInfo.Currentstamina);
 		SetCurrentStatValue(EStats::ATK, PlayerInfo.Atk);
 		SetCurrentStatValue(EStats::DEF, PlayerInfo.Def);
 
 		SetMaxStatValue(EStats::HP, PlayerInfo.Maxhp);
-		SetMaxStatValue(EStats::STAMINA, PlayerInfo.Maxstamina);
 	
 		PlusCurrentStatValue(EStats::HP, 0.00000001f);
-		PlusCurrentStatValue(EStats::STAMINA, 0.00000001f);
 	}
 }
 
@@ -238,6 +231,7 @@ void UStatsComponent::LevelUp(int32 CurrentExp, int32 MaxExp, int32 Value)
 	CurrentStats[EStats::SP] += 1;
 
 	OnSavePlayerData.ExecuteIfBound(); //db update
+	OnLevelUp.ExecuteIfBound();
 }
 
 void UStatsComponent::DevLevelUp()

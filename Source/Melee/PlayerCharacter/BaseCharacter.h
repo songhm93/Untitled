@@ -33,7 +33,7 @@ class UQuestLogComponent;
 
 
 UCLASS(config=Game)
-class ABaseCharacter : public ACharacter, public ICombatInterface, public ITargetingInterface, public IInventoryInterface, public IQuestInterface
+class ABaseCharacter : public ACharacter, public ICombatInterface, public IInventoryInterface, public IQuestInterface, public ITargetingInterface
 {
 	GENERATED_BODY()
 public:
@@ -139,6 +139,8 @@ private:
 
 	void Respawn();
 
+	void LevelUpEffect();
+
 	UFUNCTION(BlueprintPure)
 	float GetRemainRespawnTime();
 
@@ -195,6 +197,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* LevelUpParticle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* StunParticle;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UStatsComponent* StatComp;
 
@@ -234,8 +242,6 @@ private:
 
 	float SprintSpeed;
 
-	float SprintStaminaCost;
-
 	bool bSprintKeyPressed;
 
 	bool bHitFront; //맞았을 때 때린 캐릭터가 내 앞에서 때렸는지?
@@ -248,12 +254,12 @@ private:
 	
 	bool bIsHoldWeapon;
 	
+	float CurrentArmLength;
 public: //get
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE UCombatComponent* GetCombatComp() const { return CombatCompo; }
 	FORCEINLINE UStateManagerComponent* GetStateManagerComp() const { return StateManagerComp; }
-	FORCEINLINE float GetSprintStaminaCost() const { return SprintStaminaCost; }
 	FORCEINLINE UStatsComponent* GetStatComp() const { return StatComp; }
 	FORCEINLINE UInventoryComponent* GetInventoryComp() const { return InventoryComp; }
 	FORCEINLINE UMainHUDWidget* GetMainHUDWidget() const { return MainHUDWidget; }

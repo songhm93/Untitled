@@ -389,7 +389,6 @@ void ADualWeapon::InitSkillInfo()
     }
     
     Super::InitSkillInfo();
-
 }
 
 void ADualWeapon::InitSkillDT()

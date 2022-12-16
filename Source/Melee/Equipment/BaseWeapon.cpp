@@ -94,7 +94,6 @@ void ABaseWeapon::OnSkillInfoRequestComplete(FHttpRequestPtr Request, FHttpRespo
 
 void ABaseWeapon::InitSkillDT()
 {
-
 }
 
 TArray<FPlayerSkillInfo> ABaseWeapon::ConvertToPlayerSkillInfo(const FString& ResponseString)

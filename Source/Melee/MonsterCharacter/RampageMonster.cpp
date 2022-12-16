@@ -188,8 +188,6 @@ void ARampageMonster::Special5()
 {
     if(EnemyAnimInst && Special5Montage && Target && GetCharacterMovement())
     {
-        // GetWorld()->GetTimerManager().SetTimer(HeightCurveTimerHandle, this, &ThisClass::FinishSetHeight, CurveTime);
-        // GetWorld()->GetTimerManager().SetTimer(FlightTimerHandle, this, &ThisClass::MonsterFalling, FlightTime);
         GetCharacterMovement()->GravityScale = 2.f;
         CurrentLocation = GetActorLocation();
         bPlayCurve = true;
@@ -228,15 +226,6 @@ void ARampageMonster::SetHeight(float DeltaTime)
                 }
             }
         }
-    }
-}
-
-void ARampageMonster::MonsterFalling()
-{
-    if(EnemyAnimInst && Special5Montage)
-    {
-        EnemyAnimInst->Montage_Play(Special5Montage);
-        EnemyAnimInst->Montage_JumpToSection(TEXT("JumpAttackEnd"), Special5Montage);
     }
 }
 
@@ -339,7 +328,7 @@ void ARampageMonster::SetSquareArea()
     RandXValue += SquareAreaRefLoc.X;
     RandYValue += SquareAreaRefLoc.Y;
 
-    if(IsExistLoc(RandXValue + RandYValue)) //존재하면 랜덤 다시 뽑아야함
+    if(IsExistLoc(RandXValue + RandYValue)) //존재하면 다시
     {
         SetSquareArea();
         return;

@@ -42,7 +42,6 @@ class MELEE_API AMeleePlayerController : public APlayerController
 	GENERATED_BODY()
 public:
 	AMeleePlayerController();
-	virtual void Tick(float DeltaTime) override;
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void BeginPlay() override;
 	FOnLightAttack OnLightAttack;
@@ -61,8 +60,6 @@ protected:
 
 private:
 	void AttackButtonPressed();
-
-	void TrackingSprint();
 
 	void GetItemWidgetScrollUp();
 

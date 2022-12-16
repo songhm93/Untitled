@@ -148,8 +148,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UCameraShakeBase> DefaultCameraShakeClass;
-	
-	float DodgeStaminaCost;
 
 	float AttackActionCorrectionValue;
 
@@ -189,7 +187,6 @@ public: //get
 	FORCEINLINE UAnimMontage* GetLSExitCombatMontage() const { return LSExitCombatMontage; }
 	FORCEINLINE UAnimMontage* GetDSEnterCombatMontage() const { return DSEnterCombatMontage; }
 	FORCEINLINE UAnimMontage* GetDSExitCombatMontage() const { return DSExitCombatMontage; }
-	FORCEINLINE float GetDodgeStaminaCost() const { return DodgeStaminaCost; }
 	UFUNCTION()
 	FORCEINLINE bool GetThirdSkillTimerRunning() const { return bThirdSkillTimerRunning; }
 	

@@ -63,14 +63,9 @@ protected:
 
 private:
 	void UpdateCombatState(bool CombatState);
-
-	void OnProcessRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success);
-
-	FMonsterInfoDB ConvertToMonsterInfo(const FString& ResponseString);
-
+	
 	FMonsterGives MonsterGives;
 
-	
 public: //get
 	FORCEINLINE FSpecialATK GetSpecialATK() const { return SATK; }
 	FORCEINLINE FMonsterGives GetMonsterGives() const { return MonsterGives; }

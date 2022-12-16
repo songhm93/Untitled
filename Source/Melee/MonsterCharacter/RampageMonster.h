@@ -109,8 +109,6 @@ private:
 
 	float FlightTime;
 
-	void MonsterFalling();
-
 	FVector JumpTargetLocation;
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
