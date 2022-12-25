@@ -1,11 +1,16 @@
-# Untitled 포트폴리오
+# Unreal 포트폴리오
 
 포트폴리오 목적으로 제작한 RPG 게임입니다.
+
+> 아래 이미지 클릭하면 유튜브로 이동합니다. <br>
+
+[![BossArea](https://user-images.githubusercontent.com/27758519/208657398-117f9e8c-9079-4545-89f8-96f85e4bc22a.jpg)](https://www.youtube.com/watch?v=sFZNZcmXguc)
+
 
 엔진 : UnrealEngine 5.0.3 <br>
 제작기간 : 약 2달 <br>
 개발 규모 : 1인 개발 <br>
-DB : MySql(서버 연동으로 멀티 게임을 기반에 둔 것이 아닌 공부 목적으로 DB 사용, 웹서버 언어로는 코틀린을 사용) <br>
+DB : MySql(서버 연동으로 멀티 게임을 기반에 둔 것이 아닌 공부 목적으로 DB 사용, 웹서버 언어로는 코틀린 사용) <br>
 
 ### Character
 + Character - Interface 상속 <br>
