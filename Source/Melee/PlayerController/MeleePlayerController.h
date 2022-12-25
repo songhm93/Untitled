@@ -85,7 +85,7 @@ private:
 
 	int32 WaitGetItemWidgetNum; //큐에 들어가 있는
 	//큐에 들어가있는 갯수   -> 위 변수가 4면 이게 늘어남
-	TArray<FGetItemQueue> GetItemWidgetQueue;
+	TQueue<FGetItemQueue> GetItemWidgetQueue;
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UMerchantWidget> MerchantWidgetClass;

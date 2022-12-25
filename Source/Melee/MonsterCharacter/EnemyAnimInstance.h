@@ -49,5 +49,8 @@ private:
 	FTimerHandle SpecialReadyTimerHandle;
 
 	float SpecialReadyTime;
+
+public:
+	FORCEINLINE void SetSpecialReadyTime(float Time) { SpecialReadyTime = Time; }
 	
 };

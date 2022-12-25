@@ -69,7 +69,7 @@ private:
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
 	int32 TotalSlotNum; //인벤토리 슬롯 갯수
 
-	UPROPERTY(VisibleAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TArray<FPlayerInventoryDB> PlayerInventory; //PlayerInventory PID로 가져온 DB 배열
 
 	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
@@ -142,5 +142,7 @@ public:
 	void MergeSameItemEachSlot(int32 MoveIndex, int32 FixIndex);
 	UFUNCTION(BlueprintPure)
 	FItemInfoInSlot GetItemInfoInSlot(int32 Index);
+	UFUNCTION(BlueprintPure)
+	int32 GetItemTotalAmount(int32 ItemId);
 	
 };

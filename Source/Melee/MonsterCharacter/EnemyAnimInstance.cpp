@@ -19,7 +19,7 @@ void UEnemyAnimInstance::NativeInitializeAnimation()
         }
         
     }
-    SpecialReadyTime = 0.f;
+    SpecialReadyTime = 5.f;
 }
 
 void UEnemyAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -48,7 +48,6 @@ void UEnemyAnimInstance::AnimNotify_SpecialComplete()
         AEnemyAIController* EnemyController = Cast<AEnemyAIController>(EnemyCharacter->GetController());
         if(EnemyController && EnemyController->GetBBComp())
         {
-            SpecialReadyTime = FMath::RandRange(4.f, 5.f);
             EnemyController->GetBBComp()->SetValueAsBool(TEXT("SpecialComplete"), true);
             EnemyController->GetBBComp()->SetValueAsBool(TEXT("SpecialReady"), false);
             GetWorld()->GetTimerManager().SetTimer(SpecialReadyTimerHandle, this, &ThisClass::UpdateSpecialReady, SpecialReadyTime);

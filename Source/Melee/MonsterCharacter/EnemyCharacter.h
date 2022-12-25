@@ -131,6 +131,44 @@ protected:
 	bool IsBossFurious;
 
 	void BossFurious();
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterialInstMaster;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterialInstTorso;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterialInstLegs;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterialInstArms;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterialInstMasterAnim;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterialInstArmsAnim;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstMaster;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstTorso;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstLegs;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstArms;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstMasterAnim;
+
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstArmsAnim;
+
+	float InterpResult;
 private:
 	void DestroyDead();
 

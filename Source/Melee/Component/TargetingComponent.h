@@ -25,7 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	bool FindTarget(FHitResult& HitResult);
+	bool FindTarget(FHitResult HitResult);
 
 	void UpdateTargetingControlRotation(float DeltaTime); //타겟팅되면 카메라가 타겟을 바라보게.
 
@@ -75,8 +75,8 @@ public:	//set
 	FORCEINLINE void SetCurrentRotationMode(ERotationMode Mode){ CurrentRotationMode = Mode; }
 
 public:
-	void ToggleLockOn();
+	void ToggleLockOn(FHitResult HitResult);
 	void UpdateRotationMode();
-	void EnableLockOn();
+	void EnableLockOn(FHitResult HitResult);
 	void DisableLockOn();
 };

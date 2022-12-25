@@ -480,7 +480,9 @@ void ABaseCharacter::DestroyDead()
 void ABaseCharacter::Respawn()
 {
 	FVector Loc = FVector(-16455.0, -15790.0, 734.374246);
+	
 	SetActorLocation(Loc);
+	
 	if(StateManagerComp && TargetingComp && StatComp)
 	{
 		StateManagerComp->SetCurrentState(ECurrentState::NOTHING);
@@ -492,7 +494,6 @@ void ABaseCharacter::Respawn()
 	{
 		Cast<UMeleeAnimInstance>(GetMesh()->GetAnimInstance())->SetIsDead(false);
 	}
-	
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
 	if(GetCharacterMovement())
@@ -693,8 +694,16 @@ void ABaseCharacter::EquippedArmorApply(int32 ItemId)
 
 void ABaseCharacter::ToggleLockOn()
 {
-	if(StateManagerComp && StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE) return;
-	if(TargetingComp) TargetingComp->ToggleLockOn();
+	if(StateManagerComp && StateManagerComp->GetCurrentCombatState() == ECurrentCombatState::NONE_COMBAT_STATE)
+	{
+		ToggleCombat();
+	}
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectType;
+	TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+	CollisionObjectType.Add(Pawn);
+	FHitResult HitResult;
+	Cast<APlayerController>(GetController())->GetHitResultUnderCursorForObjects(CollisionObjectType, false, HitResult);
+	if(TargetingComp) TargetingComp->ToggleLockOn(HitResult);
 }
 
 bool ABaseCharacter::CanBeTargeted()
@@ -743,6 +752,14 @@ void ABaseCharacter::PerformStun()
 	{
 		PlayAnimMontage(StunMontage);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), StunParticle, GetActorLocation() + GetActorUpVector() * 80.f);
+	}
+}
+
+void ABaseCharacter::ApplyPotionEffect()
+{
+	if(HPPotionParticle)
+	{
+		UGameplayStatics::SpawnEmitterAttached(HPPotionParticle, GetMesh());
 	}
 }
 

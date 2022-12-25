@@ -57,6 +57,8 @@ AEnemyCharacter::AEnemyCharacter()
 	IsBossFurious = false;
 	DefaultATK = 0;
 	DefaultDEF = 0;
+	InterpResult = 5.3f;
+
 }
 
 void AEnemyCharacter::Tick(float DeltaTime)
@@ -66,6 +68,20 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	if(MonsterCombatCompo && bTargetingState && Target && !MonsterCombatCompo->CanAttack())
 	{
 		LookAtPlayer(Target, DeltaTime);
+	}
+	if(IsBossFurious)
+	{
+		if(InterpResult == 2.f) return;
+		if(DynamicMaterialInstMaster && DynamicMaterialInstTorso && DynamicMaterialInstLegs && DynamicMaterialInstArms && DynamicMaterialInstMasterAnim && DynamicMaterialInstArmsAnim)
+		{
+			InterpResult = FMath::FInterpTo(InterpResult, 2.f, DeltaTime, .5f);
+			DynamicMaterialInstMaster->SetScalarParameterValue(TEXT("EmiisivePower"), InterpResult);
+			DynamicMaterialInstTorso->SetScalarParameterValue(TEXT("EmiisivePower"), InterpResult);
+			DynamicMaterialInstLegs->SetScalarParameterValue(TEXT("EmiisivePower"), InterpResult);
+			DynamicMaterialInstArms->SetScalarParameterValue(TEXT("EmiisivePower"), InterpResult);
+			DynamicMaterialInstMasterAnim->SetScalarParameterValue(TEXT("EmiisivePower"), InterpResult);
+			DynamicMaterialInstArmsAnim->SetScalarParameterValue(TEXT("EmiisivePower"), InterpResult);
+		}
 	}
 }
 
@@ -105,6 +121,23 @@ void AEnemyCharacter::BeginPlay()
 			Cast<UEnemyHPBarWidget>(EnemyHPBarWidget)->SetMonsterName(MonsterName);
 		}
 	}
+	if(MaterialInstMaster && MaterialInstTorso && MaterialInstLegs && MaterialInstArms && MaterialInstMasterAnim && MaterialInstArmsAnim)
+	{
+		DynamicMaterialInstMaster = UMaterialInstanceDynamic::Create(MaterialInstMaster, this);
+		DynamicMaterialInstTorso = UMaterialInstanceDynamic::Create(MaterialInstTorso, this);
+		DynamicMaterialInstLegs = UMaterialInstanceDynamic::Create(MaterialInstLegs, this);
+		DynamicMaterialInstArms = UMaterialInstanceDynamic::Create(MaterialInstArms, this);
+		DynamicMaterialInstMasterAnim = UMaterialInstanceDynamic::Create(MaterialInstMasterAnim, this);
+		DynamicMaterialInstArmsAnim = UMaterialInstanceDynamic::Create(MaterialInstArmsAnim, this);
+		GetMesh()->SetMaterial(0, DynamicMaterialInstMaster);
+		GetMesh()->SetMaterial(1, DynamicMaterialInstTorso);
+		GetMesh()->SetMaterial(2, DynamicMaterialInstLegs);
+		GetMesh()->SetMaterial(3, DynamicMaterialInstArms);
+		GetMesh()->SetMaterial(4, DynamicMaterialInstTorso);
+		GetMesh()->SetMaterial(5, DynamicMaterialInstMasterAnim);
+		GetMesh()->SetMaterial(6, DynamicMaterialInstArmsAnim);
+	}
+		
 }
 
 bool AEnemyCharacter::CanReceiveDamage()
@@ -200,7 +233,7 @@ void AEnemyCharacter::CalcReceiveDamage(float PlayerATK) //받는 총 대미지 
 		if(MonsterType == EMonsterType::BOSS)
 		{
 			int32 MaxHP = MonsterStatComp->GetMaxValue(EStats::HP);
-			int32 FuriousHP = MaxHP - (MaxHP * 0.6);
+			int32 FuriousHP = MaxHP - (MaxHP * 0.5);
 			if((CurrentHP < FuriousHP) && !IsBossFurious) //분노
 			{
 				IsBossFurious = true;
@@ -231,10 +264,13 @@ void AEnemyCharacter::BossFurious()
 		DefaultATK = MonsterStatComp->GetCurrentStatValue(EStats::ATK);
 		DefaultDEF = MonsterStatComp->GetCurrentStatValue(EStats::DEF);
 
-		MonsterStatComp->SetCurrentStatValue(EStats::ATK, DefaultATK + DefaultATK * 0.2);
+		MonsterStatComp->SetCurrentStatValue(EStats::ATK, DefaultATK + DefaultATK * 0.5);
 		MonsterStatComp->SetCurrentStatValue(EStats::DEF, DefaultDEF + DefaultDEF);
 	}
-
+	if(Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance())->SetSpecialReadyTime(3.f);
+	}
 	SetFuriousPP();
 }
 

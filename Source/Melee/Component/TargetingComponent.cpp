@@ -58,9 +58,8 @@ void UTargetingComponent::SetTargeting(AActor* Target)
 	}
 }
 
-void UTargetingComponent::EnableLockOn()
+void UTargetingComponent::EnableLockOn(FHitResult HitResult)
 {
-	FHitResult HitResult;
 	if(FindTarget(HitResult))
 	{
 		TargetActor = HitResult.GetActor();
@@ -82,47 +81,31 @@ void UTargetingComponent::DisableLockOn()
 	TargetActor = nullptr;
 }
 
-void UTargetingComponent::ToggleLockOn()
+void UTargetingComponent::ToggleLockOn(FHitResult HitResult)
 {
+	if(TargetActor && TargetActor == HitResult.GetActor())
+	{
+		if(bIsTargeting)
+		{
+			DisableLockOn();
+			return;
+		}
+	}
 	if(bIsTargeting)
 	{
 		DisableLockOn();
-		return;
 	}
-	EnableLockOn();
+	EnableLockOn(HitResult);
 }
 
-bool UTargetingComponent::FindTarget(FHitResult& OutHit)
+bool UTargetingComponent::FindTarget(FHitResult Hit)
 {
 	//const UObject* WorldContextObject, const FVector Start, const FVector End, float Radius, const TArray<TEnumAsByte<EObjectTypeQuery> > & ObjectTypes, bool bTraceComplex, const TArray<AActor*>& ActorsToIgnore, EDrawDebugTrace::Type DrawDebugType, FHitResult& OutHit, bool bIgnoreSelf, FLinearColor TraceColor, FLinearColor TraceHitColor, float DrawTime
 	if(FollowCamera && GetOwner())
 	{
-		const FVector Start = GetOwner()->GetActorLocation();
-		const FVector End = FollowCamera->GetForwardVector() * TargetingDist + Start;
-		float TargetingRadius = 100.f;
-		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
-		ObjectTypesArray.Reserve(1);
-		ObjectTypesArray.Emplace(ECollisionChannel::ECC_Pawn);
-		TArray<AActor*> IgnoredActors;
-		IgnoredActors.Add(GetOwner());
-
-		UKismetSystemLibrary::SphereTraceSingleForObjects(
-			this,
-			Start,
-			End,
-			TargetingRadius,
-			ObjectTypesArray,
-			false,
-			IgnoredActors,
-			EDrawDebugTrace::None,
-			OutHit, 
-			true,
-			FLinearColor::Red,
-			FLinearColor::Green,
-			10.f);
-		if(OutHit.bBlockingHit)
+		if(Hit.bBlockingHit)
 		{
-			if(OutHit.GetActor()->Implements<UTargetingInterface>())
+			if(Hit.GetActor()->Implements<UTargetingInterface>())
 				return true;
 		}
 	}
@@ -155,9 +138,9 @@ void UTargetingComponent::UpdateTargetingControlRotation(float DeltaTime)
 
 		const FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(PlayerActorLocation, TargetActorLocation);
 
-		const FRotator PlayerControlRotator = OwnerController->GetControlRotation();
+		// const FRotator PlayerControlRotator = OwnerController->GetControlRotation();
 
-		const FRotator ResultRotator = FMath::RInterpTo(PlayerControlRotator, LookAtRotator, DeltaTime, TargetRotationInterpSpeed);
+		// const FRotator ResultRotator = FMath::RInterpTo(PlayerControlRotator, LookAtRotator, DeltaTime, TargetRotationInterpSpeed);
 		
 		//OwnerController->SetControlRotation(FRotator(ResultRotator.Pitch, ResultRotator.Yaw, PlayerControlRotator.Roll));
 	}

@@ -204,7 +204,7 @@ void AMeleePlayerController::GetItemWidgetVisible(FItemInfoInSlot AddItemInfo, i
 {
     if(ExistGetItemWidgetNum == 5) //화면에 위젯이 5개 떠있으면 그 뒤에 떠야하는 정보를 저장 후 대기
     {
-        GetItemWidgetQueue.Add(FGetItemQueue(AddItemInfo, Amount));
+        GetItemWidgetQueue.Enqueue(FGetItemQueue(AddItemInfo, Amount));
         ++WaitGetItemWidgetNum;
         return;
     }
@@ -251,8 +251,8 @@ void AMeleePlayerController::RemoveGetItemWidget()
     --ExistGetItemWidgetNum;
     if(WaitGetItemWidgetNum > 0) //화면에 떠있던 위젯들 지워질 때 떠야할 대기중인 위젯이 있으면
     {
-        GetItemWidgetVisible(GetItemWidgetQueue[0].ItemInfo, GetItemWidgetQueue[0].Amount);
-        GetItemWidgetQueue.RemoveAt(0);
+        GetItemWidgetVisible(GetItemWidgetQueue.Peek()->ItemInfo, GetItemWidgetQueue.Peek()->Amount);
+        GetItemWidgetQueue.Dequeue(*(GetItemWidgetQueue.Peek()));
         --WaitGetItemWidgetNum;
     }
 }

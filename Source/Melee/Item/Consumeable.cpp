@@ -42,10 +42,10 @@ bool AConsumeable::UsePotion(bool IsHPPotion) //true면 HP포션
             float MaxHP = OwnerCharacter->GetStatComp()->GetMaxValue(EStats::HP);
             OwnerCharacter->GetStatComp()->PlusCurrentStatValue(EStats::HP, MaxHP * 0.3f);
             OwnerCharacter->GetStateManagerComp()->SetPotionCooldown(IsHPPotion);
+            OwnerCharacter->ApplyPotionEffect();
+
             return true;
         }
     }
-
-
     return false;
 }

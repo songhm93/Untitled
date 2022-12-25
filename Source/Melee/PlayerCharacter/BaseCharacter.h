@@ -203,6 +203,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* StunParticle;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Common", Meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* HPPotionParticle;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UStatsComponent* StatComp;
 
@@ -276,6 +279,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddExp(int32 Exp);
 	void SetIsHoldWeapon(bool Boolean);
+	void ApplyPotionEffect();
 	
 };
 

@@ -949,3 +949,18 @@ FItemInfoInSlot UInventoryComponent::GetItemInfoInSlot(int32 Index)
 
 	return InventorySlots[Index];
 }
+
+int32 UInventoryComponent::GetItemTotalAmount(int32 ItemId)
+{
+	if(!PlayerInventory.IsEmpty())
+	{
+		for(auto Item : PlayerInventory)
+		{
+			if(Item.Itemid == ItemId)
+			{
+				return Item.Num;
+			}
+		}
+	}
+	return 0;
+}
