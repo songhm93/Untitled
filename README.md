@@ -325,4 +325,42 @@ public:
 	+ 현재 돌아가고 있는 쿨다운 시간을 가져와서 Text로 표시
 	+ DeltaTime마다 바뀌어야 하는 값을 기존 값에서 빼주고 빼준 값은 저장 후 그 값으로 파라미터 값을 세팅
 	+ 액션바 비어있지 않은 슬롯에서 Tick 함수로 반복
+	
++ 아이템 획득 위젯
+![GetItemWidget](https://user-images.githubusercontent.com/27758519/209459429-ceeaca0e-4555-45be-8196-bc36061d031f.jpg)
 
+```c++
+void AMeleePlayerController::GetItemWidgetVisible(FItemInfoInSlot AddItemInfo, int32 Amount)
+{
+    if(ExistGetItemWidgetNum == 5) //화면에 위젯이 5개 떠있으면 그 뒤에 떠야하는 정보를 저장 후 대기
+    {
+        GetItemWidgetQueue.Enqueue(FGetItemQueue(AddItemInfo, Amount));
+        return;
+    }
+	if(GetItemWidgetClass)
+	{
+	....
+	
+}
+```
+
+
++ 화면에 띄워진 위젯이 제거되면 바로 꺼내서 사용할 수 있도록 큐를 이용
+
+
+```c++
+void AMeleePlayerController::RemoveGetItemWidget()
+{
+    GetItemWidget = *(GetItemWidgetList.begin());
+    GetItemWidget->RemoveFromParent();
+    GetItemWidgetList.RemoveAt(0);
+    --ExistGetItemWidgetNum;
+    if(!GetItemWidgetQueue.IsEmpty()) //화면에 떠있던 위젯들 지워질 때 떠야할 대기중인 위젯이 있으면
+    {
+        GetItemWidgetVisible(GetItemWidgetQueue.Peek()->ItemInfo, GetItemWidgetQueue.Peek()->Amount);
+        GetItemWidgetQueue.Dequeue(*(GetItemWidgetQueue.Peek()));
+    }
+}
+```
+
++ 제거됐을 때 큐에 대기중인 위젯 정보가 있으면 GetItemWidgetVisible 함수를 재호출하여 위젯을 띄워줌
