@@ -260,7 +260,9 @@ public:
 
 # Widget
 + C++로 구현하다가 편의성으로 후반부에는 블루프린트로 구현
-+ 주요 위젯 기능
+## 주요 위젯 기능
+
+### 인벤토리 위젯
   ```c++
   void UInventoryWidget::GenerateSlotWidgets() //슬롯들 업데이트
   {
@@ -296,7 +298,11 @@ public:
       }
   }
   ```
-  
++ 인벤토리 위젯과 슬롯 위젯이 있으며, 인벤토리 위젯에서 생성해야 하는 슬롯의 갯수만큼 하나하나 생성해서 그리드에 넣어줌
++ 인벤토리 컴포넌트로부터 슬롯 인덱스의 아이템 정보를 가져와서 아이템이 존재하는 슬롯과 그렇지 않은 슬롯을 구분하여 초기화해줌
+
+
+### 스탯 위젯
   ```c++
   void UStatBarWidget::NativeConstruct()
   {
@@ -319,14 +325,9 @@ public:
       }
   }
   ```
-+ 스킬 쿨다운 다이나믹 머티리얼 파라미터 값 세팅
-![Skillcooldown](https://user-images.githubusercontent.com/27758519/207785455-5fde8be6-881f-4284-830e-acca6ef91c9a.jpg)
-	+ 사용한 스킬의 총 쿨다운 시간을 가져와서 초마다 빼줘야하는 파라미터 값을 구함(부드럽게 바뀌게 하기 위해 DeltaTime을 곱해줌)
-	+ 현재 돌아가고 있는 쿨다운 시간을 가져와서 Text로 표시
-	+ DeltaTime마다 바뀌어야 하는 값을 기존 값에서 빼주고 빼준 값은 저장 후 그 값으로 파라미터 값을 세팅
-	+ 액션바 비어있지 않은 슬롯에서 Tick 함수로 반복
-	
-+ 아이템 획득 위젯
+ + 스탯 값 업데이트시 델리게이트를 이용하여 위젯으로 값을 넘겨줌
+ 
+ ### 아이템 획득 위젯
 ![GetItemWidget](https://user-images.githubusercontent.com/27758519/209459429-ceeaca0e-4555-45be-8196-bc36061d031f.jpg)
 
 ```c++
@@ -364,3 +365,16 @@ void AMeleePlayerController::RemoveGetItemWidget()
 ```
 
 + 제거됐을 때 큐에 대기중인 위젯 정보가 있으면 GetItemWidgetVisible 함수를 재호출하여 위젯을 띄워줌
+  
+  
+  
+  
+### 스킬 쿨다운 다이나믹 머티리얼 파라미터 값 세팅
+![Skillcooldown](https://user-images.githubusercontent.com/27758519/207785455-5fde8be6-881f-4284-830e-acca6ef91c9a.jpg)
+
++ 사용한 스킬의 총 쿨다운 시간을 가져와서 초마다 빼줘야하는 파라미터 값을 구함(부드럽게 바뀌게 하기 위해 DeltaTime을 곱해줌)
++ 현재 돌아가고 있는 쿨다운 시간을 가져와서 Text로 표시
++ DeltaTime마다 바뀌어야 하는 값을 기존 값에서 빼주고 빼준 값은 저장 후 그 값으로 파라미터 값을 세팅
++ 액션바 비어있지 않은 슬롯에서 Tick 함수로 반복
+	
+
